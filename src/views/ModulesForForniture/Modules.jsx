@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllModules } from "../../index.js";
 function Modules() {
+
   const [modules, setModules] = useState([]);
 
   const getAllModulesToSet = () => {
@@ -102,7 +103,7 @@ function Modules() {
                     {module.pieces_number}
                   </td>
                   <td className="flex justify-center">
-                    <Link className="bg-lightblue py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium ">
+                    <Link to={`/ver-modulos/${module._id}/piezas`} className="bg-lightblue py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium ">
                       Ver
                     </Link>
                   </td>

@@ -11,7 +11,7 @@ function MainTable() {
         console.log(tablesData.data.table);
       })
       .catch((error) => {
-        console.error(error);
+        console.error('Este es el error:', error);
       });
   };
 

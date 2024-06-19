@@ -5,6 +5,7 @@ export { getAllTables } from "./services/mainTable/getAllTables.js";
 //MODULES
 export { createModule } from "./services/ModulesForForniture/createModule.js";
 export { getAllModules } from "./services/ModulesForForniture/getAllModules.js";
+export { getModuleById } from "./services/ModulesForForniture/getModuleById.js";
 //PIECES
 export { createPieces } from "./services/Pieces/createPieces.js";
 export { getAllPieces } from "./services/Pieces/getAllPieces.js";
@@ -22,3 +23,5 @@ export { CreateMainTable } from "./views/MainTable/CreateMainTable";
 //MODULES
 export { Modules } from "./views/ModulesForForniture/Modules";
 export { CreateModule } from "./views/ModulesForForniture/CreateModule";
+//PIECES
+export { Pieces } from "./views/PiecesForModules/Pieces";

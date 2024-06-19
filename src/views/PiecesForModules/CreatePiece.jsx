@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { createModule, FormCreatePieces, createPieces } from "../../index.js";
+import { CreatePiece } from "../../index.js";
 
-function CreateModule() {
+function CreatePiece() {
   const navigation = useNavigate();
-  const [piecesCount, setPiecesCount] = useState(0);
   const {
     register,
     handleSubmit,
@@ -16,17 +15,18 @@ function CreateModule() {
     event.preventDefault();
 
     try {
-      // Crear el módulo y obtener el ID del módulo creado
-      const { name, length, width, category, piecesNumber } = data; // Extraer datos relevantes para el módulo
+      // Crear la pieza y obtener el ID de la pieza creada
+      const { name, length, width, category, material, edge, module_id } = data; // Extraer datos relevantes para el módulo
       const moduleData = {
         name,
         length,
         width,
-        category,
-        pieces_number: piecesNumber,
-      }; // Crear objeto moduleData con los datos del módulo
-      const moduleId = await createModule(moduleData);
-      console.log("¡Creaste el módulo con éxito!");
+        material,
+        edge,
+        module_id,
+      }; // Crear objeto pieceData con los datos de la pieza
+      const pieceId = await createModule(pieceData);
+      console.log("¡Creaste la pieza con éxito!");
 
       // Crear las piezas asociadas al módulo
       for (let i = 0; i < piecesCount; i++) {

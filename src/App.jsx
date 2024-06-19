@@ -9,6 +9,7 @@ import {
   CreateMainTable,
   Modules,
   CreateModule,
+  Pieces
 } from "./index.js";
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
         <Route path="/crear-main-table" element={<CreateMainTable />} />
         <Route path="/ver-modulos" element={<Modules />} />
         <Route path="/crear-modulo" element={<CreateModule />} />
+        <Route path="/ver-modulos/:id/piezas" element={<Pieces />} />
       </Routes>
       {/*     {<Footer />} */}
     </>
