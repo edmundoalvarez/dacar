@@ -14,9 +14,8 @@ function Pieces() {
         getAllPieces()
         .then((piecesData) => {
             //! Por qué aca tengo que hacer data.module?
-            // setPieces(piecesData.data.module);
-            // console.log(piecesData.data.module);
-            const filteredPieces = piecesData.data.module.filter(piece => piece.module_id === id);
+            // console.log(piecesData);
+            const filteredPieces = piecesData.data.filter(piece => piece.module_id === id);
             setPieces(filteredPieces);
             console.log(filteredPieces);
         })
