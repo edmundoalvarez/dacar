@@ -28,8 +28,12 @@ function CreateFurniture() {
 
   const handleModuleChange = (e) => {
     const { value, checked } = e.target;
+    const selectedModule = modules.find((module) => module._id === value);
+
     setSelectedModules((prev) =>
-      checked ? [...prev, value] : prev.filter((id) => id !== value)
+      checked
+        ? [...prev, selectedModule]
+        : prev.filter((module) => module._id !== value)
     );
   };
 
@@ -38,17 +42,15 @@ function CreateFurniture() {
     try {
       await createFurniture({
         ...data,
-        modules_furniture: selectedModules,
+        modules_furniture: selectedModules.map((module) => module._id),
       }).then(() => {
         console.log("¡Creaste el mueble con éxito!");
         setTimeout(() => {
           navigate("/");
-          /* window.location.reload(true); */
         }, 100);
       });
     } catch (error) {
       console.error(error);
-      /* setIsLoading(false); */
     }
   };
 
@@ -180,6 +182,15 @@ function CreateFurniture() {
           Enviar
         </button>
       </form>
+
+      <div className="mt-4">
+        <h2 className="text-2xl">Módulos Seleccionados:</h2>
+        <ul className="list-disc pl-5">
+          {selectedModules.map((module) => (
+            <li key={module._id}>{module.name}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
