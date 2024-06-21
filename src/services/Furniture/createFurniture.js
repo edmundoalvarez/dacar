@@ -4,10 +4,10 @@ import config from "../../config.json";
 /* const token = Cookies.get("token");
 const userId = Cookies.get("userId"); */
 
-//CREAR MODULO CON SUS PIEZAS
-async function createModule(data) {
+//CREAR MUEBLE
+async function createFurniture(data) {
   const res = await axios.post(
-    config.apiModules,
+    config.apiFurnitures,
     {
       ...data,
     },
@@ -18,7 +18,7 @@ async function createModule(data) {
       },
     }
   );
-  return res.data._id;
+  return res;
 }
 
-export { createModule };
+export { createFurniture };

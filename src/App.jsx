@@ -5,11 +5,13 @@ import {
   Home,
   NotFoundPage,
   ProtectedRoute,
+  Furniture,
+  CreateFurniture,
   MainTable,
   CreateMainTable,
   Modules,
   CreateModule,
-  Pieces
+  Pieces,
 } from "./index.js";
 
 function App() {
@@ -25,6 +27,8 @@ function App() {
         </Route>
         {/* vistas no protegidas */}
         <Route path="/" element={<Home />} />
+        <Route path="/ver-muebles" element={<Furniture />} />
+        <Route path="/crear-mueble" element={<CreateFurniture />} />
         <Route path="/ver-tablas" element={<MainTable />} />
         <Route path="/crear-main-table" element={<CreateMainTable />} />
         <Route path="/ver-modulos" element={<Modules />} />

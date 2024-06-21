@@ -17,6 +17,12 @@ function Home() {
           >
             Ver módulos
           </Link>
+          <Link
+            to={`/ver-muebles`}
+            className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
+          >
+            Ver muebles
+          </Link>
         </div>
       </div>
     </>

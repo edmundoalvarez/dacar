@@ -1,6 +1,7 @@
 {
   "apiUsers": "http://localhost:3000/users",
   "apiSupliers": "http://localhost:3000/supliers",
+  "apiFurnitures": "http://localhost:3000/furnitures",
   "apiModules": "http://localhost:3000/modules",
   "apiPieces": "http://localhost:3000/pieces",
   "apiMainTable": "http://localhost:3000/main-table"

@@ -1,30 +1,30 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAllModules } from "../../index.js";
-function Modules() {
-  const [modules, setModules] = useState([]);
+import { getAllFurnitures } from "../../index.js";
+function Furniture() {
+  const [furnitures, setFurnitures] = useState([]);
 
-  const getAllModulesToSet = () => {
-    getAllModules()
-      .then((modulesData) => {
-        setModules(modulesData.data);
-        console.log(modulesData.data);
+  const getAllFurnituresToSet = () => {
+    getAllFurnitures()
+      .then((furnituresData) => {
+        setFurnitures(furnituresData.data);
+        console.log(furnituresData.data);
       })
       .catch((error) => {
-        console.error(error);
+        console.error("Este es el error:", error);
       });
   };
 
-  //traer los modulos
+  //traer las tablas
   useEffect(() => {
-    getAllModulesToSet();
+    getAllFurnituresToSet();
   }, []);
 
   return (
     <>
       <div className="m-4">
         <div className="flex gap-4">
-          <h1 className="text-4xl">Módulos</h1>
+          <h1 className="text-4xl">Muebles</h1>
 
           <Link
             to="/"
@@ -33,10 +33,10 @@ function Modules() {
             Volver al Inicio
           </Link>
           <Link
-            to="/crear-modulo"
+            to="/crear-mueble"
             className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
           >
-            Crear Modulo
+            Crear Mueble
           </Link>
         </div>
         <div className="overflow-x-auto mt-4">
@@ -45,69 +45,64 @@ function Modules() {
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Nombre
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Largo
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Ancho
                 </th>
-
                 <th
                   scope="col"
-                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                >
+                  Alto
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Categoria
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Cant. Piezas
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider "
-                >
-                  Ver
+                  Módulos
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {modules.map((module) => (
-                <tr key={module.name} className="text-center">
+              {furnitures.map((furniture) => (
+                <tr key={furniture.name}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {module.name}
+                    {furniture.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {module.length}
+                    {furniture.length}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {module.width}
-                  </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {module.category}
+                    {furniture.width}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {module.pieces_number}
+                    {furniture.height}
                   </td>
-                  <td className="flex justify-center">
-                    <Link
-                      to={`/ver-modulos/${module._id}/piezas`}
-                      className="bg-lightblue py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
-                    >
-                      Ver
-                    </Link>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {furniture.category}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {furniture.modules_furniture
+                      .map((module) => module.name)
+                      .join(", ")}
                   </td>
                 </tr>
               ))}
@@ -119,4 +114,4 @@ function Modules() {
   );
 }
 
-export { Modules };
+export { Furniture };
