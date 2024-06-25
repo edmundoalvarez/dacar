@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllFurnitures } from "../../index.js";
 function Furniture() {
@@ -83,7 +83,7 @@ function Furniture() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {furnitures.map((furniture) => (
-                <tr key={furniture.name}>
+                <tr key={furniture._id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {furniture.name}
                   </td>

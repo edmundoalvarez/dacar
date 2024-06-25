@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { createFurniture, getAllModules } from "../../index.js";
@@ -6,6 +6,7 @@ import { createFurniture, getAllModules } from "../../index.js";
 function CreateFurniture() {
   const [modules, setModules] = useState([]);
   const [selectedModules, setSelectedModules] = useState([]);
+
 
   const navigate = useNavigate();
 
@@ -39,18 +40,25 @@ function CreateFurniture() {
 
   const onSubmit = async (data, event) => {
     event.preventDefault();
+
     try {
+
+      console.log(data);
+
       await createFurniture({
         ...data,
         modules_furniture: selectedModules.map((module) => module._id),
+
       }).then(() => {
         console.log("¡Creaste el mueble con éxito!");
         setTimeout(() => {
           navigate("/");
         }, 100);
+
       });
     } catch (error) {
       console.error(error);
+
     }
   };
 
@@ -187,7 +195,23 @@ function CreateFurniture() {
         <h2 className="text-2xl">Módulos Seleccionados:</h2>
         <ul className="list-disc pl-5">
           {selectedModules.map((module) => (
-            <li key={module._id}>{module.name}</li>
+            <li key={module._id}>
+              <p>Nombre: {module.name}</p>
+              <p>Profundidad: {module.length}</p>
+              <p>Ancho: {module.width}</p>
+              <p>Alto: {module.height}</p>
+              <p>Cantidad de piezas :{module.pieces_number}</p>
+              <ul className="list-disc pl-5">
+              {module.supplies_module.map((supplie_module) =>
+                <li key={supplie_module.supplie_id}>
+                  <p>Nombre: {supplie_module.supplie_name}</p>
+                  <p>Cantidad: {supplie_module.supplie_qty}</p>
+                  <p>Largo: {supplie_module.supplie_length}</p>
+                </li>
+              )}
+              </ul>
+              <hr />
+            </li>
           ))}
         </ul>
       </div>
