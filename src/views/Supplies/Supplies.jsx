@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAllTables } from "../../index.js";
-function MainTable() {
-  const [tables, setTables] = useState([]);
+import { getAllSupplies } from "../../index.js";
+function Supplies() {
+  const [supplies, setSupplies] = useState([]);
 
-  const getAllTablesToSet = () => {
-    getAllTables()
+  const getSuppliesToSet = () => {
+    getAllSupplies()
       .then((tablesData) => {
-        setTables(tablesData.data);
+        setSupplies(tablesData.data);
         console.log(tablesData.data);
       })
       .catch((error) => {
@@ -15,16 +15,16 @@ function MainTable() {
       });
   };
 
-  //traer las placas
+  //traer los insumo
   useEffect(() => {
-    getAllTablesToSet();
+    getSuppliesToSet();
   }, []);
 
   return (
     <>
       <div className="m-4">
         <div className="flex gap-4">
-          <h1 className="text-4xl">Placas</h1>
+          <h1 className="text-4xl">Insumos</h1>
 
           <Link
             to="/"
@@ -33,10 +33,10 @@ function MainTable() {
             Volver al Inicio
           </Link>
           <Link
-            to="/crear-placa"
+            to="/crear-insumo"
             className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
           >
-            Crear Placa
+            Crear Insumo
           </Link>
         </div>
         <div className="overflow-x-auto mt-4">
@@ -79,28 +79,46 @@ function MainTable() {
                 >
                   Material
                 </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                >
+                  Precio
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                >
+                  Proveedor
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {tables.map((table) => (
-                <tr key={table.name}>
+              {supplies.map((supplie) => (
+                <tr key={supplie.name}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {table.name}
+                    {supplie.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {table.length}
+                    {supplie.length}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {table.width}
+                    {supplie.width}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {table.thickness}
+                    {supplie.thickness}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {table.category}
+                    {supplie.category}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {table.material}
+                    {supplie.material}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    ${supplie.price}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {supplie.supplier_id}
                   </td>
                 </tr>
               ))}
@@ -112,4 +130,4 @@ function MainTable() {
   );
 }
 
-export { MainTable };
+export { Supplies };

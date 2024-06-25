@@ -12,6 +12,8 @@ import {
   Modules,
   CreateModule,
   Pieces,
+  Supplies,
+  CreateSupplie,
 } from "./index.js";
 
 function App() {
@@ -29,11 +31,13 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/ver-muebles" element={<Furniture />} />
         <Route path="/crear-mueble" element={<CreateFurniture />} />
-        <Route path="/ver-tablas" element={<MainTable />} />
-        <Route path="/crear-main-table" element={<CreateMainTable />} />
+        <Route path="/ver-placas" element={<MainTable />} />
+        <Route path="/crear-placa" element={<CreateMainTable />} />
         <Route path="/ver-modulos" element={<Modules />} />
         <Route path="/crear-modulo" element={<CreateModule />} />
         <Route path="/ver-modulos/:id/piezas" element={<Pieces />} />
+        <Route path="/ver-insumos" element={<Supplies />} />
+        <Route path="/crear-insumo" element={<CreateSupplie />} />
       </Routes>
       {/*     {<Footer />} */}
     </>

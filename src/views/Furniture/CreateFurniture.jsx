@@ -70,10 +70,10 @@ function CreateFurniture() {
           Volver al Inicio
         </Link>
         <Link
-          to={`/ver-tablas`}
+          to={`/ver-placas`}
           className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
         >
-          Ver tablas
+          Ver placas
         </Link>
       </div>
       <form action="" className="w-1/2" onSubmit={handleSubmit(onSubmit)}>

@@ -15,7 +15,7 @@ function Furniture() {
       });
   };
 
-  //traer las tablas
+  //traer las placas
   useEffect(() => {
     getAllFurnituresToSet();
   }, []);

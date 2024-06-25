@@ -1,9 +1,10 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { createMainTable } from "../../index.js";
+import { createSupplies } from "../../index.js";
 
-function CreateMainTable() {
+function CreateSupplie() {
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -13,10 +14,10 @@ function CreateMainTable() {
   const onSubmit = async (data, event) => {
     event.preventDefault();
     try {
-      await createMainTable(data).then(() => {
-        console.log("¡creaste la placa con exito!");
+      await createSupplies(data).then(() => {
+        console.log("¡creaste el insumo con exito!");
         setTimeout(() => {
-          /*  navigate("/iniciar-sesion"); */
+          navigate("/ver-insumos");
           window.location.reload(true);
         }, 1500);
       });
@@ -29,7 +30,7 @@ function CreateMainTable() {
   return (
     <div className="m-4">
       <div className="flex gap-4">
-        <h1 className="text-4xl">Crear Placa</h1>
+        <h1 className="text-4xl">Crear Insumo</h1>
 
         <Link
           to="/"
@@ -38,15 +39,15 @@ function CreateMainTable() {
           Volver al Inicio
         </Link>
         <Link
-          to={`/ver-placas`}
+          to={`/ver-insumos`}
           className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
         >
-          Ver placas
+          Ver insumos
         </Link>
       </div>
       <form action="" className="w-1/2" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col w-11/12 my-2">
-          <label htmlFor="name">Nombre de la placa</label>
+          <label htmlFor="name">Nombre del insumo</label>
           <input
             className=" border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
             type="text"
@@ -69,9 +70,7 @@ function CreateMainTable() {
             type="text"
             name="length"
             id="length"
-            {...register("length", {
-              required: "El campo es obligatorio",
-            })}
+            {...register("length", {})}
           />
           {errors.length && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -86,9 +85,7 @@ function CreateMainTable() {
             type="text"
             name="width"
             id="width"
-            {...register("width", {
-              required: "El campo es obligatorio",
-            })}
+            {...register("width", {})}
           />
           {errors.width && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -103,9 +100,7 @@ function CreateMainTable() {
             type="text"
             name="thickness"
             id="thickness"
-            {...register("thickness", {
-              required: "El campo es obligatorio",
-            })}
+            {...register("thickness", {})}
           />
           {errors.thickness && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -147,6 +142,23 @@ function CreateMainTable() {
             </span>
           )}
         </div>
+        <div className="flex flex-col w-11/12 my-2">
+          <label htmlFor="price">Precio</label>
+          <input
+            className=" border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            type="text"
+            name="price"
+            id="price"
+            {...register("price", {
+              required: "El campo es obligatorio",
+            })}
+          />
+          {errors.price && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors.price.message}
+            </span>
+          )}
+        </div>
         <button
           className="bg-blue-700 hover:bg-blue-500 text-white px-4 rounded-md"
           type="submit"
@@ -158,4 +170,4 @@ function CreateMainTable() {
   );
 }
 
-export { CreateMainTable };
+export { CreateSupplie };

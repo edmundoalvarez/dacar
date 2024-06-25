@@ -1,11 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { createModule, FormCreatePieces, createPieces } from "../../index.js";
+import {
+  createModule,
+  FormCreatePieces,
+  FormAddSupplies,
+  createPieces,
+  getAllTables,
+  getAllSuppliesExceptTables,
+} from "../../index.js";
 
 function CreateModule() {
   const navigation = useNavigate();
   const [piecesCount, setPiecesCount] = useState(0);
+  const [suppliesCount, setSuppliesCount] = useState(0);
+  const [tables, setTables] = useState([]);
+  const [supplies, setSupplies] = useState([]);
+
+  // TRAER PLACAS: para el formulario de las piezas, se le pasar por prop
+  const getAllTablesToSet = () => {
+    getAllTables()
+      .then((tablesData) => {
+        setTables(tablesData.data);
+        // console.log(tablesData.data);
+      })
+      .catch((error) => {
+        console.error("Este es el error:", error);
+      });
+  };
+
+  // TRAER INSUMOS: para el formulario de insumos, se le pasar por prop
+  const getAllSuppliesToSet = () => {
+    getAllSuppliesExceptTables()
+      .then((supplieData) => {
+        setSupplies(supplieData.data);
+        // console.log(supplieData.data);
+      })
+      .catch((error) => {
+        console.error("Este es el error:", error);
+      });
+  };
+
+  // FORMULARIO PARA CREAR
   const {
     register,
     handleSubmit,
@@ -18,26 +54,53 @@ function CreateModule() {
     try {
       // Crear el módulo y obtener el ID del módulo creado
       const { name, length, width, category, piecesNumber } = data; // Extraer datos relevantes para el módulo
+      console.log(data);
+      const supplies_module = [...Array(suppliesCount)].map((_, index) => {
+        const supplyIdName = data[`supplie_id_name${index}`];
+        const [supplie_id, supplie_name] = supplyIdName.split("-");
+
+        return {
+          supplie_id,
+          supplie_name,
+          supplie_qty: data[`supplie_qty${index}`],
+          supplie_length: data[`supplie_length${index}`],
+        };
+      });
+
       const moduleData = {
         name,
         length,
         width,
+        height: data.height,
         category,
         pieces_number: piecesNumber,
+        supplies_module, // Asignar el array de insumos
       }; // Crear objeto moduleData con los datos del módulo
       const moduleId = await createModule(moduleData);
       console.log("¡Creaste el módulo con éxito!");
 
       // Crear las piezas asociadas al módulo
       for (let i = 0; i < piecesCount; i++) {
+        const edgeData = {
+          edgeLength: data[`edgeLength${i}`],
+          lacqueredEdge: data[`lacqueredEdge${i}`],
+        };
+        const finishingPiece = {
+          lacqueredPiece: data[`lacqueredPiece${i}`],
+          veneer: data[`veneer${i}`], //enchapado
+        };
+
         const pieceData = {
           // Mapeo de los nombres de los campos del formulario a los nombres esperados en la base de datos
           name: data[`namePiece${i}`],
           length: data[`lengthPiece${i}`],
           width: data[`widthPiece${i}`],
+          orientation: data[`orientation${i}`],
           category: data[`categoryPiece${i}`],
           material: data[`materialPiece${i}`],
-          edge: data[`edgePiece${i}`],
+          finishing: finishingPiece,
+          pantographed: data[`pantographed${i}`],
+          edge: edgeData,
           moduleId, // Asigna el ID del módulo a cada pieza
         };
         await createPieces(pieceData);
@@ -54,6 +117,16 @@ function CreateModule() {
   const handlePiecesCountChange = (e) => {
     setPiecesCount(Number(e.target.value));
   };
+
+  const handleSuppliesCountChange = (e) => {
+    setSuppliesCount(Number(e.target.value));
+  };
+
+  // traer las placas e insumos
+  useEffect(() => {
+    getAllTablesToSet();
+    getAllSuppliesToSet();
+  }, []);
 
   return (
     <div className="m-4">
@@ -94,6 +167,23 @@ function CreateModule() {
             </span>
           )}
         </div>
+        <div className="flex flex-col w-3/12 my-2 ">
+          <label htmlFor="height">Alto</label>
+          <input
+            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            type="text"
+            name="height"
+            id="height"
+            {...register("height", {
+              required: "El campo es obligatorio",
+            })}
+          />
+          {errors.height && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors.height.message}
+            </span>
+          )}
+        </div>
         <div className="flex flex-col w-3/12 my-2">
           <label htmlFor="length">Largo</label>
           <input
@@ -112,7 +202,7 @@ function CreateModule() {
           )}
         </div>
         <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="width">Ancho</label>
+          <label htmlFor="width">Profundidad</label>
           <input
             className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
             type="text"
@@ -145,6 +235,35 @@ function CreateModule() {
             </span>
           )}
         </div>
+
+        <div className="flex flex-col w-full my-2">
+          <h2 className="text-3xl">Insumos</h2>
+          <label htmlFor="suppliesNumber">Cantidad de insumos</label>
+          <input
+            className="border-solid border-2 border-opacity mb-2 rounded-md w-3/12"
+            type="number"
+            name="suppliesNumber"
+            id="suppliesNumber"
+            {...register("suppliesNumber")}
+            onChange={handleSuppliesCountChange}
+          />
+          {errors.suppliesNumber && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors.suppliesNumber.message}
+            </span>
+          )}
+        </div>
+
+        {[...Array(suppliesCount)].map((_, index) => (
+          <FormAddSupplies
+            key={index}
+            register={register}
+            index={index}
+            errors={errors}
+            supplies={supplies}
+          />
+        ))}
+        <h2 className="text-3xl">Piezas</h2>
         <div className="flex flex-col w-full my-2">
           <label htmlFor="piecesNumber">Cantidad de piezas</label>
           <input
@@ -163,13 +282,14 @@ function CreateModule() {
             </span>
           )}
         </div>
-        <h2 className="text-3xl">Piezas</h2>
+
         {[...Array(piecesCount)].map((_, index) => (
           <FormCreatePieces
-            key={index}
+            key={`FormCreatePieces${index}`}
             register={register}
             index={index}
             errors={errors}
+            tables={tables}
           />
         ))}
         <div className="w-full">

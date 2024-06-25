@@ -4,10 +4,10 @@ import config from "../../config.json";
 /* const token = Cookies.get("token");
 const userId = Cookies.get("userId"); */
 
-//CREAR PLACA PRINCIPAL PARA CORTES
-async function createMainTable(data) {
+//CREAR INSUMO
+async function createSupplies(data) {
   const res = await axios.post(
-    config.apiMainTable,
+    config.apiSupplies,
     {
       ...data,
     },
@@ -21,4 +21,4 @@ async function createMainTable(data) {
   return res;
 }
 
-export { createMainTable };
+export { createSupplies };
