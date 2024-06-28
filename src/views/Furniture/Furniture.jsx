@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllFurnitures } from "../../index.js";
+
 function Furniture() {
   const [furnitures, setFurnitures] = useState([]);
 
@@ -8,14 +9,13 @@ function Furniture() {
     getAllFurnitures()
       .then((furnituresData) => {
         setFurnitures(furnituresData.data);
-        console.log(furnituresData.data);
+        console.log('furnitureData (line 11); ', furnituresData.data);
       })
       .catch((error) => {
         console.error("Este es el error:", error);
       });
   };
 
-  //traer las placas
   useEffect(() => {
     getAllFurnituresToSet();
   }, []);
@@ -100,9 +100,15 @@ function Furniture() {
                     {furniture.category}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {furniture.modules_furniture
-                      .map((module) => module.name)
-                      .join(", ")}
+                    {Array.isArray(furniture.modules_furniture) ? (
+                      furniture.modules_furniture.map((module, index) => (
+                        <div key={index}>
+                          <p>{module.name}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p>No modules available</p>
+                    )}
                   </td>
                 </tr>
               ))}

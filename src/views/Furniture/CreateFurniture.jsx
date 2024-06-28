@@ -6,7 +6,7 @@ import { createFurniture, getAllModules } from "../../index.js";
 function CreateFurniture() {
   const [modules, setModules] = useState([]);
   const [selectedModules, setSelectedModules] = useState([]);
-
+  const [editModule, setEditModule] = useState(null); // Estado para el módulo en edición
 
   const navigate = useNavigate();
 
@@ -25,6 +25,7 @@ function CreateFurniture() {
     register,
     handleSubmit,
     formState: { errors },
+    setValue, // Para establecer valores en el formulario de edición
   } = useForm();
 
   const handleModuleChange = (e) => {
@@ -42,29 +43,44 @@ function CreateFurniture() {
     event.preventDefault();
 
     try {
-
       console.log(data);
 
       await createFurniture({
         ...data,
-        modules_furniture: selectedModules.map((module) => module._id),
-
+        modules_furniture: selectedModules,
       }).then(() => {
         console.log("¡Creaste el mueble con éxito!");
         setTimeout(() => {
           navigate("/");
         }, 100);
-
       });
     } catch (error) {
       console.error(error);
-
     }
   };
 
   useEffect(() => {
     getAllModulesToSet();
   }, []);
+
+  const handleEditClick = (module) => {
+    setEditModule(module);
+    // Establecer los valores del formulario con los datos del módulo seleccionado
+    setValue("editName", module.name);
+    setValue("editLength", module.length);
+    setValue("editWidth", module.width);
+    setValue("editHeight", module.height);
+    setValue("editPiecesNumber", module.pieces_number);
+  };
+
+  const handleEditSubmit = (data) => {
+    // Actualizar el módulo con los datos del formulario
+    const updatedModules = selectedModules.map((module) =>
+      module._id === editModule._id ? { ...editModule, ...data } : module
+    );
+    setSelectedModules(updatedModules);
+    setEditModule(null); // Cerrar el formulario de edición
+  };
 
   return (
     <div className="m-4">
@@ -210,10 +226,101 @@ function CreateFurniture() {
                 </li>
               )}
               </ul>
+              <button 
+                className="bg-yellow-400 hover:bg-yellow-500 text-black px-4 rounded-md"
+                onClick={() => handleEditClick(module)}
+                >Editar</button>
               <hr />
             </li>
           ))}
         </ul>
+
+        {editModule && (
+          <form onSubmit={handleSubmit(handleEditSubmit)} className="mt-4">
+            <h2 className="text-2xl">Editar Módulo: {editModule.name}</h2>
+            <div className="flex flex-col w-11/12 my-2">
+              <label htmlFor="editName">Nombre del Módulo</label>
+              <input
+                className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+                type="text"
+                name="editName"
+                id="editName"
+                {...register("editName", { required: "El campo es obligatorio" })}
+              />
+              {errors.editName && (
+                <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                  {errors.editName.message}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col w-11/12 my-2">
+              <label htmlFor="editLength">Largo</label>
+              <input
+                className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+                type="text"
+                name="editLength"
+                id="editLength"
+                {...register("editLength", { required: "El campo es obligatorio" })}
+              />
+              {errors.editLength && (
+                <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                  {errors.editLength.message}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col w-11/12 my-2">
+              <label htmlFor="editWidth">Ancho</label>
+              <input
+                className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+                type="text"
+                name="editWidth"
+                id="editWidth"
+                {...register("editWidth", { required: "El campo es obligatorio" })}
+              />
+              {errors.editWidth && (
+                <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                  {errors.editWidth.message}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col w-11/12 my-2">
+              <label htmlFor="editHeight">Alto</label>
+              <input
+                className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+                type="text"
+                name="editHeight"
+                id="editHeight"
+                {...register("editHeight", { required: "El campo es obligatorio" })}
+              />
+              {errors.editHeight && (
+                <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                  {errors.editHeight.message}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col w-11/12 my-2">
+              <label htmlFor="editPiecesNumber">Cantidad de Piezas</label>
+              <input
+                className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+                type="text"
+                name="editPiecesNumber"
+                id="editPiecesNumber"
+                {...register("editPiecesNumber", { required: "El campo es obligatorio" })}
+              />
+              {errors.editPiecesNumber && (
+                <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                  {errors.editPiecesNumber.message}
+                </span>
+              )}
+            </div>
+            <button
+              className="bg-green-700 hover:bg-green-500 text-white px-4 rounded-md"
+              type="submit"
+            >
+              Guardar Cambios
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
