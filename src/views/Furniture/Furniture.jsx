@@ -4,6 +4,8 @@ import { getAllFurnitures } from "../../index.js";
 
 function Furniture() {
   const [furnitures, setFurnitures] = useState([]);
+  const [selectedModule, setSelectedModule] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const getAllFurnituresToSet = () => {
     getAllFurnitures()
@@ -19,6 +21,17 @@ function Furniture() {
   useEffect(() => {
     getAllFurnituresToSet();
   }, []);
+
+  //Manejo de la ventana modal
+  const handleOpenModal = (module) => {
+    setSelectedModule(module);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedModule(null);
+    setIsModalOpen(false);
+  };
 
   return (
     <>
@@ -79,6 +92,12 @@ function Furniture() {
                 >
                   Módulos
                 </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                >
+                  Acción
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -99,11 +118,17 @@ function Furniture() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {furniture.category}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex flex-col gap-4">
                     {Array.isArray(furniture.modules_furniture) ? (
                       furniture.modules_furniture.map((module, index) => (
-                        <div key={index}>
-                          <p>{module.name}</p>
+                        <div key={index} className="flex items-center">
+                          <p className="w-[140px]">{module.name}</p>
+                          <button
+                            onClick={() => handleOpenModal(module)}
+                            className="ml-2 bg-blue-500 text-white py-1 px-2 rounded"
+                          >
+                            Ver
+                          </button>
                         </div>
                       ))
                     ) : (
@@ -116,6 +141,31 @@ function Furniture() {
           </table>
         </div>
       </div>
+      {/* Abrimos la modal en caso que el estado isModalOpen cambie */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white p-10 rounded-lg shadow-lg flex justify-start items-start gap-3 flex-col">
+            <h2 className="text-xl mb-4"><b>Detalles del Módulo</b></h2>
+            {selectedModule && (
+              <div className="mb-2">
+                <p><strong>Nombre:</strong> {selectedModule.name}</p>
+                <p><strong>Largo:</strong> {selectedModule.length}</p>
+                <p><strong>Ancho:</strong> {selectedModule.width}</p>
+                <p><strong>Alto:</strong> {selectedModule.height}</p>
+                <p><strong>Categoria:</strong> {selectedModule.category}</p>
+              </div>
+            )}
+            <div className="flex justify-center items-center m-auto">
+              <button
+                onClick={handleCloseModal}
+                className="mt-4 bg-red-500 text-white py-2 px-4 rounded"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
