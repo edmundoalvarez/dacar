@@ -13,12 +13,15 @@ export { getModuleById } from "./services/ModulesForForniture/getModuleById.js";
 //PIECES
 export { createPieces } from "./services/Pieces/createPieces.js";
 export { getAllPieces } from "./services/Pieces/getAllPieces.js";
+export { getPiecesByModuleId } from "./services/Pieces/getPiecesByModuleId.js";
 //SUPPLIES
 export { createSupplies } from "./services/Supplies/createSupplies.js";
 export { getAllSupplies } from "./services/Supplies/getAllSupplies.js";
 export { getAllTables } from "./services/Supplies/getAllTables.js";
 export { getAllSuppliesExceptTables } from "./services/Supplies/getAllSuppliesExceptTables.js";
+
 //Components --->
+
 export { ProtectedRoute } from "./components/ProtectedRoute.jsx";
 export { FormCreatePieces } from "./components/ComponentModules/FormCreatePieces.jsx";
 export { FormAddSupplies } from "./components/ComponentModules/FormAddSupplies.jsx";

@@ -11,7 +11,7 @@ function Furniture() {
     getAllFurnitures()
       .then((furnituresData) => {
         setFurnitures(furnituresData.data);
-        console.log('furnitureData (line 11); ', furnituresData.data);
+        console.log("furnitureData (line 11); ", furnituresData.data);
       })
       .catch((error) => {
         console.error("Este es el error:", error);
@@ -121,19 +121,32 @@ function Furniture() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex flex-col gap-4">
                     {Array.isArray(furniture.modules_furniture) ? (
                       furniture.modules_furniture.map((module, index) => (
-                        <div key={index} className="flex items-center">
-                          <p className="w-[140px]">{module.name}</p>
-                          <button
-                            onClick={() => handleOpenModal(module)}
-                            className="ml-2 bg-blue-500 text-white py-1 px-2 rounded"
-                          >
-                            Ver
-                          </button>
-                        </div>
+                        <>
+                          <div key={index} className="flex items-center">
+                            <p className="w-[140px]">{module.name}</p>
+                            <button
+                              onClick={() => handleOpenModal(module)}
+                              className="ml-2 bg-blue-500 text-white py-1 px-2 rounded"
+                            >
+                              Ver
+                            </button>
+                          </div>
+                          {index % 2 === 0 ? <hr /> : ""}
+                        </>
                       ))
                     ) : (
-                      <p>No modules available</p>
+                      <p>Sin Módulos</p>
                     )}
+                  </td>
+                  <td>
+                    <div className="flex gap-2">
+                      <button className="text-white bg-orange rounded-md  px-2 py-1 mb-2">
+                        Editar
+                      </button>
+                      <button className="text-white bg-lightblue rounded-md  px-2 py-1 mb-2">
+                        Presupuestar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -144,15 +157,101 @@ function Furniture() {
       {/* Abrimos la modal en caso que el estado isModalOpen cambie */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white p-10 rounded-lg shadow-lg flex justify-start items-start gap-3 flex-col">
-            <h2 className="text-xl mb-4"><b>Detalles del Módulo</b></h2>
+          <div className="bg-white p-10 rounded-lg shadow-lg flex flex-col max-h-screen overflow-y-auto">
+            <h2 className="text-xl mb-4">
+              <b>Detalles del Módulo</b>
+            </h2>
             {selectedModule && (
               <div className="mb-2">
-                <p><strong>Nombre:</strong> {selectedModule.name}</p>
-                <p><strong>Largo:</strong> {selectedModule.length}</p>
-                <p><strong>Ancho:</strong> {selectedModule.width}</p>
-                <p><strong>Alto:</strong> {selectedModule.height}</p>
-                <p><strong>Categoria:</strong> {selectedModule.category}</p>
+                <p>
+                  <strong>Nombre:</strong> {selectedModule.name}
+                </p>
+                <p>
+                  <strong>Largo:</strong> {selectedModule.length}
+                </p>
+                <p>
+                  <strong>Ancho:</strong> {selectedModule.width}
+                </p>
+                <p>
+                  <strong>Alto:</strong> {selectedModule.height}
+                </p>
+                <p>
+                  <strong>Categoría:</strong> {selectedModule.category}
+                </p>
+                <h2 className="text-xl bg-blue-500 text-white w-fit px-2 my-2 rounded-lg">
+                  Piezas del modulo
+                </h2>
+                <ul>
+                  {selectedModule.pieces.map((piece) => (
+                    <div key={piece._id}>
+                      <li className="my-2">
+                        <p>
+                          <strong>Nombre:</strong> {piece.name}
+                        </p>
+                        <p>
+                          <strong>Largo:</strong> {piece.length}
+                        </p>
+                        <p>
+                          <strong>Ancho:</strong> {piece.width}
+                        </p>
+                        <p>
+                          <strong>Categoría:</strong> {piece.category}
+                        </p>
+                        <p>
+                          <strong>Categoría:</strong> {piece.material}
+                        </p>
+                        <p>
+                          <strong>Acabado:</strong>{" "}
+                          {piece.lacqueredPiece ? (
+                            <>
+                              Laqueado
+                              {piece.lacqueredPieceSides === "single" &&
+                                " (1 lado)"}
+                              {piece.lacqueredPieceSides === "double" &&
+                                " (2 lados)"}{" "}
+                              <br />
+                              {piece.pantographed ? "Pantografiado" : ""}
+                            </>
+                          ) : piece.veneer ? (
+                            <>
+                              Enchapado
+                              <br />
+                              {piece.veneerFinishing &&
+                                (piece.veneerFinishing === "veneerLacquered"
+                                  ? "Laqueado"
+                                  : piece.veneerFinishing === "veneerPolished"
+                                  ? "Lustrado"
+                                  : "")}
+                            </>
+                          ) : piece.melamine ? (
+                            <>
+                              "Melamina"
+                              <br />
+                              {piece.melamineLacquered ? "Laqueada" : ""}
+                            </>
+                          ) : (
+                            "No indica"
+                          )}
+                        </p>
+                        <p>
+                          <strong>Filo:</strong>{" "}
+                          {piece.edge && piece.edge.edgeLength ? (
+                            <span>
+                              {piece.edge.edgeLength} cm{" "}
+                              {piece.edge.lacqueredEdge ? "(Laqueado)" : ""}
+                            </span>
+                          ) : (
+                            ""
+                          )}
+                        </p>
+                      </li>
+                      <button className="text-white bg-orange rounded-md  px-2 mb-2">
+                        Editar
+                      </button>
+                      <hr className="border border-gray-400" />
+                    </div>
+                  ))}
+                </ul>
               </div>
             )}
             <div className="flex justify-center items-center m-auto">

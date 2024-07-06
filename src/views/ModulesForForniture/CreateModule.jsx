@@ -45,6 +45,7 @@ function CreateModule() {
   const {
     register,
     handleSubmit,
+    resetField,
     formState: { errors },
   } = useForm();
 
@@ -85,11 +86,25 @@ function CreateModule() {
           edgeLength: data[`edgeLength${i}`],
           lacqueredEdge: data[`lacqueredEdge${i}`],
         };
-        const finishingPiece = {
-          lacqueredPiece: data[`lacqueredPiece${i}`],
-          veneer: data[`veneer${i}`], //enchapado
-        };
-
+        let lacqueredPiece;
+        let veneer;
+        let melamine;
+        if (data[`finishing${i}`] === "lacqueredPiece") {
+          lacqueredPiece = true;
+          veneer = false;
+          melamine = false;
+        }
+        if (data[`finishing${i}`] === "veneer") {
+          lacqueredPiece = false;
+          veneer = true;
+          melamine = false;
+        }
+        if (data[`finishing${i}`] === "melamine") {
+          lacqueredPiece = false;
+          veneer = false;
+          melamine = true;
+        }
+        console.log(data[`finishing${i}`], lacqueredPiece, veneer, melamine);
         const pieceData = {
           // Mapeo de los nombres de los campos del formulario a los nombres esperados en la base de datos
           name: data[`namePiece${i}`],
@@ -98,7 +113,12 @@ function CreateModule() {
           orientation: data[`orientation${i}`],
           category: data[`categoryPiece${i}`],
           material: data[`materialPiece${i}`],
-          finishing: finishingPiece,
+          lacqueredPiece: lacqueredPiece,
+          lacqueredPieceSides: data[`lacqueredPieceSides${i}`],
+          veneer: veneer,
+          veneerFinishing: data[`veneerOption${i}`],
+          melamine: melamine,
+          melamineLacquered: data[`melamineLacquered${i}`],
           pantographed: data[`pantographed${i}`],
           edge: edgeData,
           moduleId, // Asigna el ID del módulo a cada pieza
@@ -290,6 +310,7 @@ function CreateModule() {
             index={index}
             errors={errors}
             tables={tables}
+            resetField={resetField}
           />
         ))}
         <div className="w-full">

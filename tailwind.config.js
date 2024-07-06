@@ -13,7 +13,7 @@ const config = {
         lightblue: "#04b290",
         green: "#bbff15",
         pink: "#e206f4",
-        orange: "#f9700b",
+        orange: "#fa8f42",
       },
       backdropFilter: {
         blur: "blur(5px)",

@@ -1,13 +1,28 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { createFurniture, getAllModules } from "../../index.js";
+import {
+  createFurniture,
+  getAllModules,
+  getPiecesByModuleId,
+} from "../../index.js";
 
 function CreateFurniture() {
   const [modules, setModules] = useState([]);
   const [selectedModules, setSelectedModules] = useState([]);
   const [formData, setFormData] = useState({});
   const [originalData, setOriginalData] = useState({});
+  const [selectedModule, setSelectedModule] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = (module) => {
+    setSelectedModule(module);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
 
   const navigate = useNavigate();
 
@@ -22,7 +37,11 @@ function CreateFurniture() {
       });
   };
 
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
   const handleModuleChange = (e) => {
     const { value, checked } = e.target;
@@ -71,30 +90,39 @@ function CreateFurniture() {
     event.preventDefault();
 
     try {
-      // Creamos un nuevo objeto con los datos del Modulo seleccionado (con cambios o sin cambios)
-      const editedModules = selectedModules.map(module => {
+      // Creamos un nuevo objeto con los datos del Módulo seleccionado (con cambios o sin cambios)
+      const editedModules = await Promise.all(
+        selectedModules.map(async (module) => {
+          const moduleId = module._id;
+          // Comparamos los objetos para ver si hay cambios y así poder agregar "(editado)" al nombre del módulo
+          const isEdited =
+            JSON.stringify(formData[moduleId]) !==
+            JSON.stringify(originalData[moduleId]);
 
-        const moduleId = module._id;
-        // Comparamos los objetos para ver si hay cambios y asi poder agregar "(editado)" al nombre del modulo
-        const isEdited = JSON.stringify(formData[moduleId]) !== JSON.stringify(originalData[moduleId]);
+          // Obtener las piezas correspondientes al módulo actual
+          const modulePieces = await getPiecesByModuleId(moduleId); // Esperar a que se resuelva la promesa
 
-        return {
-          ...module,
-          ...formData[moduleId],
-          // Agregamos "(editado)" al nombre del modulo si hubo cambios en sus propiedades
-          name: isEdited ? `${formData[moduleId].name} (editado)` : formData[moduleId].name
-        };
-      });
+          return {
+            ...module,
+            ...formData[moduleId],
+            // Agregamos "(editado)" al nombre del módulo si hubo cambios en sus propiedades
+            name: isEdited
+              ? `${formData[moduleId].name} (editado)`
+              : formData[moduleId].name,
+            pieces: modulePieces, // Agregar las piezas correspondientes al módulo
+          };
+        })
+      );
 
       console.log(data);
 
       await createFurniture({
         ...data,
-        modules_furniture: editedModules, 
+        modules_furniture: editedModules,
       }).then(() => {
         console.log("¡Creaste el mueble con éxito!");
         setTimeout(() => {
-          navigate("/");
+          navigate("/ver-muebles");
         }, 100);
       });
     } catch (error) {
@@ -227,60 +255,124 @@ function CreateFurniture() {
           <h2 className="text-2xl">Módulos Seleccionados:</h2>
           <div>
             {selectedModules.map((module) => (
-              <div key={module._id} className="border-solid border-2 border-opacity mb-2 rounded-md p-4">
-                <div className="flex flex-col w-11/12 my-2">
-                  <label htmlFor={`name-${module._id}`}>Nombre</label>
-                  <input
-                    type="text"
-                    id={`name-${module._id}`}
-                    value={formData[module._id]?.name || ''}
-                    onChange={(e) => handleInputChange(module._id, 'name', e.target.value)}
-                    className="border-solid border-2 border-opacity mb-2 rounded-md"
-                  />
-                </div>
-                <div className="flex flex-col w-11/12 my-2">
-                  <label htmlFor={`length-${module._id}`}>Largo</label>
-                  <input
-                    type="text"
-                    id={`length-${module._id}`}
-                    value={formData[module._id]?.length || ''}
-                    onChange={(e) => handleInputChange(module._id, 'length', e.target.value)}
-                    className="border-solid border-2 border-opacity mb-2 rounded-md"
-                  />
-                </div>
-                <div className="flex flex-col w-11/12 my-2">
-                  <label htmlFor={`width-${module._id}`}>Ancho</label>
-                  <input
-                    type="text"
-                    id={`width-${module._id}`}
-                    value={formData[module._id]?.width || ''}
-                    onChange={(e) => handleInputChange(module._id, 'width', e.target.value)}
-                    className="border-solid border-2 border-opacity mb-2 rounded-md"
-                  />
-                </div>
-                <div className="flex flex-col w-11/12 my-2">
-                  <label htmlFor={`height-${module._id}`}>Alto</label>
-                  <input
-                    type="text"
-                    id={`height-${module._id}`}
-                    value={formData[module._id]?.height || ''}
-                    onChange={(e) => handleInputChange(module._id, 'height', e.target.value)}
-                    className="border-solid border-2 border-opacity mb-2 rounded-md"
-                  />
-                </div>
-                <div className="flex flex-col w-11/12 my-2">
-                  <label htmlFor={`pieces_number-${module._id}`}>Cantidad de piezas</label>
-                  <input
-                    type="text"
-                    id={`pieces_number-${module._id}`}
-                    value={formData[module._id]?.pieces_number || ''}
-                    onChange={(e) => handleInputChange(module._id, 'pieces_number', e.target.value)}
-                    className="border-solid border-2 border-opacity mb-2 rounded-md"
-                  />
-                </div>
+              <div
+                key={module._id}
+                className="border-solid border-2 border-opacity mb-2 rounded-md p-4 flex items-center justify-between"
+              >
+                <p>{module.name}</p>
+                <button
+                  onClick={() => handleOpenModal(module)}
+                  className="ml-2 bg-blue-500 text-white py-1 px-2 rounded"
+                >
+                  Ver
+                </button>
               </div>
             ))}
           </div>
+
+          {isModalOpen && selectedModule && (
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+              <div className="bg-white p-10 rounded-lg shadow-lg flex justify-start items-start gap-3 flex-col">
+                <h2 className="text-xl mb-4">
+                  <b>Detalles del Módulo</b>
+                </h2>
+                <div className="mb-2">
+                  <div className="flex flex-col w-11/12 my-2">
+                    <label htmlFor={`name-${selectedModule._id}`}>Nombre</label>
+                    <input
+                      type="text"
+                      id={`name-${selectedModule._id}`}
+                      value={formData[selectedModule._id]?.name || ""}
+                      onChange={(e) =>
+                        handleInputChange(
+                          selectedModule._id,
+                          "name",
+                          e.target.value
+                        )
+                      }
+                      className="border-solid border-2 border-opacity mb-2 rounded-md"
+                    />
+                  </div>
+                  <div className="flex flex-col w-11/12 my-2">
+                    <label htmlFor={`length-${selectedModule._id}`}>
+                      Largo
+                    </label>
+                    <input
+                      type="text"
+                      id={`length-${selectedModule._id}`}
+                      value={formData[selectedModule._id]?.length || ""}
+                      onChange={(e) =>
+                        handleInputChange(
+                          selectedModule._id,
+                          "length",
+                          e.target.value
+                        )
+                      }
+                      className="border-solid border-2 border-opacity mb-2 rounded-md"
+                    />
+                  </div>
+                  <div className="flex flex-col w-11/12 my-2">
+                    <label htmlFor={`width-${selectedModule._id}`}>Ancho</label>
+                    <input
+                      type="text"
+                      id={`width-${selectedModule._id}`}
+                      value={formData[selectedModule._id]?.width || ""}
+                      onChange={(e) =>
+                        handleInputChange(
+                          selectedModule._id,
+                          "width",
+                          e.target.value
+                        )
+                      }
+                      className="border-solid border-2 border-opacity mb-2 rounded-md"
+                    />
+                  </div>
+                  <div className="flex flex-col w-11/12 my-2">
+                    <label htmlFor={`height-${selectedModule._id}`}>Alto</label>
+                    <input
+                      type="text"
+                      id={`height-${selectedModule._id}`}
+                      value={formData[selectedModule._id]?.height || ""}
+                      onChange={(e) =>
+                        handleInputChange(
+                          selectedModule._id,
+                          "height",
+                          e.target.value
+                        )
+                      }
+                      className="border-solid border-2 border-opacity mb-2 rounded-md"
+                    />
+                  </div>
+                  <div className="flex flex-col w-11/12 my-2">
+                    <label htmlFor={`pieces_number-${selectedModule._id}`}>
+                      Cantidad de piezas
+                    </label>
+                    <input
+                      type="text"
+                      id={`pieces_number-${selectedModule._id}`}
+                      value={formData[selectedModule._id]?.pieces_number || ""}
+                      onChange={(e) =>
+                        handleInputChange(
+                          selectedModule._id,
+                          "pieces_number",
+                          e.target.value
+                        )
+                      }
+                      className="border-solid border-2 border-opacity mb-2 rounded-md"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-center items-center m-auto">
+                  <button
+                    onClick={handleCloseModal}
+                    className="mt-4 bg-red-500 text-white py-2 px-4 rounded"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <button

@@ -95,6 +95,12 @@ function Pieces() {
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
+                  Acabado
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                >
                   Filo
                 </th>
               </tr>
@@ -119,7 +125,48 @@ function Pieces() {
                     {piece.material}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {piece.edge}
+                    <p>
+                      {piece.lacqueredPiece ? (
+                        <>
+                          Laqueado
+                          {piece.lacqueredPieceSides === "single" &&
+                            " (1 lado)"}
+                          {piece.lacqueredPieceSides === "double" &&
+                            " (2 lados)"}{" "}
+                          <br></br>
+                          {piece.pantographed ? "Pantografiado" : ""}
+                        </>
+                      ) : piece.veneer ? (
+                        <>
+                          Enchapado<br></br>
+                          {piece.veneerFinishing &&
+                          piece.veneerFinishing === "veneerLacquered"
+                            ? "Laqueado"
+                            : piece.veneerFinishing &&
+                              piece.veneerFinishing === "veneerPolished"
+                            ? "Lustrado"
+                            : ""}
+                        </>
+                      ) : piece.melamine ? (
+                        <>
+                          Melamina
+                          <br />
+                          {piece.melamineLacquered ? "Laqueada" : ""}
+                        </>
+                      ) : (
+                        "No indica"
+                      )}
+                    </p>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {piece.edge && piece.edge.edgeLength ? (
+                      <p>
+                        {piece.edge.edgeLength} cm{" "}
+                        {piece.edge.lacqueredEdge ? "(Laqueado)" : ""}
+                      </p>
+                    ) : (
+                      ""
+                    )}
                   </td>
                 </tr>
               ))}
