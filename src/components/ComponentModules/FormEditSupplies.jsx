@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useEffect } from "react";
+import PropTypes from "prop-types";
 
-function FormAddSupplies({ register, index, errors, supplies }) {
-  const [selectedSupplyName, setSelectedSupplyName] = useState("");
-
-  const handleSupplyChange = (e) => {
-    const selectedOption = e.target.options[e.target.selectedIndex];
-    setSelectedSupplyName(selectedOption.text);
-  };
+function FormEditSupplies({ register, index, errors, supplies, supplyModule, setValue }) {
+  useEffect(() => {
+    if (supplyModule) {
+      setValue(`supplie_id_name${index}`, `${supplyModule.supplie_id}-${supplyModule.supplie_name}`);
+      setValue(`supplie_qty${index}`, supplyModule.supplie_qty);
+      setValue(`supplie_length${index}`, supplyModule.supplie_length);
+    }
+  }, [supplyModule, index, setValue]);
 
   return (
     <>
@@ -20,7 +22,7 @@ function FormAddSupplies({ register, index, errors, supplies }) {
             {...register(`supplie_id_name${index}`, {
               required: "El campo es obligatorio",
             })}
-            onChange={handleSupplyChange}
+            defaultValue={supplyModule ? `${supplyModule.supplie_id}-${supplyModule.supplie_name}` : ""}
           >
             <option value="">Elegir una opción</option>
             {supplies.map((supplie) => (
@@ -41,12 +43,14 @@ function FormAddSupplies({ register, index, errors, supplies }) {
         <div className="flex flex-col w-2/12 my-2">
           <label htmlFor={`supplie_qty${index}`}>Cantidad</label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-3/12"
+            className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
             type="number"
             name={`supplie_qty${index}`}
             id={`supplie_qty${index}`}
+            defaultValue={supplyModule ? supplyModule.supplie_qty : ""}
             {...register(`supplie_qty${index}`, {
               required: "El campo es obligatorio",
+              valueAsNumber: true,
             })}
           />
           {errors[`supplie_qty${index}`] && (
@@ -58,10 +62,11 @@ function FormAddSupplies({ register, index, errors, supplies }) {
         <div className="flex flex-col w-2/12 my-2">
           <label htmlFor={`supplie_length${index}`}>Largo (opcional)</label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-3/12"
+            className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
             type="text"
             name={`supplie_length${index}`}
             id={`supplie_length${index}`}
+            defaultValue={supplyModule ? supplyModule.supplie_length : ""}
             {...register(`supplie_length${index}`)}
           />
           {errors[`supplie_length${index}`] && (
@@ -75,4 +80,23 @@ function FormAddSupplies({ register, index, errors, supplies }) {
   );
 }
 
-export { FormAddSupplies };
+FormEditSupplies.propTypes = {
+  register: PropTypes.func.isRequired,
+  index: PropTypes.number.isRequired,
+  errors: PropTypes.object.isRequired,
+  supplies: PropTypes.arrayOf(
+    PropTypes.shape({
+      _id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  supplyModule: PropTypes.shape({
+    supplie_id: PropTypes.string,
+    supplie_name: PropTypes.string,
+    supplie_qty: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    supplie_length: PropTypes.string,
+  }),
+  setValue: PropTypes.func.isRequired,
+};
+
+export { FormEditSupplies };

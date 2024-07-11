@@ -3,6 +3,8 @@
 //FURNITURE
 export { createFurniture } from "./services/Furniture/createFurniture.js";
 export { getAllFurnitures } from "./services/Furniture/getAllFurnitures.js";
+export { getFurnitureById } from "./services/Furniture/getFurnitureById.js";
+
 //MAIN TABLE
 export { createMainTable } from "./services/mainTable/createMainTable.js";
 // export { getAllTables } from "./services/mainTable/getAllTables.js";
@@ -24,7 +26,9 @@ export { getAllSuppliesExceptTables } from "./services/Supplies/getAllSuppliesEx
 
 export { ProtectedRoute } from "./components/ProtectedRoute.jsx";
 export { FormCreatePieces } from "./components/ComponentModules/FormCreatePieces.jsx";
+export { FormEditPieces } from "./components/ComponentModules/FormEditPieces.jsx";
 export { FormAddSupplies } from "./components/ComponentModules/FormAddSupplies.jsx";
+export { FormEditSupplies } from "./components/ComponentModules/FormEditSupplies.jsx";
 
 //Views --->
 
@@ -33,6 +37,7 @@ export { NotFoundPage } from "./views/404/NotFoundPage";
 //FURNITURE
 export { Furniture } from "./views/Furniture/Furniture";
 export { CreateFurniture } from "./views/Furniture/CreateFurniture";
+export { EditModule } from "./views/Furniture/EditModule";
 //MAIN TABLE
 export { MainTable } from "./views/MainTable/MainTable";
 export { CreateMainTable } from "./views/MainTable/CreateMainTable";

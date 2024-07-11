@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getAllFurnitures } from "../../index.js";
 
 function Furniture() {
   const [furnitures, setFurnitures] = useState([]);
+  const [selectedFurniture, setSelectedFurniture] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const getAllFurnituresToSet = () => {
     getAllFurnitures()
@@ -22,15 +24,24 @@ function Furniture() {
     getAllFurnituresToSet();
   }, []);
 
-  //Manejo de la ventana modal
-  const handleOpenModal = (module) => {
+  // Manejo de la ventana modal
+  const handleOpenModal = (furniture, module) => {
+    setSelectedFurniture(furniture);
     setSelectedModule(module);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
+    setSelectedFurniture(null);
     setSelectedModule(null);
     setIsModalOpen(false);
+  };
+
+  // Manejador del botón Editar
+  const handleEditClick = (furnitureId, moduleId) => {
+    console.log('Id mueble:', furnitureId);
+    console.log('Id modulo:', moduleId);
+    navigate(`/ver-muebles/${furnitureId}/ver-modulos/${moduleId}/edit`);
   };
 
   return (
@@ -118,21 +129,20 @@ function Furniture() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {furniture.category}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex flex-col gap-4">
+                  <td className="px-6 whitespace-nowrap text-sm text-gray-500 flex flex-col gap-0">
                     {Array.isArray(furniture.modules_furniture) ? (
                       furniture.modules_furniture.map((module, index) => (
-                        <>
-                          <div key={index} className="flex items-center">
+                        <div key={module._id || index} className={`flex flex-col items-start py-4 ${index < furniture.modules_furniture.length - 1 ? 'border-b border-gray-200' : ''}`}>
+                          <div className="flex items-center">
                             <p className="w-[140px]">{module.name}</p>
                             <button
-                              onClick={() => handleOpenModal(module)}
+                              onClick={() => handleOpenModal(furniture, module)}
                               className="ml-2 bg-blue-500 text-white py-1 px-2 rounded"
                             >
                               Ver
                             </button>
                           </div>
-                          {index % 2 === 0 ? <hr /> : ""}
-                        </>
+                        </div>
                       ))
                     ) : (
                       <p>Sin Módulos</p>
@@ -140,10 +150,10 @@ function Furniture() {
                   </td>
                   <td>
                     <div className="flex gap-2">
-                      <button className="text-white bg-orange rounded-md  px-2 py-1 mb-2">
+                      <button className="text-white bg-orange rounded-md px-2 py-1 mb-2">
                         Editar
                       </button>
-                      <button className="text-white bg-lightblue rounded-md  px-2 py-1 mb-2">
+                      <button className="text-white bg-lightblue rounded-md px-2 py-1 mb-2">
                         Presupuestar
                       </button>
                     </div>
@@ -198,7 +208,7 @@ function Furniture() {
                           <strong>Categoría:</strong> {piece.category}
                         </p>
                         <p>
-                          <strong>Categoría:</strong> {piece.material}
+                          <strong>Material:</strong> {piece.material}
                         </p>
                         <p>
                           <strong>Acabado:</strong>{" "}
@@ -225,7 +235,7 @@ function Furniture() {
                             </>
                           ) : piece.melamine ? (
                             <>
-                              "Melamina"
+                              &quot;Melamina&quot;
                               <br />
                               {piece.melamineLacquered ? "Laqueada" : ""}
                             </>
@@ -245,19 +255,22 @@ function Furniture() {
                           )}
                         </p>
                       </li>
-                      <button className="text-white bg-orange rounded-md  px-2 mb-2">
-                        Editar
-                      </button>
                       <hr className="border border-gray-400" />
                     </div>
                   ))}
                 </ul>
               </div>
             )}
-            <div className="flex justify-center items-center m-auto">
+            <div className="flex justify-center items-center m-auto gap-2 mt-4">
+              <button
+                onClick={() => handleEditClick(selectedFurniture._id, selectedModule._id)}
+                className="text-white bg-orange py-2 px-4 rounded"
+              >
+                Editar módulo y piezas
+              </button>
               <button
                 onClick={handleCloseModal}
-                className="mt-4 bg-red-500 text-white py-2 px-4 rounded"
+                className="bg-red-500 text-white py-2 px-4 rounded"
               >
                 Cerrar
               </button>

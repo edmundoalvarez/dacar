@@ -1,5 +1,5 @@
 import "./App.css";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, /* useLocation */ } from "react-router-dom";
 //** COMPONENTES PRINCIPALES **//
 import {
   Home,
@@ -14,6 +14,7 @@ import {
   Pieces,
   Supplies,
   CreateSupplie,
+  EditModule
 } from "./index.js";
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
         <Route path="/ver-modulos" element={<Modules />} />
         <Route path="/crear-modulo" element={<CreateModule />} />
         <Route path="/ver-modulos/:id/piezas" element={<Pieces />} />
+        <Route path="/ver-muebles/:idForniture/ver-modulos/:idModule/edit" element={<EditModule />} />
         <Route path="/ver-insumos" element={<Supplies />} />
         <Route path="/crear-insumo" element={<CreateSupplie />} />
       </Routes>
