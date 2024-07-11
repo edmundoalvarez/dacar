@@ -1,4 +1,4 @@
-//ToDo: Hacer el back para que al modificarse se guarde sobre el modulo que ya está pero no afecte el original
+// ToDo: Hacer el back de todo. Que sobreescriba el modulo que ya esta en el mueble pero que no afecte al original (incluido insumos y piezas)
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";

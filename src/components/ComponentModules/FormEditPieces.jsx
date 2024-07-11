@@ -8,11 +8,10 @@ function FormEditPieces({ register, index, errors, tables, resetField, piece }) 
   useEffect(() => {
     if (piece) {
       setShowEdgePiece(!!piece.edge);
-      setFinishingModule(
-        piece.lacqueredPiece ? "lacqueredPiece" : 
-        piece.veneer ? "veneer" : 
-        piece.melamine ? "melamine" : ""
-      );
+      const initialFinishing = piece.lacqueredPiece ? "lacqueredPiece" : 
+                                piece.veneer ? "veneer" : 
+                                piece.melamine ? "melamine" : "";
+      setFinishingModule(initialFinishing);
     }
   }, [piece]);
 
@@ -173,7 +172,7 @@ function FormEditPieces({ register, index, errors, tables, resetField, piece }) 
             required: "El campo es obligatorio",
           })}
           onChange={handleFinishingOptionChange}
-          defaultValue={finishingModule}
+          value={finishingModule}
         >
           <option value="">Elegir una opción</option>
           <option value="lacqueredPiece">Laqueado</option>
