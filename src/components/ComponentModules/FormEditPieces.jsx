@@ -1,19 +1,28 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
-function FormEditPieces({ register, index, errors, tables, resetField, piece }) {
+function FormEditPieces({ register, index, errors, tables, resetField, setValue, piece }) {
   const [showEdgePiece, setShowEdgePiece] = useState(false);
   const [finishingModule, setFinishingModule] = useState("");
+  const [material, setMaterial] = useState("");
 
   useEffect(() => {
     if (piece) {
       setShowEdgePiece(!!piece.edge);
-      const initialFinishing = piece.lacqueredPiece ? "lacqueredPiece" : 
-                                piece.veneer ? "veneer" : 
-                                piece.melamine ? "melamine" : "";
+
+      const initialFinishing =  piece.veneer ? "veneer" : 
+                                piece.melamine ? "melamine" : 
+                                piece.pantographed ? "pantographed" : 
+                                piece.lacqueredPiece ? "lacqueredPiece" :
+                                "";
+
       setFinishingModule(initialFinishing);
+      setValue(`finishing${index}`, initialFinishing);
+
+      setMaterial(piece.material || "");
+      setValue(`materialPiece${index}`, piece.material || "");
     }
-  }, [piece]);
+  }, [piece, setValue, index]);
 
   const handleEdgeOptionChange = (event) => {
     const isYes = event.target.value === "yes";
@@ -40,6 +49,12 @@ function FormEditPieces({ register, index, errors, tables, resetField, piece }) 
     if (selectedFinishing !== "veneer") {
       resetField(`veneerOption${index}`);
     }
+  };
+
+  const handleMaterialChange = (event) => {
+    const selectedMaterial = event.target.value;
+    setMaterial(selectedMaterial);
+    setValue(`materialPiece${index}`, selectedMaterial);
   };
 
   return (
@@ -125,7 +140,8 @@ function FormEditPieces({ register, index, errors, tables, resetField, piece }) 
           {...register(`materialPiece${index}`, {
             required: "El campo es obligatorio",
           })}
-          defaultValue={piece?.material || ""}
+          onChange={handleMaterialChange}
+          value={material} // Usar solo value para un componente controlado
         >
           <option value="">Elegir una opción</option>
           {tables.map((table) => (
@@ -172,12 +188,13 @@ function FormEditPieces({ register, index, errors, tables, resetField, piece }) 
             required: "El campo es obligatorio",
           })}
           onChange={handleFinishingOptionChange}
-          value={finishingModule}
+          value={finishingModule} // Usar solo value para un componente controlado
         >
           <option value="">Elegir una opción</option>
           <option value="lacqueredPiece">Laqueado</option>
           <option value="veneer">Enchapado</option>
           <option value="melamine">Melamina</option>
+          <option value="pantographed">Pantografiado</option>
         </select>
         {errors[`finishing${index}`] && (
           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -354,6 +371,7 @@ FormEditPieces.propTypes = {
     })
   ).isRequired,
   resetField: PropTypes.func.isRequired,
+  setValue: PropTypes.func.isRequired,
   piece: PropTypes.shape({
     name: PropTypes.string,
     length: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

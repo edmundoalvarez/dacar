@@ -4,6 +4,7 @@
 export { createFurniture } from "./services/Furniture/createFurniture.js";
 export { getAllFurnitures } from "./services/Furniture/getAllFurnitures.js";
 export { getFurnitureById } from "./services/Furniture/getFurnitureById.js";
+export { updateModuleOfFurniture } from "./services/Furniture/updateModuleOfFurniture.js";
 
 //MAIN TABLE
 export { createMainTable } from "./services/mainTable/createMainTable.js";

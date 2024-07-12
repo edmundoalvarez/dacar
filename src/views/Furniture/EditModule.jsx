@@ -1,16 +1,13 @@
-// ToDo: Hacer el back de todo. Que sobreescriba el modulo que ya esta en el mueble pero que no afecte al original (incluido insumos y piezas)
-
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import {
-  createModule,
   FormEditPieces,
   FormEditSupplies,
-  createPieces,
   getAllTables,
   getAllSuppliesExceptTables,
   getFurnitureById,
+  updateModuleOfFurniture,
 } from "../../index.js";
 
 function EditModule() {
@@ -104,10 +101,15 @@ function EditModule() {
   };
 
   const onSubmit = async (data, event) => {
+
     event.preventDefault();
+
     try {
-      const { name, length, width, category, piecesNumber } = data;
+
+      const { name, length, width, height, category, piecesNumber } = data;
+
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
+        
         const supplyIdName = data[`supplie_id_name${index}`];
         const [supplie_id, supplie_name] = supplyIdName.split("-");
 
@@ -119,63 +121,66 @@ function EditModule() {
         };
       });
 
-      const moduleData = {
-        name,
-        length,
-        width,
-        height: data.height,
-        category,
-        pieces_number: piecesNumber,
-        supplies_module,
-      };
-      const moduleId = await createModule(moduleData);
-      console.log("¡Creaste el módulo con éxito!");
-
-      for (let i = 0; i < piecesCount; i++) {
+      const pieces = [...Array(piecesCount)].map((_, index) => {
+        
         const edgeData = {
-          edgeLength: data[`edgeLength${i}`],
-          lacqueredEdge: data[`lacqueredEdge${i}`],
+          edgeLength: data[`edgeLength${index}`],
+          lacqueredEdge: data[`lacqueredEdge${index}`],
         };
+        
         let lacqueredPiece;
         let veneer;
         let melamine;
-        if (data[`finishing${i}`] === "lacqueredPiece") {
+        if (data[`finishing${index}`] === "lacqueredPiece") {
           lacqueredPiece = true;
           veneer = false;
           melamine = false;
         }
-        if (data[`finishing${i}`] === "veneer") {
+        if (data[`finishing${index}`] === "veneer") {
           lacqueredPiece = false;
           veneer = true;
           melamine = false;
         }
-        if (data[`finishing${i}`] === "melamine") {
+        if (data[`finishing${index}`] === "melamine") {
           lacqueredPiece = false;
           veneer = false;
           melamine = true;
         }
-        const pieceData = {
-          name: data[`namePiece${i}`],
-          length: data[`lengthPiece${i}`],
-          width: data[`widthPiece${i}`],
-          orientation: data[`orientation${i}`],
-          category: data[`categoryPiece${i}`],
-          material: data[`materialPiece${i}`],
+        return {
+          name: data[`namePiece${index}`],
+          length: data[`lengthPiece${index}`],
+          width: data[`widthPiece${index}`],
+          orientation: data[`orientation${index}`],
+          category: data[`categoryPiece${index}`],
+          material: data[`materialPiece${index}`],
           lacqueredPiece: lacqueredPiece,
-          lacqueredPieceSides: data[`lacqueredPieceSides${i}`],
+          lacqueredPieceSides: data[`lacqueredPieceSides${index}`],
           veneer: veneer,
-          veneerFinishing: data[`veneerOption${i}`],
+          veneerFinishing: data[`veneerOption${index}`],
           melamine: melamine,
-          melamineLacquered: data[`melamineLacquered${i}`],
-          pantographed: data[`pantographed${i}`],
+          melamineLacquered: data[`melamineLacquered${index}`],
+          pantographed: data[`pantographed${index}`],
           edge: edgeData,
-          moduleId,
         };
-        await createPieces(pieceData);
-      }
+      });
+
+      const updatedModule = {
+        ...currentModule,
+        name,
+        length,
+        width,
+        height,
+        category,
+        pieces_number: piecesNumber,
+        supplies_module,
+        pieces,
+      };
+
+      await updateModuleOfFurniture(idForniture, idModule, updatedModule);
+      console.log("¡Módulo actualizado con éxito!", updatedModule);
 
       setTimeout(() => {
-        navigate(`/ver-modulos`);
+        navigate(`/ver-muebles`);
       }, 500);
     } catch (error) {
       console.error(error);
@@ -323,7 +328,7 @@ function EditModule() {
             errors={errors}
             supplies={supplies}
             supplyModule={currentModule.supplies_module[index]}
-            setValue={setValue}
+            setValue={setValue} // Asegúrate de pasar setValue aquí también
           />
         ))}
         <h2 className="text-3xl">Piezas</h2>
@@ -355,6 +360,7 @@ function EditModule() {
             errors={errors}
             tables={tables}
             resetField={resetField}
+            setValue={setValue} // Pasa setValue aquí también
             piece={currentModule.pieces[index]}
           />
         ))}
