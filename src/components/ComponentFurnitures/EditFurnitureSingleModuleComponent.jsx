@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import {
   FormEditPieces,
@@ -10,8 +10,12 @@ import {
   updateModuleOfFurniture,
 } from "../../index.js";
 
-function EditModule() {
-  const { idForniture, idModule } = useParams(); // Obtener los ID del mueble y del módulo desde la URL
+function EditFurnitureSingleModuleComponent({
+  idForniture,
+  idModule,
+  onModified,
+  notModified,
+}) {
   const navigate = useNavigate();
   const [piecesCount, setPiecesCount] = useState(0);
   const [suppliesCount, setSuppliesCount] = useState(0);
@@ -19,7 +23,14 @@ function EditModule() {
   const [supplies, setSupplies] = useState([]);
   const [currentModule, setCurrentModule] = useState(null); // Estado para almacenar el módulo actual
 
-  const { register, handleSubmit, reset, setValue, resetField, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    resetField,
+    formState: { errors },
+  } = useForm();
 
   // Obtener datos del mueble por ID
   const getFurnitureData = () => {
@@ -33,7 +44,9 @@ function EditModule() {
         const furniture = furnitureData.data;
 
         // Buscar el módulo con el ID `idModule`
-        const module = furniture.modules_furniture.find(mod => mod._id === idModule);
+        const module = furniture.modules_furniture.find(
+          (mod) => mod._id === idModule
+        );
         if (!module) {
           console.error("Module not found");
           return;
@@ -48,7 +61,10 @@ function EditModule() {
 
         // Establecer valores iniciales para insumos y piezas
         module.supplies_module.forEach((supply, index) => {
-          setValue(`supplie_id_name${index}`, `${supply.supplie_id}-${supply.supplie_name}`);
+          setValue(
+            `supplie_id_name${index}`,
+            `${supply.supplie_id}-${supply.supplie_name}`
+          );
           setValue(`supplie_qty${index}`, supply.supplie_qty);
           setValue(`supplie_length${index}`, supply.supplie_length);
         });
@@ -101,15 +117,12 @@ function EditModule() {
   };
 
   const onSubmit = async (data, event) => {
-
     event.preventDefault();
 
     try {
-
       const { name, length, width, height, category, piecesNumber } = data;
 
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
-        
         const supplyIdName = data[`supplie_id_name${index}`];
         const [supplie_id, supplie_name] = supplyIdName.split("-");
 
@@ -122,12 +135,11 @@ function EditModule() {
       });
 
       const pieces = [...Array(piecesCount)].map((_, index) => {
-        
         const edgeData = {
           edgeLength: data[`edgeLength${index}`],
           lacqueredEdge: data[`lacqueredEdge${index}`],
         };
-        
+
         let lacqueredPiece;
         let veneer;
         let melamine;
@@ -178,10 +190,8 @@ function EditModule() {
 
       await updateModuleOfFurniture(idForniture, idModule, updatedModule);
       console.log("¡Módulo actualizado con éxito!", updatedModule);
-
-      setTimeout(() => {
-        navigate(`/ver-muebles`);
-      }, 500);
+      //le pasamos al padre para que desrenderice el componente
+      onModified();
     } catch (error) {
       console.error(error);
     }
@@ -191,24 +201,19 @@ function EditModule() {
     getAllTablesToSet();
     getAllSuppliesToSet();
     getFurnitureData(); // Llamar a la función para obtener los datos del mueble y módulo
-  }, []);
+    console.log(idModule);
+  }, [idModule]);
 
   return (
     <div className="m-4">
       <div className="flex gap-4">
         <h1 className="text-4xl">Editar Módulo</h1>
-        <Link
-          to="/"
+        <button
+          onClick={notModified}
           className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium"
         >
-          Volver al Inicio
-        </Link>
-        <Link
-          to={`/ver-modulos`}
-          className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium"
-        >
-          Ver Módulos
-        </Link>
+          Cerrar
+        </button>
       </div>
       <form
         action=""
@@ -320,17 +325,18 @@ function EditModule() {
           )}
         </div>
 
-        {currentModule && [...Array(suppliesCount)].map((_, index) => (
-          <FormEditSupplies
-            key={`supplies-${index}`}
-            register={register}
-            index={index}
-            errors={errors}
-            supplies={supplies}
-            supplyModule={currentModule.supplies_module[index]}
-            setValue={setValue} // Asegúrate de pasar setValue aquí también
-          />
-        ))}
+        {currentModule &&
+          [...Array(suppliesCount)].map((_, index) => (
+            <FormEditSupplies
+              key={`supplies-${index}`}
+              register={register}
+              index={index}
+              errors={errors}
+              supplies={supplies}
+              supplyModule={currentModule.supplies_module[index]}
+              setValue={setValue} // Asegúrate de pasar setValue aquí también
+            />
+          ))}
         <h2 className="text-3xl">Piezas</h2>
         <div className="flex flex-col w-full my-2">
           <label htmlFor="piecesNumber">Cantidad de piezas</label>
@@ -352,24 +358,25 @@ function EditModule() {
           )}
         </div>
 
-        {currentModule && [...Array(piecesCount)].map((_, index) => (
-          <FormEditPieces
-            key={`pieces-${index}`}
-            register={register}
-            index={index}
-            errors={errors}
-            tables={tables}
-            resetField={resetField}
-            setValue={setValue} // Pasa setValue aquí también
-            piece={currentModule.pieces[index]}
-          />
-        ))}
+        {currentModule &&
+          [...Array(piecesCount)].map((_, index) => (
+            <FormEditPieces
+              key={`pieces-${index}`}
+              register={register}
+              index={index}
+              errors={errors}
+              tables={tables}
+              resetField={resetField}
+              setValue={setValue} // Pasa setValue aquí también
+              piece={currentModule.pieces[index]}
+            />
+          ))}
         <div className="w-full">
           <button
             className="bg-blue-700 hover:bg-blue-500 text-white px-4 rounded-md"
             type="submit"
           >
-            Enviar
+            Guardar
           </button>
         </div>
       </form>
@@ -377,4 +384,4 @@ function EditModule() {
   );
 }
 
-export { EditModule };
+export { EditFurnitureSingleModuleComponent };

@@ -25,11 +25,14 @@ export { getAllSuppliesExceptTables } from "./services/Supplies/getAllSuppliesEx
 
 //Components --->
 
+//MODULES
 export { ProtectedRoute } from "./components/ProtectedRoute.jsx";
 export { FormCreatePieces } from "./components/ComponentModules/FormCreatePieces.jsx";
 export { FormEditPieces } from "./components/ComponentModules/FormEditPieces.jsx";
 export { FormAddSupplies } from "./components/ComponentModules/FormAddSupplies.jsx";
 export { FormEditSupplies } from "./components/ComponentModules/FormEditSupplies.jsx";
+//FURNITURE
+export { EditFurnitureSingleModuleComponent } from "./components/ComponentFurnitures/EditFurnitureSingleModuleComponent.jsx";
 
 //Views --->
 
@@ -38,7 +41,9 @@ export { NotFoundPage } from "./views/404/NotFoundPage";
 //FURNITURE
 export { Furniture } from "./views/Furniture/Furniture";
 export { CreateFurniture } from "./views/Furniture/CreateFurniture";
-export { EditModule } from "./views/Furniture/EditModule";
+export { EditFurnitureSingleModule } from "./views/Furniture/EditFurnitureSingleModule.jsx";
+export { EditFurnitureMultipleModules } from "./views/Furniture/EditFurnitureMultipleModules";
+
 //MAIN TABLE
 export { MainTable } from "./views/MainTable/MainTable";
 export { CreateMainTable } from "./views/MainTable/CreateMainTable";

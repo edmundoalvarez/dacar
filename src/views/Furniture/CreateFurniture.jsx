@@ -122,7 +122,7 @@ function CreateFurniture() {
       }).then(() => {
         console.log("¡Creaste el mueble con éxito!");
         setTimeout(() => {
-          navigate("/ver-muebles");
+          navigate(`/editar-modulos-meueble/${furnitureId}`);
         }, 100);
       });
     } catch (error) {
