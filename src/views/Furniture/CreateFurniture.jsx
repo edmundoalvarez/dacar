@@ -119,10 +119,11 @@ function CreateFurniture() {
       await createFurniture({
         ...data,
         modules_furniture: editedModules,
-      }).then(() => {
+      }).then((res) => {
+        const furnitureId = res.data._id;
         console.log("¡Creaste el mueble con éxito!");
         setTimeout(() => {
-          navigate(`/editar-modulos-meueble/${furnitureId}`);
+          navigate(`/editar-modulos-mueble/${furnitureId}`);
         }, 100);
       });
     } catch (error) {
@@ -146,10 +147,10 @@ function CreateFurniture() {
           Volver al Inicio
         </Link>
         <Link
-          to={`/ver-placas`}
+          to={`/ver-muebles`}
           className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
         >
-          Ver placas
+          Ver muebles
         </Link>
       </div>
       <form action="" className="w-1/2" onSubmit={handleSubmit(onSubmit)}>
@@ -169,6 +170,21 @@ function CreateFurniture() {
           )}
         </div>
         <div className="flex flex-col w-11/12 my-2">
+          <label htmlFor="height">Alto</label>
+          <input
+            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            type="text"
+            name="height"
+            id="height"
+            {...register("height", { required: "El campo es obligatorio" })}
+          />
+          {errors.height && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors.height.message}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col w-11/12 my-2">
           <label htmlFor="length">Largo</label>
           <input
             className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
@@ -184,7 +200,7 @@ function CreateFurniture() {
           )}
         </div>
         <div className="flex flex-col w-11/12 my-2">
-          <label htmlFor="width">Ancho</label>
+          <label htmlFor="width">Profundidad</label>
           <input
             className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
             type="text"
@@ -198,21 +214,7 @@ function CreateFurniture() {
             </span>
           )}
         </div>
-        <div className="flex flex-col w-11/12 my-2">
-          <label htmlFor="height">Alto</label>
-          <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
-            type="text"
-            name="height"
-            id="height"
-            {...register("height", { required: "El campo es obligatorio" })}
-          />
-          {errors.height && (
-            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.height.message}
-            </span>
-          )}
-        </div>
+
         <div className="flex flex-col w-11/12 my-2">
           <label htmlFor="category">Categoria</label>
           <input
@@ -261,6 +263,7 @@ function CreateFurniture() {
               >
                 <p>{module.name}</p>
                 <button
+                  type="button"
                   onClick={() => handleOpenModal(module)}
                   className="ml-2 bg-blue-500 text-white py-1 px-2 rounded"
                 >
@@ -276,91 +279,51 @@ function CreateFurniture() {
                 <h2 className="text-xl mb-4">
                   <b>Detalles del Módulo</b>
                 </h2>
-                <div className="mb-2">
-                  <div className="flex flex-col w-11/12 my-2">
-                    <label htmlFor={`name-${selectedModule._id}`}>Nombre</label>
-                    <input
-                      type="text"
-                      id={`name-${selectedModule._id}`}
-                      value={formData[selectedModule._id]?.name || ""}
-                      onChange={(e) =>
-                        handleInputChange(
-                          selectedModule._id,
-                          "name",
-                          e.target.value
-                        )
-                      }
-                      className="border-solid border-2 border-opacity mb-2 rounded-md"
-                    />
-                  </div>
-                  <div className="flex flex-col w-11/12 my-2">
-                    <label htmlFor={`length-${selectedModule._id}`}>
-                      Largo
-                    </label>
-                    <input
-                      type="text"
-                      id={`length-${selectedModule._id}`}
-                      value={formData[selectedModule._id]?.length || ""}
-                      onChange={(e) =>
-                        handleInputChange(
-                          selectedModule._id,
-                          "length",
-                          e.target.value
-                        )
-                      }
-                      className="border-solid border-2 border-opacity mb-2 rounded-md"
-                    />
-                  </div>
-                  <div className="flex flex-col w-11/12 my-2">
-                    <label htmlFor={`width-${selectedModule._id}`}>Ancho</label>
-                    <input
-                      type="text"
-                      id={`width-${selectedModule._id}`}
-                      value={formData[selectedModule._id]?.width || ""}
-                      onChange={(e) =>
-                        handleInputChange(
-                          selectedModule._id,
-                          "width",
-                          e.target.value
-                        )
-                      }
-                      className="border-solid border-2 border-opacity mb-2 rounded-md"
-                    />
-                  </div>
-                  <div className="flex flex-col w-11/12 my-2">
-                    <label htmlFor={`height-${selectedModule._id}`}>Alto</label>
-                    <input
-                      type="text"
-                      id={`height-${selectedModule._id}`}
-                      value={formData[selectedModule._id]?.height || ""}
-                      onChange={(e) =>
-                        handleInputChange(
-                          selectedModule._id,
-                          "height",
-                          e.target.value
-                        )
-                      }
-                      className="border-solid border-2 border-opacity mb-2 rounded-md"
-                    />
-                  </div>
-                  <div className="flex flex-col w-11/12 my-2">
-                    <label htmlFor={`pieces_number-${selectedModule._id}`}>
-                      Cantidad de piezas
-                    </label>
-                    <input
-                      type="text"
-                      id={`pieces_number-${selectedModule._id}`}
-                      value={formData[selectedModule._id]?.pieces_number || ""}
-                      onChange={(e) =>
-                        handleInputChange(
-                          selectedModule._id,
-                          "pieces_number",
-                          e.target.value
-                        )
-                      }
-                      className="border-solid border-2 border-opacity mb-2 rounded-md"
-                    />
-                  </div>
+                <div className="mb-2 w-full">
+                  <table className="w-full border-collapse border border-gray-400">
+                    <tbody>
+                      <tr>
+                        <th className="border border-gray-400 px-4 py-2 text-left">
+                          Nombre
+                        </th>
+                        <td className="border border-gray-400 px-4 py-2">
+                          {formData[selectedModule._id]?.name || ""}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th className="border border-gray-400 px-4 py-2 text-left">
+                          Largo
+                        </th>
+                        <td className="border border-gray-400 px-4 py-2">
+                          {formData[selectedModule._id]?.length || ""}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th className="border border-gray-400 px-4 py-2 text-left">
+                          Ancho
+                        </th>
+                        <td className="border border-gray-400 px-4 py-2">
+                          {formData[selectedModule._id]?.width || ""}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th className="border border-gray-400 px-4 py-2 text-left">
+                          Alto
+                        </th>
+                        <td className="border border-gray-400 px-4 py-2">
+                          {formData[selectedModule._id]?.height || ""}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th className="border border-gray-400 px-4 py-2 text-left">
+                          Cantidad de piezas
+                        </th>
+                        <td className="border border-gray-400 px-4 py-2">
+                          {formData[selectedModule._id]?.pieces_number || ""}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
                 <div className="flex justify-center items-center m-auto">
                   <button
@@ -379,7 +342,7 @@ function CreateFurniture() {
           className="bg-blue-700 hover:bg-blue-500 text-white px-4 rounded-md"
           type="submit"
         >
-          Enviar
+          Crear
         </button>
       </form>
     </div>

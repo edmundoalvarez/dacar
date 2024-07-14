@@ -1,7 +1,15 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
-function FormEditPieces({ register, index, errors, tables, resetField, setValue, piece }) {
+function FormEditPieces({
+  register,
+  index,
+  errors,
+  tables,
+  resetField,
+  setValue,
+  piece,
+}) {
   const [showEdgePiece, setShowEdgePiece] = useState(false);
   const [finishingModule, setFinishingModule] = useState("");
   const [material, setMaterial] = useState("");
@@ -10,11 +18,15 @@ function FormEditPieces({ register, index, errors, tables, resetField, setValue,
     if (piece) {
       setShowEdgePiece(!!piece.edge);
 
-      const initialFinishing =  piece.veneer ? "veneer" : 
-                                piece.melamine ? "melamine" : 
-                                piece.pantographed ? "pantographed" : 
-                                piece.lacqueredPiece ? "lacqueredPiece" :
-                                "";
+      const initialFinishing = piece.veneer
+        ? "veneer"
+        : piece.melamine
+        ? "melamine"
+        : piece.pantographed
+        ? "pantographed"
+        : piece.lacqueredPiece
+        ? "lacqueredPiece"
+        : "";
 
       setFinishingModule(initialFinishing);
       setValue(`finishing${index}`, initialFinishing);
@@ -78,7 +90,43 @@ function FormEditPieces({ register, index, errors, tables, resetField, setValue,
         )}
       </div>
       <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`lengthPiece${index}`}>Largo</label>
+        <label htmlFor={`orientation${index}`}>Orientación</label>
+        <input
+          type="hidden"
+          name={`orientation${index}`}
+          id={`orientation${index}`}
+          defaultValue={piece?.orientation || ""}
+          {...register(`orientation${index}`)}
+        />
+        <input
+          type="text"
+          className="border-solid border-2 bg-gray-300 border-opacity mb-2 rounded-md w-full"
+          name={`orientationShow${index}`}
+          id={`orientationShow${index}`}
+          value={
+            piece.orientation === "cross-vertical"
+              ? "Transversal Vertical"
+              : piece.orientation === "cross-horizontal"
+              ? "Transversal Horizontal"
+              : piece.orientation === "side"
+              ? "Lateral"
+              : ""
+          }
+          disabled
+        />
+      </div>
+      {/* length */}
+
+      <div className="flex flex-col w-2/12 my-2">
+        <label htmlFor={`lengthPiece${index}`}>
+          {piece.orientation === "cross-vertical"
+            ? "Alto:"
+            : piece.orientation === "cross-horizontal"
+            ? "Largo:"
+            : piece.orientation === "side"
+            ? "Alto:"
+            : ""}
+        </label>
         <input
           className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
           type="text"
@@ -96,7 +144,47 @@ function FormEditPieces({ register, index, errors, tables, resetField, setValue,
         )}
       </div>
       <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`widthPiece${index}`}>Ancho</label>
+        <label htmlFor={`orientation${index}`}>
+          Fracción{" "}
+          {piece.orientation === "cross-vertical"
+            ? "Alto:"
+            : piece.orientation === "cross-horizontal"
+            ? "Largo:"
+            : piece.orientation === "side"
+            ? "Alto:"
+            : ""}
+        </label>
+        <input
+          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          type="hidden"
+          name={`fractionLength${index}`}
+          id={`fractionLength${index}`}
+          {...register(`fractionLength${index}`, {
+            required: "El campo es obligatorio",
+          })}
+          defaultValue={piece?.fractionLength || ""}
+        />
+        <input
+          className=" bg-gray-300 mb-2 rounded-md w-full"
+          type="text"
+          name={`fractionLengthShow${index}`}
+          id={`fractionLengthShow${index}`}
+          value={piece?.fractionLength || ""}
+        />
+      </div>
+      {/* width */}
+
+      <div className="flex flex-col w-2/12 my-2">
+        <label htmlFor={`widthPiece${index}`}>
+          {" "}
+          {piece.orientation === "cross-vertical"
+            ? "Largo:"
+            : piece.orientation === "cross-horizontal"
+            ? "Profundidad:"
+            : piece.orientation === "side"
+            ? "Profundidad:"
+            : ""}
+        </label>
         <input
           className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
           type="text"
@@ -112,6 +200,35 @@ function FormEditPieces({ register, index, errors, tables, resetField, setValue,
             {errors[`widthPiece${index}`].message}
           </span>
         )}
+      </div>
+      <div className="flex flex-col w-2/12 my-2">
+        <label htmlFor={`orientation${index}`}>
+          Fracción{" "}
+          {piece.orientation === "cross-vertical"
+            ? "Largo:"
+            : piece.orientation === "cross-horizontal"
+            ? "Profundidad:"
+            : piece.orientation === "side"
+            ? "Profundidad:"
+            : ""}
+        </label>
+        <input
+          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          type="hidden"
+          name={`fractionWidth${index}`}
+          id={`fractionWidth${index}`}
+          {...register(`fractionWidth${index}`, {
+            required: "El campo es obligatorio",
+          })}
+          defaultValue={piece?.fractionWidth || ""}
+        />
+        <input
+          className=" bg-gray-300 mb-2 rounded-md w-full"
+          type="text"
+          name={`fractionWidthShow${index}`}
+          id={`fractionWidthShow${index}`}
+          value={piece?.fractionWidth || ""}
+        />
       </div>
       <div className="flex flex-col w-2/12 my-2">
         <label htmlFor={`categoryPiece${index}`}>Categoría</label>
@@ -156,28 +273,7 @@ function FormEditPieces({ register, index, errors, tables, resetField, setValue,
           </span>
         )}
       </div>
-      <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`orientation${index}`}>Orientación</label>
-        <select
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          name={`orientation${index}`}
-          id={`orientation${index}`}
-          {...register(`orientation${index}`, {
-            required: "El campo es obligatorio",
-          })}
-          defaultValue={piece?.orientation || ""}
-        >
-          <option value="">Elegir una opción</option>
-          <option value="cross-vertical">Transversal Vertical</option>
-          <option value="cross-horizontal">Transversal Horizontal</option>
-          <option value="side">Lateral</option>
-        </select>
-        {errors[`orientation${index}`] && (
-          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`orientation${index}`].message}
-          </span>
-        )}
-      </div>
+
       <div className="flex flex-col w-3/12 my-2">
         <label htmlFor={`lacqueredOrVeneer${index}`}>Acabado</label>
         <select

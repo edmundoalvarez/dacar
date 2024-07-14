@@ -3,6 +3,24 @@ import React, { useState } from "react";
 function FormCreatePieces({ register, index, errors, tables, resetField }) {
   const [showEdgePiece, setShowEdgePiece] = useState(false);
   const [finishingModule, setFinishingModule] = useState("");
+  const [lengthLabel, setLengthLabel] = useState("Alto");
+  const [widthLabel, setWidthLabel] = useState("Largo");
+
+  const handleOrientationOptionChange = (option) => {
+    const optionSelected = option.target.value;
+    if (optionSelected === "cross-vertical") {
+      setLengthLabel("Alto");
+      setWidthLabel("Largo");
+    }
+    if (optionSelected === "cross-horizontal") {
+      setLengthLabel("Largo");
+      setWidthLabel("Profundidad");
+    }
+    if (optionSelected === "side") {
+      setLengthLabel("Alto");
+      setWidthLabel("Profundidad");
+    }
+  };
 
   const handleEdgeOptionChange = (event) => {
     const isYes = event.target.value === "yes";
@@ -51,7 +69,30 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
         )}
       </div>
       <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`lengthPiece${index}`}>Largo</label>
+        <label htmlFor={`orientation${index}`}>Orientación</label>
+        <select
+          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          name={`orientation${index}`}
+          id={`orientation${index}`}
+          {...register(`orientation${index}`, {
+            required: "El campo es obligatorio",
+          })}
+          onChange={handleOrientationOptionChange}
+        >
+          <option value="">Elegir una opción</option>
+          <option value="cross-vertical">Transversal Vertical</option>
+          <option value="cross-horizontal">Transversal Horizontal</option>
+          <option value="side">Lateral</option>
+        </select>
+        {errors[`orientation${index}`] && (
+          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+            {errors[`orientation${index}`].message}
+          </span>
+        )}
+      </div>
+      {/* Length de la pieza */}
+      <div className="flex flex-col w-2/12 my-2">
+        <label htmlFor={`lengthPiece${index}`}>{lengthLabel}</label>
         <input
           className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
           type="text"
@@ -68,7 +109,43 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
         )}
       </div>
       <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`widthPiece${index}`}>Ancho</label>
+        <label htmlFor={`numeratorLength${index}`}>
+          Fracción {lengthLabel}
+        </label>
+        <input
+          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          type="text"
+          name={`numeratorLength${index}`}
+          id={`numeratorLength${index}`}
+          defaultValue={1}
+          {...register(`numeratorLength${index}`, {
+            required: "El campo es obligatorio",
+          })}
+        />
+        {errors[`numeratorLength${index}`] && (
+          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+            {errors[`numeratorLength${index}`].message}
+          </span>
+        )}
+        <input
+          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          type="text"
+          name={`denominatorLength${index}`}
+          id={`denominatorLength${index}`}
+          defaultValue={1}
+          {...register(`denominatorLength${index}`, {
+            required: "El campo es obligatorio",
+          })}
+        />
+        {errors[`denominatorLength${index}`] && (
+          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+            {errors[`denominatorLength${index}`].message}
+          </span>
+        )}
+      </div>
+      {/* Width de la pieza */}
+      <div className="flex flex-col w-2/12 my-2">
+        <label htmlFor={`widthPiece${index}`}>{widthLabel}</label>
         <input
           className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
           type="text"
@@ -81,6 +158,39 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
         {errors[`widthPiece${index}`] && (
           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
             {errors[`widthPiece${index}`].message}
+          </span>
+        )}
+      </div>
+      <div className="flex flex-col w-2/12 my-2">
+        <label htmlFor={`numeratorWidth${index}`}>Fracción {widthLabel}</label>
+        <input
+          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          type="text"
+          name={`numeratorWidth${index}`}
+          id={`numeratorWidth${index}`}
+          defaultValue={1}
+          {...register(`numeratorWidth${index}`, {
+            required: "El campo es obligatorio",
+          })}
+        />
+        {errors[`numeratorWidth${index}`] && (
+          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+            {errors[`numeratorWidth${index}`].message}
+          </span>
+        )}
+        <input
+          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          type="text"
+          name={`denominatorWidth${index}`}
+          id={`denominatorWidth${index}`}
+          defaultValue={1}
+          {...register(`denominatorWidth${index}`, {
+            required: "El campo es obligatorio",
+          })}
+        />
+        {errors[`denominatorWidth${index}`] && (
+          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+            {errors[`denominatorWidth${index}`].message}
           </span>
         )}
       </div>
@@ -124,27 +234,7 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
           </span>
         )}
       </div>
-      <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`orientation${index}`}>Orientación</label>
-        <select
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          name={`orientation${index}`}
-          id={`orientation${index}`}
-          {...register(`orientation${index}`, {
-            required: "El campo es obligatorio",
-          })}
-        >
-          <option value="">Elegir una opción</option>
-          <option value="cross-vertical">Transversal Vertical</option>
-          <option value="cross-horizontal">Transversal Horizontal</option>
-          <option value="side">Lateral</option>
-        </select>
-        {errors[`orientation${index}`] && (
-          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`orientation${index}`].message}
-          </span>
-        )}
-      </div>
+
       <div className="flex flex-col w-3/12 my-2">
         <label htmlFor={`lacqueredOrVeneer`}>Acabado</label>
         <select

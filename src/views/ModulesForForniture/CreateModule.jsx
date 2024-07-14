@@ -104,12 +104,22 @@ function CreateModule() {
           veneer = false;
           melamine = true;
         }
-        console.log(data[`finishing${i}`], lacqueredPiece, veneer, melamine);
+
         const pieceData = {
           // Mapeo de los nombres de los campos del formulario a los nombres esperados en la base de datos
           name: data[`namePiece${i}`],
           length: data[`lengthPiece${i}`],
           width: data[`widthPiece${i}`],
+          fractionLength: parseFloat(
+            (
+              data[`numeratorLength${i}`] / data[`denominatorLength${i}`]
+            ).toFixed(2)
+          ),
+          fractionWidth: parseFloat(
+            (data[`numeratorWidth${i}`] / data[`denominatorWidth${i}`]).toFixed(
+              2
+            )
+          ),
           orientation: data[`orientation${i}`],
           category: data[`categoryPiece${i}`],
           material: data[`materialPiece${i}`],

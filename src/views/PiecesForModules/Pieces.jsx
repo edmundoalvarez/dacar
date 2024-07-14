@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getAllPieces } from "../../index.js";
-import { getModuleById } from "../../index.js";
+import { getAllPieces, deletePiece, getModuleById } from "../../index.js";
 
 function Pieces() {
   const { id } = useParams();
@@ -33,6 +32,28 @@ function Pieces() {
         console.error(error);
       });
   };
+  //Eliminar pieza
+  const [openModalToDelete, setOpenModalToDelete] = useState(false);
+  const [pieceToDelete, setPieceToDelete] = useState(null);
+
+  function handleDeletePiece(pieceId) {
+    setOpenModalToDelete(true);
+    setPieceToDelete(pieceId);
+  }
+  function deleteSinglePiece(pieceId) {
+    deletePiece(pieceId)
+      .then((res) => {
+        getAllPiecesToSet();
+        console.log(res.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    // Cerrar la modal después de eliminar la pieza
+    setOpenModalToDelete(false);
+    setPieceToDelete(null);
+  }
 
   //traer las placas
   useEffect(() => {
@@ -47,7 +68,7 @@ function Pieces() {
     <>
       <div className="m-4">
         <div className="flex gap-4">
-          <h1 className="text-4xl">Piézas del módulo: {module.name}</h1>
+          <h1 className="text-4xl">Piezas del módulo: {module.name}</h1>
           <Link
             to="/ver-modulos"
             className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium"
@@ -69,13 +90,13 @@ function Pieces() {
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Largo
+                  Alto
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Ancho
+                  Largo
                 </th>
 
                 <th
@@ -101,6 +122,12 @@ function Pieces() {
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Filo
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                >
+                  Accion
                 </th>
               </tr>
             </thead>
@@ -167,12 +194,52 @@ function Pieces() {
                       ""
                     )}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex justify-center items-center gap-x-4">
+                      <Link
+                        to={`
+                        `}
+                        className="text-white bg-orange rounded-md px-2 py-1 mb-2"
+                      >
+                        Editar
+                      </Link>
+                      <button
+                        className="text-white bg-red-500 rounded-md px-2 py-1 mb-2"
+                        onClick={() => handleDeletePiece(piece._id)}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+      {openModalToDelete && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white p-10 rounded-lg shadow-lg flex justify-center items-center flex-col">
+            <h2 className="text-xl mb-4">
+              ¿Seguro que desea eliminar la pieza?
+            </h2>
+            <div className="flex gap-4">
+              <button
+                className="bg-red-500 text-white py-2 px-4 rounded"
+                onClick={() => deleteSinglePiece(pieceToDelete)}
+              >
+                Eliminar
+              </button>
+              <button
+                className="bg-gray-300 text-black py-2 px-4 rounded"
+                onClick={() => setOpenModalToDelete(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

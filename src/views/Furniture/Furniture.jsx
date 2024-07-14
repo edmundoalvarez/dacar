@@ -83,7 +83,7 @@ function Furniture() {
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Ancho
+                  Profundidad
                 </th>
                 <th
                   scope="col"
@@ -191,7 +191,7 @@ function Furniture() {
                   <strong>Largo:</strong> {selectedModule.length}
                 </p>
                 <p>
-                  <strong>Ancho:</strong> {selectedModule.width}
+                  <strong>Profundidad:</strong> {selectedModule.width}
                 </p>
                 <p>
                   <strong>Alto:</strong> {selectedModule.height}
@@ -200,87 +200,129 @@ function Furniture() {
                   <strong>Categoría:</strong> {selectedModule.category}
                 </p>
                 <h2 className="text-xl bg-blue-500 text-white w-fit px-2 my-2 rounded-lg">
+                  Insumos del modulo
+                </h2>
+                {selectedModule.supplies_module.map((supplie) => (
+                  <ul key={supplie.supplie_id} className="my-2">
+                    <li>
+                      <strong>Nombre:</strong> {supplie.supplie_name}
+                    </li>
+                    <li>
+                      <strong>Cantidad:</strong> {supplie.supplie_qty}
+                    </li>
+                    <li>
+                      <strong>Largo:</strong> {supplie?.supplie_length}
+                    </li>
+                  </ul>
+                ))}
+                <h2 className="text-xl bg-blue-500 text-white w-fit px-2 my-2 rounded-lg">
                   Piezas del modulo
                 </h2>
-                <ul>
-                  {selectedModule.pieces.map((piece) => (
-                    <div key={piece._id}>
-                      <li className="my-2">
-                        <p>
-                          <strong>Nombre:</strong> {piece.name}
-                        </p>
-                        <p>
-                          <strong>Largo:</strong> {piece.length}
-                        </p>
-                        <p>
-                          <strong>Ancho:</strong> {piece.width}
-                        </p>
-                        <p>
-                          <strong>Categoría:</strong> {piece.category}
-                        </p>
-                        <p>
-                          <strong>Material:</strong> {piece.material}
-                        </p>
-                        <p>
-                          <strong>Acabado:</strong>{" "}
-                          {piece.lacqueredPiece ? (
-                            <>
-                              Laqueado
-                              {piece.lacqueredPieceSides === "single" &&
-                                " (1 lado)"}
-                              {piece.lacqueredPieceSides === "double" &&
-                                " (2 lados)"}{" "}
-                              <br />
-                              {piece.pantographed ? "Pantografiado" : ""}
-                            </>
-                          ) : piece.veneer ? (
-                            <>
-                              Enchapado
-                              <br />
-                              {piece.veneerFinishing &&
-                                (piece.veneerFinishing === "veneerLacquered"
-                                  ? "Laqueado"
-                                  : piece.veneerFinishing === "veneerPolished"
-                                  ? "Lustrado"
-                                  : "")}
-                            </>
-                          ) : piece.melamine ? (
-                            <>
-                              &quot;Melamina&quot;
-                              <br />
-                              {piece.melamineLacquered ? "Laqueada" : ""}
-                            </>
-                          ) : (
-                            "No indica"
-                          )}
-                        </p>
-                        <p>
-                          <strong>Filo:</strong>{" "}
-                          {piece.edge && piece.edge.edgeLength ? (
-                            <span>
-                              {piece.edge.edgeLength} cm{" "}
-                              {piece.edge.lacqueredEdge ? "(Laqueado)" : ""}
-                            </span>
-                          ) : (
-                            ""
-                          )}
-                        </p>
-                      </li>
-                      <hr className="border border-gray-400" />
-                    </div>
-                  ))}
-                </ul>
+                {selectedModule.pieces.map((piece) => (
+                  <ul key={piece._id} className="my-2">
+                    <li>
+                      <strong>Nombre:</strong> {piece.name}
+                    </li>
+                    <li>
+                      <strong>Orientación:</strong>{" "}
+                      {piece.orientation === "cross-vertical"
+                        ? "Transversal Vertical"
+                        : piece.orientation === "cross-horizontal"
+                        ? "Transversal Horizontal"
+                        : piece.orientation === "side"
+                        ? "Lateral"
+                        : ""}
+                    </li>
+                    <li>
+                      <strong>
+                        {" "}
+                        {piece.orientation === "cross-vertical"
+                          ? "Alto:"
+                          : piece.orientation === "cross-horizontal"
+                          ? "Profundidad:"
+                          : piece.orientation === "side"
+                          ? "Alto:"
+                          : ""}
+                      </strong>{" "}
+                      {piece.length}
+                    </li>
+                    <li>
+                      <strong>
+                        {piece.orientation === "cross-vertical"
+                          ? "Largo:"
+                          : piece.orientation === "cross-horizontal"
+                          ? "Largo:"
+                          : piece.orientation === "side"
+                          ? "Profundidad:"
+                          : ""}
+                      </strong>{" "}
+                      {piece.width}
+                    </li>
+                    <li>
+                      <strong>Categoría:</strong> {piece.category}
+                    </li>
+                    <li>
+                      <strong>Material:</strong> {piece.material}
+                    </li>
+                    <li>
+                      <strong>Acabado:</strong>{" "}
+                      {piece.lacqueredPiece ? (
+                        <>
+                          Laqueado
+                          {piece.lacqueredPieceSides === "single" &&
+                            " (1 lado)"}
+                          {piece.lacqueredPieceSides === "double" &&
+                            " (2 lados)"}{" "}
+                          <br></br>
+                          {piece.pantographed ? "Pantografiado" : ""}
+                        </>
+                      ) : piece.veneer ? (
+                        <>
+                          Enchapado<br></br>
+                          {piece.veneerFinishing &&
+                          piece.veneerFinishing === "veneerLacquered"
+                            ? "Laqueado"
+                            : piece.veneerFinishing &&
+                              piece.veneerFinishing === "veneerPolished"
+                            ? "Lustrado"
+                            : ""}
+                        </>
+                      ) : piece.melamine ? (
+                        <>
+                          Melamina
+                          <br />
+                          {piece.melamineLacquered ? "Laqueada" : ""}
+                        </>
+                      ) : (
+                        "No indica"
+                      )}
+                    </li>
+                    <li>
+                      <strong>Filo:</strong>{" "}
+                      {piece.edge && piece.edge.edgeLength ? (
+                        <>
+                          {piece.edge.edgeLength} cm{" "}
+                          {piece.edge.lacqueredEdge ? "(Laqueado)" : ""}
+                        </>
+                      ) : (
+                        ""
+                      )}
+                    </li>
+
+                    <hr className="border border-gray-400" />
+                  </ul>
+                ))}
               </div>
             )}
             <div className="flex justify-center items-center m-auto gap-2 mt-4">
-              <button
+              {/*    <button
                 onClick={() =>
                   handleEditClick(selectedFurniture._id, selectedModule._id)
                 }
                 className="text-white bg-orange py-2 px-4 rounded"
               >
                 Editar módulo y piezas
-              </button>
+              </button> */}
               <button
                 onClick={handleCloseModal}
                 className="bg-red-500 text-white py-2 px-4 rounded"

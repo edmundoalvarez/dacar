@@ -17,6 +17,7 @@ export { getModuleById } from "./services/ModulesForForniture/getModuleById.js";
 export { createPieces } from "./services/Pieces/createPieces.js";
 export { getAllPieces } from "./services/Pieces/getAllPieces.js";
 export { getPiecesByModuleId } from "./services/Pieces/getPiecesByModuleId.js";
+export { deletePiece } from "./services/Pieces/deletePiece.js";
 //SUPPLIES
 export { createSupplies } from "./services/Supplies/createSupplies.js";
 export { getAllSupplies } from "./services/Supplies/getAllSupplies.js";

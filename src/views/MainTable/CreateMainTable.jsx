@@ -63,7 +63,7 @@ function CreateMainTable() {
           )}
         </div>
         <div className="flex flex-col w-11/12 my-2">
-          <label htmlFor="length">Largo</label>
+          <label htmlFor="length">Alto</label>
           <input
             className=" border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
             type="text"
@@ -80,7 +80,7 @@ function CreateMainTable() {
           )}
         </div>
         <div className="flex flex-col w-11/12 my-2">
-          <label htmlFor="width">Ancho</label>
+          <label htmlFor="width">Largo</label>
           <input
             className=" border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
             type="text"

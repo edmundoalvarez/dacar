@@ -53,13 +53,13 @@ function MainTable() {
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Largo
+                  Alto
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Ancho
+                  Largo
                 </th>
                 <th
                   scope="col"

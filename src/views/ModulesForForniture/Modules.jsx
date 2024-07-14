@@ -53,13 +53,19 @@ function Modules() {
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
+                  Alto
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                >
                   Largo
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Ancho
+                  Profundidad
                 </th>
 
                 <th
@@ -87,6 +93,9 @@ function Modules() {
                 <tr key={module.name} className="text-center">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {module.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {module.height}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {module.length}

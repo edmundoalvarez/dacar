@@ -22,7 +22,9 @@ function EditFurnitureSingleModuleComponent({
   const [tables, setTables] = useState([]);
   const [supplies, setSupplies] = useState([]);
   const [currentModule, setCurrentModule] = useState(null); // Estado para almacenar el módulo actual
-
+  const [moduleOriginalHeight, setModuleOriginalHeight] = useState(null);
+  const [moduleOriginalLength, setModuleOriginalLength] = useState(null);
+  const [moduleOriginalWidth, setModuleOriginalWidth] = useState(null);
   const {
     register,
     handleSubmit,
@@ -55,6 +57,9 @@ function EditFurnitureSingleModuleComponent({
         setCurrentModule(module); // Guardar el módulo en el estado
 
         // Rellenar el formulario con los datos del módulo
+        setModuleOriginalHeight(module.height || 0);
+        setModuleOriginalLength(module.length || 0);
+        setModuleOriginalWidth(module.width || 0);
         setPiecesCount(module.pieces.length || 0);
         setSuppliesCount(module.supplies_module.length || 0);
         reset(module);
@@ -116,11 +121,27 @@ function EditFurnitureSingleModuleComponent({
       });
   };
 
+  //AGREGAR MAS INSUMOS
+
+  const handleSuppliesCountChange = (e) => {
+    setSuppliesCount(Number(e.target.value));
+  };
+
   const onSubmit = async (data, event) => {
     event.preventDefault();
 
     try {
-      const { name, length, width, height, category, piecesNumber } = data;
+      const {
+        name,
+        height,
+        heightHidden,
+        length,
+        lengthHidden,
+        width,
+        widthHidden,
+        category,
+        piecesNumber,
+      } = data;
 
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
         const supplyIdName = data[`supplie_id_name${index}`];
@@ -158,10 +179,70 @@ function EditFurnitureSingleModuleComponent({
           veneer = false;
           melamine = true;
         }
+
+        //lo que viene de la pieza
+        let fractionLength = parseFloat(data[`fractionLength${index}`]);
+        let fractionWidth = parseFloat(data[`fractionWidth${index}`]);
+        let lengthPiece = parseFloat(data[`lengthPiece${index}`]);
+        let widthPiece = parseFloat(data[`widthPiece${index}`]);
+        //variables para cargar el dato
+        let pieceLength;
+        let pieceWidth;
+        if (data[`orientation${index}`] === "cross-vertical") {
+          if (height >= heightHidden) {
+            pieceLength =
+              lengthPiece + (height - heightHidden) * fractionLength;
+          }
+          if (height < heightHidden) {
+            pieceLength =
+              lengthPiece - (heightHidden - height) * fractionLength;
+          }
+
+          if (length >= lengthHidden) {
+            pieceWidth = widthPiece + (length - lengthHidden) * fractionWidth;
+          }
+          if (length < lengthHidden) {
+            pieceWidth = widthPiece - (lengthHidden - length) * fractionWidth;
+          }
+        }
+        if (data[`orientation${index}`] === "cross-horizontal") {
+          if (length >= lengthHidden) {
+            pieceLength =
+              lengthPiece + (length - lengthHidden) * fractionLength;
+          }
+          if (length < lengthHidden) {
+            pieceLength =
+              lengthPiece - (lengthHidden - length) * fractionLength;
+          }
+          if (width >= widthHidden) {
+            pieceWidth = widthPiece + (width - widthHidden) * fractionWidth;
+          }
+          if (width < widthHidden) {
+            pieceWidth = widthPiece - (widthHidden - width) * fractionWidth;
+          }
+        }
+        if (data[`orientation${index}`] === "side") {
+          if (height >= heightHidden) {
+            pieceLength =
+              lengthPiece + (height - heightHidden) * fractionLength;
+          }
+          if (height < heightHidden) {
+            pieceLength =
+              lengthPiece - (heightHidden - height) * fractionLength;
+          }
+          if (width >= widthHidden) {
+            pieceWidth = widthPiece + (width - widthHidden) * fractionWidth;
+          }
+          if (width < widthHidden) {
+            pieceWidth = widthPiece - (widthHidden - width) * fractionWidth;
+          }
+        }
         return {
           name: data[`namePiece${index}`],
-          length: data[`lengthPiece${index}`],
-          width: data[`widthPiece${index}`],
+          length: pieceLength,
+          width: pieceWidth,
+          fractionLength: fractionLength,
+          fractionWidth: fractionWidth,
           orientation: data[`orientation${index}`],
           category: data[`categoryPiece${index}`],
           material: data[`materialPiece${index}`],
@@ -253,6 +334,17 @@ function EditFurnitureSingleModuleComponent({
               {errors.height.message}
             </span>
           )}
+          {/* input hidden */}
+          <input
+            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            type="hidden"
+            name="heightHidden"
+            id="heightHidden"
+            defaultValue={moduleOriginalHeight}
+            {...register("heightHidden", {
+              required: "El campo es obligatorio",
+            })}
+          />
         </div>
         <div className="flex flex-col w-3/12 my-2">
           <label htmlFor="length">Largo</label>
@@ -270,6 +362,17 @@ function EditFurnitureSingleModuleComponent({
               {errors.length.message}
             </span>
           )}
+          {/* input hidden */}
+          <input
+            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            type="hidden"
+            name="lengthHidden"
+            id="lengthHidden"
+            defaultValue={moduleOriginalLength}
+            {...register("lengthHidden", {
+              required: "El campo es obligatorio",
+            })}
+          />
         </div>
         <div className="flex flex-col w-3/12 my-2">
           <label htmlFor="width">Profundidad</label>
@@ -287,6 +390,17 @@ function EditFurnitureSingleModuleComponent({
               {errors.width.message}
             </span>
           )}
+          {/* input hidden */}
+          <input
+            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            type="hidden"
+            name="widthHidden"
+            id="widthHidden"
+            defaultValue={moduleOriginalWidth}
+            {...register("widthHidden", {
+              required: "El campo es obligatorio",
+            })}
+          />
         </div>
         <div className="flex flex-col w-3/12 my-2">
           <label htmlFor="category">Categoria</label>
@@ -316,7 +430,7 @@ function EditFurnitureSingleModuleComponent({
             id="suppliesNumber"
             {...register("suppliesNumber")}
             value={suppliesCount}
-            readOnly
+            onChange={handleSuppliesCountChange}
           />
           {errors.suppliesNumber && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
