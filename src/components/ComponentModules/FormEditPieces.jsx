@@ -16,8 +16,9 @@ function FormEditPieces({
 
   useEffect(() => {
     if (piece) {
-      setShowEdgePiece(!!piece.edge);
-
+      if (piece.edgeLength || piece.edgeWidth) {
+        setShowEdgePiece(true);
+      }
       const initialFinishing = piece.veneer
         ? "veneer"
         : piece.melamine
@@ -42,6 +43,9 @@ function FormEditPieces({
 
     if (!isYes) {
       resetField(`edgeLength${index}`);
+      resetField(`edgeLengthSides${index}`);
+      resetField(`edgeWidth${index}`);
+      resetField(`edgeWidthSides${index}`);
       resetField(`lacqueredEdge${index}`);
     }
   };
@@ -144,7 +148,7 @@ function FormEditPieces({
         )}
       </div>
       <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`orientation${index}`}>
+        <label htmlFor={`fractionLength${index}`}>
           Fracción{" "}
           {piece.orientation === "cross-vertical"
             ? "Alto:"
@@ -156,21 +160,34 @@ function FormEditPieces({
         </label>
         <input
           className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          type="hidden"
-          name={`fractionLength${index}`}
-          id={`fractionLength${index}`}
-          {...register(`fractionLength${index}`, {
+          type="text"
+          name={`numeratorLength${index}`}
+          id={`numeratorLength${index}`}
+          defaultValue={1}
+          {...register(`numeratorLength${index}`, {
             required: "El campo es obligatorio",
           })}
-          defaultValue={piece?.fractionLength || ""}
         />
+        {errors[`numeratorLength${index}`] && (
+          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+            {errors[`numeratorLength${index}`].message}
+          </span>
+        )}
         <input
-          className=" bg-gray-300 mb-2 rounded-md w-full"
+          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
           type="text"
-          name={`fractionLengthShow${index}`}
-          id={`fractionLengthShow${index}`}
-          value={piece?.fractionLength || ""}
+          name={`denominatorLength${index}`}
+          id={`denominatorLength${index}`}
+          defaultValue={1}
+          {...register(`denominatorLength${index}`, {
+            required: "El campo es obligatorio",
+          })}
         />
+        {errors[`denominatorLength${index}`] && (
+          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+            {errors[`denominatorLength${index}`].message}
+          </span>
+        )}
       </div>
       {/* width */}
 
@@ -214,21 +231,34 @@ function FormEditPieces({
         </label>
         <input
           className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          type="hidden"
-          name={`fractionWidth${index}`}
-          id={`fractionWidth${index}`}
-          {...register(`fractionWidth${index}`, {
+          type="text"
+          name={`numeratorWidth${index}`}
+          id={`numeratorWidth${index}`}
+          defaultValue={1}
+          {...register(`numeratorWidth${index}`, {
             required: "El campo es obligatorio",
           })}
-          defaultValue={piece?.fractionWidth || ""}
         />
+        {errors[`numeratorWidth${index}`] && (
+          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+            {errors[`numeratorWidth${index}`].message}
+          </span>
+        )}
         <input
-          className=" bg-gray-300 mb-2 rounded-md w-full"
+          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
           type="text"
-          name={`fractionWidthShow${index}`}
-          id={`fractionWidthShow${index}`}
-          value={piece?.fractionWidth || ""}
+          name={`denominatorWidth${index}`}
+          id={`denominatorWidth${index}`}
+          defaultValue={1}
+          {...register(`denominatorWidth${index}`, {
+            required: "El campo es obligatorio",
+          })}
         />
+        {errors[`denominatorWidth${index}`] && (
+          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+            {errors[`denominatorWidth${index}`].message}
+          </span>
+        )}
       </div>
       <div className="flex flex-col w-2/12 my-2">
         <label htmlFor={`categoryPiece${index}`}>Categoría</label>
@@ -395,7 +425,7 @@ function FormEditPieces({
             name={`edgeOption${index}`}
             value="yes"
             onChange={handleEdgeOptionChange}
-            defaultChecked={piece?.edge && piece.edge.edgeLength}
+            defaultChecked={piece.edgeLength || piece.edgeWidth}
           />
           <label htmlFor={`edgeOptionYes${index}`} className="ml-2">
             Sí
@@ -408,7 +438,7 @@ function FormEditPieces({
             name={`edgeOption${index}`}
             value="no"
             onChange={handleEdgeOptionChange}
-            defaultChecked={!piece?.edge || !piece.edge.edgeLength}
+            defaultChecked={!piece.edgeLength && !piece.edgeWidth}
           />
           <label htmlFor={`edgeOptionNo${index}`} className="ml-2">
             No
@@ -421,32 +451,75 @@ function FormEditPieces({
         )}
       </div>
       {showEdgePiece && (
-        <div>
-          <div className="flex flex-col w-2/12 my-2">
-            <label htmlFor={`edgeLength${index}`}>Filo</label>
-            <input
+        <div className="flex">
+          {/* filo length */}
+          <div>
+            <div>
+              <label>
+                <input type="checkbox" {...register(`edgeLength${index}`)} />
+                Filo de{" "}
+                {piece.orientation === "cross-vertical"
+                  ? "Alto:"
+                  : piece.orientation === "cross-horizontal"
+                  ? "Largo:"
+                  : piece.orientation === "side"
+                  ? "Alto:"
+                  : ""}
+              </label>
+            </div>
+            <label htmlFor={`edgeLengthSides${index}`}>Cantidad de lados</label>
+            <select
               className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-              type="text"
-              name={`edgeLength${index}`}
-              id={`edgeLength${index}`}
-              {...register(`edgeLength${index}`, {
-                required: "El campo es obligatorio",
-              })}
-              defaultValue={piece?.edge ? piece.edge.edgeLength.toString() : ""}
-            />
-            {errors[`edgeLength${index}`] && (
+              name={`edgeLengthSides${index}`}
+              id={`edgeLengthSides${index}`}
+              {...register(`edgeLengthSides${index}`)}
+            >
+              <option value="">Elegir una opción</option>
+              <option value="1">1 Lado</option>
+              <option value="2">2 Lados</option>
+            </select>
+            {errors[`edgeLengthSides${index}`] && (
               <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                {errors[`edgeLength${index}`].message}
+                {errors[`edgeLengthSides${index}`].message}
               </span>
             )}
           </div>
+          <div>
+            {/* filo width */}
+            <div>
+              <label>
+                <input type="checkbox" {...register(`edgeWidth${index}`)} />
+                Filo de{" "}
+                {piece.orientation === "cross-vertical"
+                  ? "Largo:"
+                  : piece.orientation === "cross-horizontal"
+                  ? "Profundidad:"
+                  : piece.orientation === "side"
+                  ? "Profundidad:"
+                  : ""}
+              </label>
+            </div>
+            <label htmlFor={`edgeWidthSides${index}`}>Cantidad de lados</label>
+            <select
+              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+              name={`edgeWidthSides${index}`}
+              id={`edgeWidthSides${index}`}
+              {...register(`edgeWidthSides${index}`)}
+            >
+              <option value="">Elegir una opción</option>
+              <option value="1">1 Lado</option>
+              <option value="2">2 Lados</option>
+            </select>
+            {errors[`edgeWidthSides${index}`] && (
+              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                {errors[`edgeWidthSides${index}`].message}
+              </span>
+            )}
+            {/* filo laqueado */}
+          </div>
           <div className="flex flex-col w-2/12 my-2">
             <label>
-              <input
-                type="checkbox"
-                {...register(`lacqueredEdge${index}`)}
-                defaultChecked={piece?.edge ? piece.edge.lacqueredEdge : false}
-              />
+              <input type="checkbox" {...register(`lacqueredEdge${index}`)} />
               Filo Laqueado
             </label>
           </div>
@@ -472,6 +545,13 @@ FormEditPieces.propTypes = {
     name: PropTypes.string,
     length: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    numeratorLength: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    denominatorLength: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+    ]),
+    numeratorWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    denominatorWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     category: PropTypes.string,
     material: PropTypes.string,
     orientation: PropTypes.string,
@@ -482,10 +562,11 @@ FormEditPieces.propTypes = {
     melamine: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     melamineLacquered: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     pantographed: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-    edge: PropTypes.shape({
-      edgeLength: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      lacqueredEdge: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-    }),
+    edgeLength: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    edgeLengthSides: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    edgeWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    edgeWidthSides: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    lacqueredEdge: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   }),
 };
 

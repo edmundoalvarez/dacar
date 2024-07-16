@@ -78,6 +78,10 @@ function EditFurnitureSingleModuleComponent({
           setValue(`namePiece${index}`, piece.name);
           setValue(`lengthPiece${index}`, piece.length.toString());
           setValue(`widthPiece${index}`, piece.width.toString());
+          setValue(`numeratorLength${index}`, piece.numeratorLength);
+          setValue(`denominatorLength${index}`, piece.denominatorLength);
+          setValue(`numeratorWidth${index}`, piece.numeratorWidth);
+          setValue(`denominatorWidth${index}`, piece.denominatorWidth);
           setValue(`orientation${index}`, piece.orientation);
           setValue(`categoryPiece${index}`, piece.category);
           setValue(`materialPiece${index}`, piece.material);
@@ -88,10 +92,12 @@ function EditFurnitureSingleModuleComponent({
           setValue(`melamine${index}`, piece.melamine);
           setValue(`melamineLacquered${index}`, piece.melamineLacquered);
           setValue(`pantographed${index}`, piece.pantographed);
-          if (piece.edge) {
-            setValue(`edgeLength${index}`, piece.edge.edgeLength.toString());
-            setValue(`lacqueredEdge${index}`, piece.edge.lacqueredEdge);
-          }
+          setValue(`edgeLength${index}`, piece.edgeLength);
+          setValue(`edgeLengthSides${index}`, piece.edgeLengthSides);
+          setValue(`edgeWidth${index}`, piece.edgeWidth);
+          setValue(`edgeWidthSides${index}`, piece.edgeWidthSides);
+          setValue(`lacqueredEdge${index}`, piece.lacqueredEdge);
+          console.log("piece", `edgeLength${index}`, piece.edgeLength);
         });
       })
       .catch((error) => {
@@ -156,11 +162,6 @@ function EditFurnitureSingleModuleComponent({
       });
 
       const pieces = [...Array(piecesCount)].map((_, index) => {
-        const edgeData = {
-          edgeLength: data[`edgeLength${index}`],
-          lacqueredEdge: data[`lacqueredEdge${index}`],
-        };
-
         let lacqueredPiece;
         let veneer;
         let melamine;
@@ -181,8 +182,16 @@ function EditFurnitureSingleModuleComponent({
         }
 
         //lo que viene de la pieza
-        let fractionLength = parseFloat(data[`fractionLength${index}`]);
-        let fractionWidth = parseFloat(data[`fractionWidth${index}`]);
+        let fractionLength =
+          parseInt(data[`numeratorLength${index}`]) /
+          parseInt(data[`denominatorLength${index}`]);
+        fractionLength = parseFloat(fractionLength.toFixed(2));
+
+        let fractionWidth =
+          parseInt(data[`numeratorWidth${index}`]) /
+          parseInt(data[`denominatorWidth${index}`]);
+        fractionWidth = parseFloat(fractionWidth.toFixed(2));
+
         let lengthPiece = parseFloat(data[`lengthPiece${index}`]);
         let widthPiece = parseFloat(data[`widthPiece${index}`]);
         //variables para cargar el dato
@@ -241,8 +250,10 @@ function EditFurnitureSingleModuleComponent({
           name: data[`namePiece${index}`],
           length: pieceLength,
           width: pieceWidth,
-          fractionLength: fractionLength,
-          fractionWidth: fractionWidth,
+          numeratorLength: data[`numeratorLength${index}`],
+          denominatorLength: data[`denominatorLength${index}`],
+          numeratorWidth: data[`numeratorWidth${index}`],
+          denominatorWidth: data[`denominatorWidth${index}`],
           orientation: data[`orientation${index}`],
           category: data[`categoryPiece${index}`],
           material: data[`materialPiece${index}`],
@@ -253,7 +264,11 @@ function EditFurnitureSingleModuleComponent({
           melamine: melamine,
           melamineLacquered: data[`melamineLacquered${index}`],
           pantographed: data[`pantographed${index}`],
-          edge: edgeData,
+          edgeLength: data[`edgeLength${index}`],
+          edgeLengthSides: data[`edgeLengthSides${index}`],
+          edgeWidth: data[`edgeWidth${index}`],
+          edgeWidthSides: data[`edgeWidthSides${index}`],
+          lacqueredEdge: data[`lacqueredEdge${index}`],
         };
       });
 

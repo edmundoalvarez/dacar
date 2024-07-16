@@ -82,10 +82,6 @@ function CreateModule() {
 
       // Crear las piezas asociadas al módulo
       for (let i = 0; i < piecesCount; i++) {
-        const edgeData = {
-          edgeLength: data[`edgeLength${i}`],
-          lacqueredEdge: data[`lacqueredEdge${i}`],
-        };
         let lacqueredPiece;
         let veneer;
         let melamine;
@@ -110,16 +106,10 @@ function CreateModule() {
           name: data[`namePiece${i}`],
           length: data[`lengthPiece${i}`],
           width: data[`widthPiece${i}`],
-          fractionLength: parseFloat(
-            (
-              data[`numeratorLength${i}`] / data[`denominatorLength${i}`]
-            ).toFixed(2)
-          ),
-          fractionWidth: parseFloat(
-            (data[`numeratorWidth${i}`] / data[`denominatorWidth${i}`]).toFixed(
-              2
-            )
-          ),
+          numeratorLength: data[`numeratorLength${i}`],
+          denominatorLength: data[`denominatorLength${i}`],
+          numeratorWidth: data[`numeratorWidth${i}`],
+          denominatorWidth: data[`denominatorWidth${i}`],
           orientation: data[`orientation${i}`],
           category: data[`categoryPiece${i}`],
           material: data[`materialPiece${i}`],
@@ -130,7 +120,11 @@ function CreateModule() {
           melamine: melamine,
           melamineLacquered: data[`melamineLacquered${i}`],
           pantographed: data[`pantographed${i}`],
-          edge: edgeData,
+          edgeLength: data[`edgeLength${i}`],
+          edgeLengthSides: data[`edgeLengthSides${i}`],
+          edgeWidth: data[`edgeWidth${i}`],
+          edgeWidthSides: data[`edgeWidthSides${i}`],
+          lacqueredEdge: data[`lacqueredEdge${i}`],
           moduleId, // Asigna el ID del módulo a cada pieza
         };
         await createPieces(pieceData);
@@ -315,7 +309,7 @@ function CreateModule() {
 
         {[...Array(piecesCount)].map((_, index) => (
           <FormCreatePieces
-            key={`FormCreatePieces${index}`}
+            key={`FormCreatePiecess${index}`}
             register={register}
             index={index}
             errors={errors}

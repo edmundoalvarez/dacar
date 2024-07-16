@@ -3,11 +3,15 @@ import React, { useState } from "react";
 function FormCreatePieces({ register, index, errors, tables, resetField }) {
   const [showEdgePiece, setShowEdgePiece] = useState(false);
   const [finishingModule, setFinishingModule] = useState("");
-  const [lengthLabel, setLengthLabel] = useState("Alto");
-  const [widthLabel, setWidthLabel] = useState("Largo");
+  const [lengthLabel, setLengthLabel] = useState("");
+  const [widthLabel, setWidthLabel] = useState("");
 
   const handleOrientationOptionChange = (option) => {
     const optionSelected = option.target.value;
+    if (optionSelected === "") {
+      setLengthLabel("");
+      setWidthLabel("");
+    }
     if (optionSelected === "cross-vertical") {
       setLengthLabel("Alto");
       setWidthLabel("Largo");
@@ -28,6 +32,9 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
 
     if (!isYes) {
       resetField(`edgeLength${index}`);
+      resetField(`edgeLengthSides${index}`);
+      resetField(`edgeWidth${index}`);
+      resetField(`edgeWidthSides${index}`);
       resetField(`lacqueredEdge${index}`);
     }
   };
@@ -90,110 +97,116 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
           </span>
         )}
       </div>
-      {/* Length de la pieza */}
-      <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`lengthPiece${index}`}>{lengthLabel}</label>
-        <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          type="text"
-          name={`lengthPiece${index}`}
-          id={`lengthPiece${index}`}
-          {...register(`lengthPiece${index}`, {
-            required: "El campo es obligatorio",
-          })}
-        />
-        {errors[`lengthPiece${index}`] && (
-          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`lengthPiece${index}`].message}
-          </span>
-        )}
-      </div>
-      <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`numeratorLength${index}`}>
-          Fracción {lengthLabel}
-        </label>
-        <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          type="text"
-          name={`numeratorLength${index}`}
-          id={`numeratorLength${index}`}
-          defaultValue={1}
-          {...register(`numeratorLength${index}`, {
-            required: "El campo es obligatorio",
-          })}
-        />
-        {errors[`numeratorLength${index}`] && (
-          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`numeratorLength${index}`].message}
-          </span>
-        )}
-        <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          type="text"
-          name={`denominatorLength${index}`}
-          id={`denominatorLength${index}`}
-          defaultValue={1}
-          {...register(`denominatorLength${index}`, {
-            required: "El campo es obligatorio",
-          })}
-        />
-        {errors[`denominatorLength${index}`] && (
-          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`denominatorLength${index}`].message}
-          </span>
-        )}
-      </div>
-      {/* Width de la pieza */}
-      <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`widthPiece${index}`}>{widthLabel}</label>
-        <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          type="text"
-          name={`widthPiece${index}`}
-          id={`widthPiece${index}`}
-          {...register(`widthPiece${index}`, {
-            required: "El campo es obligatorio",
-          })}
-        />
-        {errors[`widthPiece${index}`] && (
-          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`widthPiece${index}`].message}
-          </span>
-        )}
-      </div>
-      <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`numeratorWidth${index}`}>Fracción {widthLabel}</label>
-        <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          type="text"
-          name={`numeratorWidth${index}`}
-          id={`numeratorWidth${index}`}
-          defaultValue={1}
-          {...register(`numeratorWidth${index}`, {
-            required: "El campo es obligatorio",
-          })}
-        />
-        {errors[`numeratorWidth${index}`] && (
-          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`numeratorWidth${index}`].message}
-          </span>
-        )}
-        <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          type="text"
-          name={`denominatorWidth${index}`}
-          id={`denominatorWidth${index}`}
-          defaultValue={1}
-          {...register(`denominatorWidth${index}`, {
-            required: "El campo es obligatorio",
-          })}
-        />
-        {errors[`denominatorWidth${index}`] && (
-          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`denominatorWidth${index}`].message}
-          </span>
-        )}
-      </div>
+      {lengthLabel !== "" && (
+        <>
+          {/* Length de la pieza */}
+          <div className="flex flex-col w-2/12 my-2">
+            <label htmlFor={`lengthPiece${index}`}>{lengthLabel}</label>
+            <input
+              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+              type="text"
+              name={`lengthPiece${index}`}
+              id={`lengthPiece${index}`}
+              {...register(`lengthPiece${index}`, {
+                required: "El campo es obligatorio",
+              })}
+            />
+            {errors[`lengthPiece${index}`] && (
+              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                {errors[`lengthPiece${index}`].message}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col w-2/12 my-2">
+            <label htmlFor={`numeratorLength${index}`}>
+              Fracción {lengthLabel}
+            </label>
+            <input
+              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+              type="text"
+              name={`numeratorLength${index}`}
+              id={`numeratorLength${index}`}
+              defaultValue={1}
+              {...register(`numeratorLength${index}`, {
+                required: "El campo es obligatorio",
+              })}
+            />
+            {errors[`numeratorLength${index}`] && (
+              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                {errors[`numeratorLength${index}`].message}
+              </span>
+            )}
+            <input
+              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+              type="text"
+              name={`denominatorLength${index}`}
+              id={`denominatorLength${index}`}
+              defaultValue={1}
+              {...register(`denominatorLength${index}`, {
+                required: "El campo es obligatorio",
+              })}
+            />
+            {errors[`denominatorLength${index}`] && (
+              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                {errors[`denominatorLength${index}`].message}
+              </span>
+            )}
+          </div>
+          {/* Width de la pieza */}
+          <div className="flex flex-col w-2/12 my-2">
+            <label htmlFor={`widthPiece${index}`}>{widthLabel}</label>
+            <input
+              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+              type="text"
+              name={`widthPiece${index}`}
+              id={`widthPiece${index}`}
+              {...register(`widthPiece${index}`, {
+                required: "El campo es obligatorio",
+              })}
+            />
+            {errors[`widthPiece${index}`] && (
+              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                {errors[`widthPiece${index}`].message}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col w-2/12 my-2">
+            <label htmlFor={`numeratorWidth${index}`}>
+              Fracción {widthLabel}
+            </label>
+            <input
+              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+              type="text"
+              name={`numeratorWidth${index}`}
+              id={`numeratorWidth${index}`}
+              defaultValue={1}
+              {...register(`numeratorWidth${index}`, {
+                required: "El campo es obligatorio",
+              })}
+            />
+            {errors[`numeratorWidth${index}`] && (
+              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                {errors[`numeratorWidth${index}`].message}
+              </span>
+            )}
+            <input
+              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+              type="text"
+              name={`denominatorWidth${index}`}
+              id={`denominatorWidth${index}`}
+              defaultValue={1}
+              {...register(`denominatorWidth${index}`, {
+                required: "El campo es obligatorio",
+              })}
+            />
+            {errors[`denominatorWidth${index}`] && (
+              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                {errors[`denominatorWidth${index}`].message}
+              </span>
+            )}
+          </div>
+        </>
+      )}
       <div className="flex flex-col w-2/12 my-2">
         <label htmlFor={`categoryPiece${index}`}>Categoría</label>
         <input
@@ -322,7 +335,7 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
               name={`veneerOption${index}`}
               value="veneerPolished"
             />
-            <label htmlFor={`edgeOptionNo${index}`} className="ml-2">
+            <label htmlFor={`veneerOption${index}`} className="ml-2">
               Lustrado
             </label>
           </div>
@@ -367,23 +380,57 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
         )}
       </div>
       {showEdgePiece && (
-        <div>
-          <div className="flex flex-col w-2/12 my-2">
-            <label htmlFor={`edgeLength${index}`}>Filo</label>
-            <input
+        <div className="flex">
+          {/* filo length */}
+          <div>
+            <div>
+              <label>
+                <input type="checkbox" {...register(`edgeLength${index}`)} />
+                Filo de {lengthLabel}
+              </label>
+            </div>
+            <label htmlFor={`edgeLengthSides${index}`}>Cantidad de lados</label>
+            <select
               className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-              type="text"
-              name={`edgeLength${index}`}
-              id={`edgeLength${index}`}
-              {...register(`edgeLength${index}`, {
-                required: "El campo es obligatorio",
-              })}
-            />
-            {errors[`edgeLength${index}`] && (
+              name={`edgeLengthSides${index}`}
+              id={`edgeLengthSides${index}`}
+              {...register(`edgeLengthSides${index}`)}
+            >
+              <option value="">Elegir una opción</option>
+              <option value="1">1 Lado</option>
+              <option value="2">2 Lados</option>
+            </select>
+            {errors[`edgeLengthSides${index}`] && (
               <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                {errors[`edgeLength${index}`].message}
+                {errors[`edgeLengthSides${index}`].message}
               </span>
             )}
+          </div>
+          <div>
+            {/* filo width */}
+            <div>
+              <label>
+                <input type="checkbox" {...register(`edgeWidth${index}`)} />
+                Filo de {widthLabel}
+              </label>
+            </div>
+            <label htmlFor={`edgeWidthSides${index}`}>Cantidad de lados</label>
+            <select
+              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+              name={`edgeWidthSides${index}`}
+              id={`edgeWidthSides${index}`}
+              {...register(`edgeWidthSides${index}`)}
+            >
+              <option value="">Elegir una opción</option>
+              <option value="1">1 Lado</option>
+              <option value="2">2 Lados</option>
+            </select>
+            {errors[`edgeWidthSides${index}`] && (
+              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                {errors[`edgeWidthSides${index}`].message}
+              </span>
+            )}
+            {/* filo laqueado */}
           </div>
           <div className="flex flex-col w-2/12 my-2">
             <label>
