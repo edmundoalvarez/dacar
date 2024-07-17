@@ -78,10 +78,6 @@ function EditFurnitureSingleModuleComponent({
           setValue(`namePiece${index}`, piece.name);
           setValue(`lengthPiece${index}`, piece.length.toString());
           setValue(`widthPiece${index}`, piece.width.toString());
-          setValue(`numeratorLength${index}`, piece.numeratorLength);
-          setValue(`denominatorLength${index}`, piece.denominatorLength);
-          setValue(`numeratorWidth${index}`, piece.numeratorWidth);
-          setValue(`denominatorWidth${index}`, piece.denominatorWidth);
           setValue(`orientation${index}`, piece.orientation);
           setValue(`categoryPiece${index}`, piece.category);
           setValue(`materialPiece${index}`, piece.material);
@@ -182,16 +178,6 @@ function EditFurnitureSingleModuleComponent({
         }
 
         //lo que viene de la pieza
-        let fractionLength =
-          parseInt(data[`numeratorLength${index}`]) /
-          parseInt(data[`denominatorLength${index}`]);
-        fractionLength = parseFloat(fractionLength.toFixed(2));
-
-        let fractionWidth =
-          parseInt(data[`numeratorWidth${index}`]) /
-          parseInt(data[`denominatorWidth${index}`]);
-        fractionWidth = parseFloat(fractionWidth.toFixed(2));
-
         let lengthPiece = parseFloat(data[`lengthPiece${index}`]);
         let widthPiece = parseFloat(data[`widthPiece${index}`]);
         //variables para cargar el dato
@@ -200,60 +186,71 @@ function EditFurnitureSingleModuleComponent({
         if (data[`orientation${index}`] === "cross-vertical") {
           if (height >= heightHidden) {
             pieceLength =
-              lengthPiece + (height - heightHidden) * fractionLength;
+              lengthPiece +
+              (height - heightHidden) * (lengthPiece / heightHidden);
           }
           if (height < heightHidden) {
             pieceLength =
-              lengthPiece - (heightHidden - height) * fractionLength;
+              lengthPiece -
+              (heightHidden - height) * (lengthPiece / heightHidden);
           }
 
           if (length >= lengthHidden) {
-            pieceWidth = widthPiece + (length - lengthHidden) * fractionWidth;
+            pieceWidth =
+              widthPiece +
+              (length - lengthHidden) * (widthPiece / lengthHidden);
           }
           if (length < lengthHidden) {
-            pieceWidth = widthPiece - (lengthHidden - length) * fractionWidth;
+            pieceWidth =
+              widthPiece -
+              (lengthHidden - length) * (widthPiece / lengthHidden);
           }
         }
         if (data[`orientation${index}`] === "cross-horizontal") {
           if (length >= lengthHidden) {
             pieceLength =
-              lengthPiece + (length - lengthHidden) * fractionLength;
+              lengthPiece +
+              (length - lengthHidden) * (lengthPiece / lengthHidden);
           }
           if (length < lengthHidden) {
             pieceLength =
-              lengthPiece - (lengthHidden - length) * fractionLength;
+              lengthPiece -
+              (lengthHidden - length) * (lengthPiece / lengthHidden);
           }
           if (width >= widthHidden) {
-            pieceWidth = widthPiece + (width - widthHidden) * fractionWidth;
+            pieceWidth =
+              widthPiece + (width - widthHidden) * (widthPiece / widthHidden);
           }
           if (width < widthHidden) {
-            pieceWidth = widthPiece - (widthHidden - width) * fractionWidth;
+            pieceWidth =
+              widthPiece - (widthHidden - width) * (widthPiece / widthHidden);
           }
         }
         if (data[`orientation${index}`] === "side") {
           if (height >= heightHidden) {
             pieceLength =
-              lengthPiece + (height - heightHidden) * fractionLength;
+              lengthPiece +
+              (height - heightHidden) * (lengthPiece / heightHidden);
           }
           if (height < heightHidden) {
             pieceLength =
-              lengthPiece - (heightHidden - height) * fractionLength;
+              lengthPiece -
+              (heightHidden - height) * (lengthPiece / heightHidden);
           }
           if (width >= widthHidden) {
-            pieceWidth = widthPiece + (width - widthHidden) * fractionWidth;
+            pieceWidth =
+              widthPiece + (width - widthHidden) * (widthPiece / widthHidden);
           }
           if (width < widthHidden) {
-            pieceWidth = widthPiece - (widthHidden - width) * fractionWidth;
+            pieceWidth =
+              widthPiece - (widthHidden - width) * (widthPiece / widthHidden);
           }
         }
+        //  parseFloat(pieceLength.toFixed(2));
         return {
           name: data[`namePiece${index}`],
-          length: pieceLength,
-          width: pieceWidth,
-          numeratorLength: data[`numeratorLength${index}`],
-          denominatorLength: data[`denominatorLength${index}`],
-          numeratorWidth: data[`numeratorWidth${index}`],
-          denominatorWidth: data[`denominatorWidth${index}`],
+          length: parseFloat(pieceLength.toFixed(2)),
+          width: parseFloat(pieceWidth.toFixed(2)),
           orientation: data[`orientation${index}`],
           category: data[`categoryPiece${index}`],
           material: data[`materialPiece${index}`],

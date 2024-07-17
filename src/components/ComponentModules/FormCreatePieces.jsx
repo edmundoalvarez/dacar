@@ -117,41 +117,7 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
               </span>
             )}
           </div>
-          <div className="flex flex-col w-2/12 my-2">
-            <label htmlFor={`numeratorLength${index}`}>
-              Fracción {lengthLabel}
-            </label>
-            <input
-              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-              type="text"
-              name={`numeratorLength${index}`}
-              id={`numeratorLength${index}`}
-              defaultValue={1}
-              {...register(`numeratorLength${index}`, {
-                required: "El campo es obligatorio",
-              })}
-            />
-            {errors[`numeratorLength${index}`] && (
-              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                {errors[`numeratorLength${index}`].message}
-              </span>
-            )}
-            <input
-              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-              type="text"
-              name={`denominatorLength${index}`}
-              id={`denominatorLength${index}`}
-              defaultValue={1}
-              {...register(`denominatorLength${index}`, {
-                required: "El campo es obligatorio",
-              })}
-            />
-            {errors[`denominatorLength${index}`] && (
-              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                {errors[`denominatorLength${index}`].message}
-              </span>
-            )}
-          </div>
+
           {/* Width de la pieza */}
           <div className="flex flex-col w-2/12 my-2">
             <label htmlFor={`widthPiece${index}`}>{widthLabel}</label>
@@ -167,41 +133,6 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
             {errors[`widthPiece${index}`] && (
               <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                 {errors[`widthPiece${index}`].message}
-              </span>
-            )}
-          </div>
-          <div className="flex flex-col w-2/12 my-2">
-            <label htmlFor={`numeratorWidth${index}`}>
-              Fracción {widthLabel}
-            </label>
-            <input
-              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-              type="text"
-              name={`numeratorWidth${index}`}
-              id={`numeratorWidth${index}`}
-              defaultValue={1}
-              {...register(`numeratorWidth${index}`, {
-                required: "El campo es obligatorio",
-              })}
-            />
-            {errors[`numeratorWidth${index}`] && (
-              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                {errors[`numeratorWidth${index}`].message}
-              </span>
-            )}
-            <input
-              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-              type="text"
-              name={`denominatorWidth${index}`}
-              id={`denominatorWidth${index}`}
-              defaultValue={1}
-              {...register(`denominatorWidth${index}`, {
-                required: "El campo es obligatorio",
-              })}
-            />
-            {errors[`denominatorWidth${index}`] && (
-              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                {errors[`denominatorWidth${index}`].message}
               </span>
             )}
           </div>

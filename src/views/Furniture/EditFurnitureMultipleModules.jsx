@@ -7,7 +7,6 @@ import {
 
 function EditFurnitureMultipleModules() {
   const [singleFurniture, setSingleFurniture] = useState([]);
-  const [selectedFurniture, setSelectedFurniture] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
   const [furnitureToEdit, setFurnitureToEdit] = useState(null);
   const [moduleToEdit, setModuleToEdit] = useState(null);

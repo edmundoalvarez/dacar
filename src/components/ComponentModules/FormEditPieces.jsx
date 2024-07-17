@@ -147,48 +147,7 @@ function FormEditPieces({
           </span>
         )}
       </div>
-      <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`fractionLength${index}`}>
-          Fracción{" "}
-          {piece.orientation === "cross-vertical"
-            ? "Alto:"
-            : piece.orientation === "cross-horizontal"
-            ? "Largo:"
-            : piece.orientation === "side"
-            ? "Alto:"
-            : ""}
-        </label>
-        <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          type="text"
-          name={`numeratorLength${index}`}
-          id={`numeratorLength${index}`}
-          defaultValue={1}
-          {...register(`numeratorLength${index}`, {
-            required: "El campo es obligatorio",
-          })}
-        />
-        {errors[`numeratorLength${index}`] && (
-          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`numeratorLength${index}`].message}
-          </span>
-        )}
-        <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          type="text"
-          name={`denominatorLength${index}`}
-          id={`denominatorLength${index}`}
-          defaultValue={1}
-          {...register(`denominatorLength${index}`, {
-            required: "El campo es obligatorio",
-          })}
-        />
-        {errors[`denominatorLength${index}`] && (
-          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`denominatorLength${index}`].message}
-          </span>
-        )}
-      </div>
+
       {/* width */}
 
       <div className="flex flex-col w-2/12 my-2">
@@ -218,48 +177,7 @@ function FormEditPieces({
           </span>
         )}
       </div>
-      <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`orientation${index}`}>
-          Fracción{" "}
-          {piece.orientation === "cross-vertical"
-            ? "Largo:"
-            : piece.orientation === "cross-horizontal"
-            ? "Profundidad:"
-            : piece.orientation === "side"
-            ? "Profundidad:"
-            : ""}
-        </label>
-        <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          type="text"
-          name={`numeratorWidth${index}`}
-          id={`numeratorWidth${index}`}
-          defaultValue={1}
-          {...register(`numeratorWidth${index}`, {
-            required: "El campo es obligatorio",
-          })}
-        />
-        {errors[`numeratorWidth${index}`] && (
-          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`numeratorWidth${index}`].message}
-          </span>
-        )}
-        <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-          type="text"
-          name={`denominatorWidth${index}`}
-          id={`denominatorWidth${index}`}
-          defaultValue={1}
-          {...register(`denominatorWidth${index}`, {
-            required: "El campo es obligatorio",
-          })}
-        />
-        {errors[`denominatorWidth${index}`] && (
-          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`denominatorWidth${index}`].message}
-          </span>
-        )}
-      </div>
+
       <div className="flex flex-col w-2/12 my-2">
         <label htmlFor={`categoryPiece${index}`}>Categoría</label>
         <input
