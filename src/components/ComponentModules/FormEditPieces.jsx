@@ -23,8 +23,6 @@ function FormEditPieces({
         ? "veneer"
         : piece.melamine
         ? "melamine"
-        : piece.pantographed
-        ? "pantographed"
         : piece.lacqueredPiece
         ? "lacqueredPiece"
         : "";
@@ -238,7 +236,6 @@ function FormEditPieces({
           <option value="lacqueredPiece">Laqueado</option>
           <option value="veneer">Enchapado</option>
           <option value="melamine">Melamina</option>
-          <option value="pantographed">Pantografiado</option>
         </select>
         {errors[`finishing${index}`] && (
           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">

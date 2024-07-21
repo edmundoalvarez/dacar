@@ -5,7 +5,6 @@ export { createFurniture } from "./services/Furniture/createFurniture.js";
 export { getAllFurnitures } from "./services/Furniture/getAllFurnitures.js";
 export { getFurnitureById } from "./services/Furniture/getFurnitureById.js";
 export { updateModuleOfFurniture } from "./services/Furniture/updateModuleOfFurniture.js";
-
 //MAIN TABLE
 export { createMainTable } from "./services/mainTable/createMainTable.js";
 // export { getAllTables } from "./services/mainTable/getAllTables.js";
@@ -24,6 +23,10 @@ export { getAllSupplies } from "./services/Supplies/getAllSupplies.js";
 export { getAllTables } from "./services/Supplies/getAllTables.js";
 export { getAllSuppliesExceptTables } from "./services/Supplies/getAllSuppliesExceptTables.js";
 
+//CLIENTS
+export { createClient } from "./services/Clients/createClient.js";
+export { getAllClients } from "./services/Clients/getAllClients.js";
+
 //Components --->
 
 //MODULES
@@ -34,6 +37,8 @@ export { FormAddSupplies } from "./components/ComponentModules/FormAddSupplies.j
 export { FormEditSupplies } from "./components/ComponentModules/FormEditSupplies.jsx";
 //FURNITURE
 export { EditFurnitureSingleModuleComponent } from "./components/ComponentFurnitures/EditFurnitureSingleModuleComponent.jsx";
+//CLIENTS
+export { FormCreateClient } from "./components/ComponentClients/FormCreateClient.jsx";
 
 //Views --->
 
@@ -56,3 +61,6 @@ export { Pieces } from "./views/PiecesForModules/Pieces";
 //SUPPLIES
 export { Supplies } from "./views/Supplies/Supplies";
 export { CreateSupplie } from "./views/Supplies/CreateSupplie";
+
+//BUDGETS
+export { CreateBudget } from "./views/Budgets/CreateBudget";

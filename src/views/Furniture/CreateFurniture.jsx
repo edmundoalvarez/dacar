@@ -14,6 +14,8 @@ function CreateFurniture() {
   const [originalData, setOriginalData] = useState({});
   const [selectedModule, setSelectedModule] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedModuleIds, setSelectedModuleIds] = useState([]);
+  const [moduleQuantities, setModuleQuantities] = useState({});
 
   const handleOpenModal = (module) => {
     setSelectedModule(module);
@@ -46,13 +48,14 @@ function CreateFurniture() {
   const handleModuleChange = (e) => {
     const { value, checked } = e.target;
     const selectedModule = modules.find((module) => module._id === value);
-
     setSelectedModules((prev) =>
       checked
         ? [...prev, selectedModule]
         : prev.filter((module) => module._id !== value)
     );
-
+    setSelectedModuleIds((prev) =>
+      checked ? [...prev, value] : prev.filter((id) => id !== value)
+    );
     if (checked) {
       setFormData((prev) => ({
         ...prev,
@@ -76,13 +79,10 @@ function CreateFurniture() {
     }
   };
 
-  const handleInputChange = (moduleId, field, value) => {
-    setFormData((prev) => ({
+  const handleInputChange = (moduleId, value) => {
+    setModuleQuantities((prev) => ({
       ...prev,
-      [moduleId]: {
-        ...prev[moduleId],
-        [field]: value,
-      },
+      [moduleId]: parseInt(value, 10),
     }));
   };
 
@@ -90,31 +90,28 @@ function CreateFurniture() {
     event.preventDefault();
 
     try {
-      // Creamos un nuevo objeto con los datos del Módulo seleccionado (con cambios o sin cambios)
       const editedModules = await Promise.all(
-        selectedModules.map(async (module) => {
+        selectedModules.flatMap(async (module) => {
           const moduleId = module._id;
-          // Comparamos los objetos para ver si hay cambios y así poder agregar "(editado)" al nombre del módulo
+          const quantity = moduleQuantities[moduleId] || 1;
+          const modulePieces = await getPiecesByModuleId(moduleId);
           const isEdited =
             JSON.stringify(formData[moduleId]) !==
             JSON.stringify(originalData[moduleId]);
 
-          // Obtener las piezas correspondientes al módulo actual
-          const modulePieces = await getPiecesByModuleId(moduleId); // Esperar a que se resuelva la promesa
-
-          return {
+          const newModules = Array.from({ length: quantity }, (_, i) => ({
             ...module,
             ...formData[moduleId],
-            // Agregamos "(editado)" al nombre del módulo si hubo cambios en sus propiedades
+            _id: `${moduleId}-${i + 1}`, // Generar un nuevo ID único
             name: isEdited
-              ? `${formData[moduleId].name} (editado)`
-              : formData[moduleId].name,
-            pieces: modulePieces, // Agregar las piezas correspondientes al módulo
-          };
-        })
-      );
+              ? `${formData[moduleId].name} (editado ${i + 1})`
+              : `${formData[moduleId].name} (${i + 1})`,
+            pieces: modulePieces,
+          }));
 
-      console.log(data);
+          return newModules;
+        })
+      ).then((modules) => modules.flat());
 
       await createFurniture({
         ...data,
@@ -243,6 +240,21 @@ function CreateFurniture() {
                   className="mr-2"
                 />
                 <label htmlFor={`module-${module._id}`}>{module.name}</label>
+                {selectedModuleIds.includes(module._id) && (
+                  <>
+                    <label htmlFor={`qty-module-${module._id}`}>Cantidad</label>
+                    <input
+                      className="border-solid border-2 border-opacity ml-2 rounded-md w-1/12"
+                      type="number"
+                      name={`qty-module-${module._id}`}
+                      min="1"
+                      value={moduleQuantities[module._id] || 0}
+                      onChange={(e) =>
+                        handleInputChange(module._id, e.target.value)
+                      }
+                    />
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -256,9 +268,9 @@ function CreateFurniture() {
         <div className="mt-4">
           <h2 className="text-2xl">Módulos Seleccionados:</h2>
           <div>
-            {selectedModules.map((module) => (
+            {selectedModules.flatMap((module, index) => (
               <div
-                key={module._id}
+                key={module._id + "-" + index}
                 className="border-solid border-2 border-opacity mb-2 rounded-md p-4 flex items-center justify-between"
               >
                 <p>{module.name}</p>

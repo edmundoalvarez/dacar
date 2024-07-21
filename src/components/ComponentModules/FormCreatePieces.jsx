@@ -167,7 +167,7 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
         >
           <option value="">Elegir una opción</option>
           {tables.map((table) => (
-            <option key={table.id} value={table.id}>
+            <option key={table._id} value={table.name}>
               {table.name}
             </option>
           ))}

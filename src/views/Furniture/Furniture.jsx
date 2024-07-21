@@ -164,9 +164,13 @@ function Furniture() {
                       >
                         Editar
                       </Link>
-                      <button className="text-white bg-lightblue rounded-md px-2 py-1 mb-2">
+                      <Link
+                        to={`/presupuestar-mueble/${furniture._id}
+                        `}
+                        className="text-white bg-lightblue rounded-md px-2 py-1 mb-2"
+                      >
                         Presupuestar
-                      </button>
+                      </Link>
                     </div>
                   </td>
                 </tr>

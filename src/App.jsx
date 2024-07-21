@@ -16,6 +16,7 @@ import {
   CreateSupplie,
   EditFurnitureSingleModule,
   EditFurnitureMultipleModules,
+  CreateBudget,
 } from "./index.js";
 
 function App() {
@@ -45,6 +46,10 @@ function App() {
         <Route
           path="/editar-modulos-mueble/:idForniture"
           element={<EditFurnitureMultipleModules />}
+        />
+        <Route
+          path="/presupuestar-mueble/:idForniture"
+          element={<CreateBudget />}
         />
         <Route path="/ver-insumos" element={<Supplies />} />
         <Route path="/crear-insumo" element={<CreateSupplie />} />
