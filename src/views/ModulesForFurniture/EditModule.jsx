@@ -1,21 +1,18 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import {
   FormEditPieces,
   FormEditSupplies,
   getAllTables,
   getAllSuppliesExceptTables,
-  getFurnitureById,
-  updateModuleOfFurniture,
+  getModuleAndPiecesByModuleId,
+  updateModule,
+  updatePiece,
 } from "../../index.js";
 
-function EditFurnitureSingleModuleComponent({
-  idFurniture,
-  idModule,
-  onModified,
-  notModified,
-}) {
+function EditModule() {
+  const { idModule } = useParams(); // Obtener los ID del mueble y del módulo desde la URL
   const navigate = useNavigate();
   const [piecesCount, setPiecesCount] = useState(0);
   const [suppliesCount, setSuppliesCount] = useState(0);
@@ -25,6 +22,7 @@ function EditFurnitureSingleModuleComponent({
   const [moduleOriginalHeight, setModuleOriginalHeight] = useState(null);
   const [moduleOriginalLength, setModuleOriginalLength] = useState(null);
   const [moduleOriginalWidth, setModuleOriginalWidth] = useState(null);
+
   const {
     register,
     handleSubmit,
@@ -35,27 +33,12 @@ function EditFurnitureSingleModuleComponent({
   } = useForm();
 
   // Obtener datos del mueble por ID
-  const getFurnitureData = () => {
-    if (!idFurniture) {
-      console.error("idFurniture is undefined");
-      return;
-    }
-
-    getFurnitureById(idFurniture)
-      .then((furnitureData) => {
-        const furniture = furnitureData.data;
-
-        // Buscar el módulo con el ID `idModule`
-        const module = furniture.modules_furniture.find(
-          (mod) => mod._id === idModule
-        );
-        if (!module) {
-          console.error("Module not found");
-          return;
-        }
-
+  const getModuleData = () => {
+    getModuleAndPiecesByModuleId(idModule)
+      .then((moduleData) => {
+        const module = moduleData;
+        // console.log("module", module);
         setCurrentModule(module); // Guardar el módulo en el estado
-
         // Rellenar el formulario con los datos del módulo
         setModuleOriginalHeight(module.height || 0);
         setModuleOriginalLength(module.length || 0);
@@ -75,6 +58,7 @@ function EditFurnitureSingleModuleComponent({
         });
 
         module.pieces.forEach((piece, index) => {
+          setValue(`pieceId${index}`, piece._id);
           setValue(`namePiece${index}`, piece.name);
           setValue(`lengthPiece${index}`, piece.length.toString());
           setValue(`widthPiece${index}`, piece.width.toString());
@@ -93,11 +77,11 @@ function EditFurnitureSingleModuleComponent({
           setValue(`edgeWidth${index}`, piece.edgeWidth);
           setValue(`edgeWidthSides${index}`, piece.edgeWidthSides);
           setValue(`lacqueredEdge${index}`, piece.lacqueredEdge);
-          console.log("piece", `edgeLength${index}`, piece.edgeLength);
+          // console.log("piece", `edgeLength${index}`, piece.edgeLength);
         });
       })
       .catch((error) => {
-        console.error("Error fetching furniture data:", error);
+        console.error("Error fetching module data:", error);
       });
   };
 
@@ -128,7 +112,6 @@ function EditFurnitureSingleModuleComponent({
   const handleSuppliesCountChange = (e) => {
     setSuppliesCount(Number(e.target.value));
   };
-
   const onSubmit = async (data, event) => {
     event.preventDefault();
 
@@ -176,7 +159,6 @@ function EditFurnitureSingleModuleComponent({
           veneer = false;
           melamine = true;
         }
-
         //lo que viene de la pieza
         let lengthPiece = parseFloat(data[`lengthPiece${index}`]);
         let widthPiece = parseFloat(data[`widthPiece${index}`]);
@@ -248,6 +230,7 @@ function EditFurnitureSingleModuleComponent({
         }
         //  parseFloat(pieceLength.toFixed(2));
         return {
+          _id: data[`pieceId${index}`],
           name: data[`namePiece${index}`],
           length: parseFloat(pieceLength.toFixed(2)),
           width: parseFloat(pieceWidth.toFixed(2)),
@@ -266,25 +249,31 @@ function EditFurnitureSingleModuleComponent({
           edgeWidth: data[`edgeWidth${index}`],
           edgeWidthSides: data[`edgeWidthSides${index}`],
           lacqueredEdge: data[`lacqueredEdge${index}`],
+          module_id: idModule,
         };
       });
 
       const updatedModule = {
-        ...currentModule,
         name,
-        length,
-        width,
-        height,
+        length: parseFloat(length),
+        width: parseFloat(width),
+        height: parseFloat(height),
         category,
-        pieces_number: piecesNumber,
+        pieces_number: parseInt(piecesNumber, 10),
         supplies_module,
-        pieces,
       };
+      console.log("updatedModule", updatedModule);
+      console.log("pieces", pieces);
+      await updateModule(idModule, updatedModule);
+      pieces.forEach((piece) => {
+        updatePiece(piece._id, piece);
+      });
+      // await updatePiece(idModule, updatedModule);
+      // console.log("¡Módulo actualizado con éxito!", updatedModule);
 
-      await updateModuleOfFurniture(idFurniture, idModule, updatedModule);
-      console.log("¡Módulo actualizado con éxito!", updatedModule);
-      //le pasamos al padre para que desrenderice el componente
-      onModified();
+      // setTimeout(() => {
+      //   navigate(`/ver-muebles`);
+      // }, 500);
     } catch (error) {
       console.error(error);
     }
@@ -293,20 +282,25 @@ function EditFurnitureSingleModuleComponent({
   useEffect(() => {
     getAllTablesToSet();
     getAllSuppliesToSet();
-    getFurnitureData(); // Llamar a la función para obtener los datos del mueble y módulo
-    console.log(idModule);
-  }, [idModule]);
+    getModuleData(); // Llamar a la función para obtener los datos del mueble y módulo
+  }, []);
 
   return (
     <div className="m-4">
       <div className="flex gap-4">
         <h1 className="text-4xl">Editar Módulo</h1>
-        <button
-          onClick={notModified}
+        <Link
+          to="/"
           className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium"
         >
-          Cerrar
-        </button>
+          Volver al Inicio
+        </Link>
+        <Link
+          to={`/ver-modulos`}
+          className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium"
+        >
+          Volver a Módulos
+        </Link>
       </div>
       <form
         action=""
@@ -502,7 +496,7 @@ function EditFurnitureSingleModuleComponent({
             className="bg-blue-700 hover:bg-blue-500 text-white px-4 rounded-md"
             type="submit"
           >
-            Guardar
+            Enviar
           </button>
         </div>
       </form>
@@ -510,4 +504,4 @@ function EditFurnitureSingleModuleComponent({
   );
 }
 
-export { EditFurnitureSingleModuleComponent };
+export { EditModule };

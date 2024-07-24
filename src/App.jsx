@@ -11,10 +11,11 @@ import {
   CreateMainTable,
   Modules,
   CreateModule,
+  EditModule,
   Pieces,
   Supplies,
   CreateSupplie,
-  EditFurnitureSingleModule,
+  // EditFurnitureSingleModule,
   EditFurnitureMultipleModules,
   CreateBudget,
 } from "./index.js";
@@ -38,17 +39,18 @@ function App() {
         <Route path="/crear-placa" element={<CreateMainTable />} />
         <Route path="/ver-modulos" element={<Modules />} />
         <Route path="/crear-modulo" element={<CreateModule />} />
+        <Route path="/editar-modulo/:idModule" element={<EditModule />} />
         <Route path="/ver-modulos/:id/piezas" element={<Pieces />} />
-        <Route
-          path="/ver-muebles/:idForniture/ver-modulos/:idModule/edit"
+        {/* <Route
+          path="/ver-muebles/:idFurniture/ver-modulos/:idModule/edit"
           element={<EditFurnitureSingleModule />}
-        />
+        /> */}
         <Route
-          path="/editar-modulos-mueble/:idForniture"
+          path="/editar-modulos-mueble/:idFurniture"
           element={<EditFurnitureMultipleModules />}
         />
         <Route
-          path="/presupuestar-mueble/:idForniture"
+          path="/presupuestar-mueble/:idFurniture"
           element={<CreateBudget />}
         />
         <Route path="/ver-insumos" element={<Supplies />} />

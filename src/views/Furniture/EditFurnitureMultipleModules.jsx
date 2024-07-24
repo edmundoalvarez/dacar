@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   getFurnitureById,
   EditFurnitureSingleModuleComponent,
+  EditFurnitureComponent,
 } from "../../index.js";
 
 function EditFurnitureMultipleModules() {
@@ -13,10 +14,10 @@ function EditFurnitureMultipleModules() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const navigate = useNavigate();
-  const { idForniture } = useParams();
+  const { idFurniture } = useParams();
 
   const getFurnituresToSet = () => {
-    getFurnitureById(idForniture)
+    getFurnitureById(idFurniture)
       .then((furnituresData) => {
         setSingleFurniture(furnituresData.data);
       })
@@ -46,6 +47,11 @@ function EditFurnitureMultipleModules() {
     setModuleToEdit(module);
   };
 
+  // Handle editing a furniture
+  const handleEditFurniture = (singleFurniture) => {
+    setFurnitureToEdit(singleFurniture);
+  };
+
   //Cuando el modulo es modificado y se desrenderice
   const handleModification = () => {
     setModuleToEdit(null);
@@ -53,6 +59,7 @@ function EditFurnitureMultipleModules() {
   };
   const closeComponentEdit = () => {
     setModuleToEdit(null);
+    setFurnitureToEdit(null);
   };
 
   return (
@@ -148,11 +155,19 @@ function EditFurnitureMultipleModules() {
                           </button>
                           <button
                             onClick={() =>
+                              handleEditFurniture(singleFurniture._id)
+                            }
+                            className="ml-2 bg-lightblue text-white py-1 px-2 rounded"
+                          >
+                            Editar Mueble
+                          </button>
+                          <button
+                            onClick={() =>
                               handleEditModule(singleFurniture._id, module._id)
                             }
                             className="ml-2 bg-orange text-white py-1 px-2 rounded"
                           >
-                            Editar
+                            Editar Módulos
                           </button>
                         </div>
                       </div>
@@ -319,8 +334,16 @@ function EditFurnitureMultipleModules() {
 
       {moduleToEdit && (
         <EditFurnitureSingleModuleComponent
-          idForniture={furnitureToEdit}
+          idFurniture={furnitureToEdit}
           idModule={moduleToEdit}
+          onModified={handleModification}
+          notModified={closeComponentEdit}
+        />
+      )}
+
+      {furnitureToEdit && !moduleToEdit && (
+        <EditFurnitureComponent
+          idFurniture={furnitureToEdit}
           onModified={handleModification}
           notModified={closeComponentEdit}
         />

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+/* import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import {
@@ -11,7 +11,7 @@ import {
 } from "../../index.js";
 
 function EditFurnitureSingleModule() {
-  const { idForniture, idModule } = useParams(); // Obtener los ID del mueble y del módulo desde la URL
+  const { idFurniture, idModule } = useParams(); // Obtener los ID del mueble y del módulo desde la URL
   const navigate = useNavigate();
   const [piecesCount, setPiecesCount] = useState(0);
   const [suppliesCount, setSuppliesCount] = useState(0);
@@ -30,12 +30,12 @@ function EditFurnitureSingleModule() {
 
   // Obtener datos del mueble por ID
   const getFurnitureData = () => {
-    if (!idForniture) {
-      console.error("idForniture is undefined");
+    if (!idFurniture) {
+      console.error("idFurniture is undefined");
       return;
     }
 
-    getFurnitureById(idForniture)
+    getFurnitureById(idFurniture)
       .then((furnitureData) => {
         const furniture = furnitureData.data;
 
@@ -184,7 +184,7 @@ function EditFurnitureSingleModule() {
         pieces,
       };
 
-      await updateModuleOfFurniture(idForniture, idModule, updatedModule);
+      await updateModuleOfFurniture(idFurniture, idModule, updatedModule);
       console.log("¡Módulo actualizado con éxito!", updatedModule);
 
       setTimeout(() => {
@@ -388,3 +388,4 @@ function EditFurnitureSingleModule() {
 }
 
 export { EditFurnitureSingleModule };
+ */

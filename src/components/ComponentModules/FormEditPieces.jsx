@@ -74,6 +74,17 @@ function FormEditPieces({
   return (
     <div className="flex flex-wrap gap-x-4 w-full">
       <div className="flex flex-col w-2/12 my-2">
+        {/* input hidden */}
+        <input
+          className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+          type="hidden"
+          name="pieceId"
+          id="pieceId"
+          defaultValue={piece?._id}
+          {...register("pieceId", {
+            required: "El campo es obligatorio",
+          })}
+        />
         <label htmlFor={`namePiece${index}`}>Nombre de la pieza</label>
         <input
           className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
@@ -477,9 +488,9 @@ FormEditPieces.propTypes = {
     melamine: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     melamineLacquered: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     pantographed: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-    edgeLength: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    edgeLength: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     edgeLengthSides: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    edgeWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    edgeWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     edgeWidthSides: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     lacqueredEdge: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   }),

@@ -10,7 +10,7 @@ import {
 } from "../../index.js";
 
 function CreateBudget() {
-  const { idForniture } = useParams();
+  const { idFurniture } = useParams();
   const [singleFurniture, setSingleFurniture] = useState(null);
   const [countMaterial, setCountMaterial] = useState(0);
   const [tables, setTables] = useState([]);
@@ -18,6 +18,7 @@ function CreateBudget() {
   const [allClients, setAllClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredClients, setFilteredClients] = useState([]);
+  const [furnitureSupplies, setFurnitureSupplies] = useState([]);
 
   const {
     register,
@@ -27,10 +28,10 @@ function CreateBudget() {
   } = useForm();
 
   const getFurnituresToSet = () => {
-    getFurnitureById(idForniture)
+    getFurnitureById(idFurniture)
       .then((furnituresData) => {
         setSingleFurniture(furnituresData.data);
-        // console.log(furnituresData.data);
+        console.log(furnituresData.data);
       })
       .catch((error) => {
         console.error("Este es el error:", error);
@@ -64,7 +65,7 @@ function CreateBudget() {
   useEffect(() => {
     getFurnituresToSet();
     getAllTablesToSet();
-  }, [idForniture]);
+  }, [idFurniture]);
 
   //filtro de clientes
   useEffect(() => {
@@ -295,31 +296,70 @@ function CreateBudget() {
             {singleFurniture.category}
           </p>
         </div>
-        <h2 className="text-2xl font-semibold mb-2">Acabados del Mueble</h2>
-        <p className="mb-1">
-          <span className="font-bold">Enchapado (lustrado) en m2:</span>{" "}
-          {totalVeneerPolished / 100} m<sup>2</sup>
-        </p>
-        <p className="mb-1">
-          <span className="font-bold">Enchapado (laqueado) en m2:</span>{" "}
-          {totalVeneerLacquered / 100} m<sup>2</sup>
-        </p>
-        <p className="mb-1">
-          <span className="font-bold">Laqueado en m2:</span>{" "}
-          {totalLacquered / 100} m<sup>2</sup>
-        </p>
-        <p className="mb-1">
-          <span className="font-bold">Pantografiado en m2:</span>{" "}
-          {totalPantographed / 100} m<sup>2</sup>
-        </p>
-        <p className="mb-1">
-          <span className="font-bold">Filo total (laqueado):</span>{" "}
-          {(totalLacqueredEdgeLength / 100).toFixed(2)} m
-        </p>
-        <p className="mb-1">
-          <span className="font-bold">Filo total (sin laquear):</span>{" "}
-          {(totalEdgeLength / 100).toFixed(2)} m
-        </p>
+        <div className="flex gap-16">
+          <div className="w-1/3">
+            <h2 className="text-2xl font-semibold mb-2">Acabados del Mueble</h2>
+            <p className="mb-1">
+              <span className="font-bold">Enchapado (lustrado) en m2:</span>{" "}
+              {totalVeneerPolished / 100} m<sup>2</sup>
+            </p>
+            <p className="mb-1">
+              <span className="font-bold">Enchapado (laqueado) en m2:</span>{" "}
+              {totalVeneerLacquered / 100} m<sup>2</sup>
+            </p>
+            <p className="mb-1">
+              <span className="font-bold">Laqueado en m2:</span>{" "}
+              {totalLacquered / 100} m<sup>2</sup>
+            </p>
+            <p className="mb-1">
+              <span className="font-bold">Pantografiado en m2:</span>{" "}
+              {totalPantographed / 100} m<sup>2</sup>
+            </p>
+            <p className="mb-1">
+              <span className="font-bold">Filo total (laqueado):</span>{" "}
+              {(totalLacqueredEdgeLength / 100).toFixed(2)} m
+            </p>
+            <p className="mb-1">
+              <span className="font-bold">Filo total (sin laquear):</span>{" "}
+              {(totalEdgeLength / 100).toFixed(2)} m
+            </p>
+          </div>
+
+          <div className="w-2/3">
+            <h2 className="text-2xl font-semibold mb-2">
+              Insumos totales del mueble
+            </h2>
+            <div className="flex flex-wrap -mx-2">
+              {sortedModules &&
+                sortedModules.map((module, moduleIndex) => (
+                  <div
+                    key={moduleIndex}
+                    className="w-full sm:w-1/2 lg:w-1/3 px-2 mb-4"
+                  >
+                    <div className=" p-4 rounded shadow">
+                      <h4>{module.name}</h4>
+                      {module.supplies_module.map((supply, supplyIndex) => (
+                        <div key={supplyIndex} className="mb-2">
+                          <p>
+                            <span className="font-bold">Nombre:</span>{" "}
+                            {supply.supplie_name}
+                          </p>
+                          <p>
+                            <span className="font-bold">Cantidad:</span>{" "}
+                            {supply.supplie_qty}
+                          </p>
+                          <p>
+                            <span className="font-bold">Largo:</span>{" "}
+                            {supply.supplie_length}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
       </div>
       {/* cargar cantidad de placas a usar */}
       <div className="p-4 bg-gray-300 rounded-md shadow-md">
