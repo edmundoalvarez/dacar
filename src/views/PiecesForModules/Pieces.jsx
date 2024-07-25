@@ -196,13 +196,13 @@ function Pieces() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex justify-center items-center gap-x-4">
-                      <Link
+                      {/*    <Link
                         to={`
                         `}
                         className="text-white bg-orange rounded-md px-2 py-1 mb-2"
                       >
                         Editar
-                      </Link>
+                      </Link> */}
                       <button
                         className="text-white bg-red-500 rounded-md px-2 py-1 mb-2"
                         onClick={() => handleDeletePiece(piece._id)}

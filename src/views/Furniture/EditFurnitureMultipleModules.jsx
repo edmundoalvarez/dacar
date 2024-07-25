@@ -67,7 +67,6 @@ function EditFurnitureMultipleModules() {
       <div className="m-4">
         <div className="flex gap-4">
           <h1 className="text-4xl">Mueble: {singleFurniture.name}</h1>
-
           <Link
             to="/ver-muebles"
             className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
@@ -121,7 +120,14 @@ function EditFurnitureMultipleModules() {
               <tr key={singleFurniture._id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {singleFurniture.name}
+                  <button
+                    onClick={() => handleEditFurniture(singleFurniture._id)}
+                    className="ml-2 bg-lightblue text-white py-1 px-2 rounded"
+                  >
+                    Editar Mueble
+                  </button>
                 </td>
+
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {singleFurniture.length}
                 </td>
@@ -153,14 +159,7 @@ function EditFurnitureMultipleModules() {
                           >
                             Ver
                           </button>
-                          <button
-                            onClick={() =>
-                              handleEditFurniture(singleFurniture._id)
-                            }
-                            className="ml-2 bg-lightblue text-white py-1 px-2 rounded"
-                          >
-                            Editar Mueble
-                          </button>
+
                           <button
                             onClick={() =>
                               handleEditModule(singleFurniture._id, module._id)
