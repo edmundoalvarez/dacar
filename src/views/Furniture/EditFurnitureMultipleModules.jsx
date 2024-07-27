@@ -4,6 +4,7 @@ import {
   getFurnitureById,
   EditFurnitureSingleModuleComponent,
   EditFurnitureComponent,
+  deleteModuleOnFurniture,
 } from "../../index.js";
 
 function EditFurnitureMultipleModules() {
@@ -12,6 +13,9 @@ function EditFurnitureMultipleModules() {
   const [furnitureToEdit, setFurnitureToEdit] = useState(null);
   const [moduleToEdit, setModuleToEdit] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  //eliminar modulo
+  const [openModalToDeleteModule, setOpenModalToDeleteModule] = useState(false);
+  const [moduleToDelete, setModuleToDelete] = useState(null);
 
   const navigate = useNavigate();
   const { idFurniture } = useParams();
@@ -61,6 +65,29 @@ function EditFurnitureMultipleModules() {
     setModuleToEdit(null);
     setFurnitureToEdit(null);
   };
+
+  //eliminar modulo
+  function handleDeleteModule(furnitureId, moduleId) {
+    setOpenModalToDeleteModule(true);
+    setModuleToDelete({ furnitureId, moduleId });
+  }
+  function deleteSingleModule(furnitureIdmoduleId) {
+    // console.log("furnitureIdmoduleId", furnitureIdmoduleId);
+    let furnitureId = furnitureIdmoduleId.furnitureId;
+    let moduleId = furnitureIdmoduleId.moduleId;
+    deleteModuleOnFurniture(furnitureId, moduleId)
+      .then((res) => {
+        getFurnituresToSet();
+        console.log(res.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    // Cerrar la modal después de eliminar el modulo
+    setOpenModalToDeleteModule(false);
+    setModuleToDelete(null);
+  }
 
   return (
     <>
@@ -168,6 +195,17 @@ function EditFurnitureMultipleModules() {
                           >
                             Editar Módulos
                           </button>
+                          <button
+                            onClick={() =>
+                              handleDeleteModule(
+                                singleFurniture._id,
+                                module._id
+                              )
+                            }
+                            className="ml-2 bg-red-500 text-white py-1 px-2 rounded"
+                          >
+                            Eliminar Modulo
+                          </button>
                         </div>
                       </div>
                     ))
@@ -180,7 +218,31 @@ function EditFurnitureMultipleModules() {
           </table>
         </div>
       </div>
-
+      {/* modal de desea eliminar el modulo */}
+      {openModalToDeleteModule && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white p-10 rounded-lg shadow-lg flex justify-center items-center flex-col">
+            <h2 className="text-xl mb-4">
+              ¿Seguro que desea eliminar la pieza?
+            </h2>
+            <div className="flex gap-4">
+              <button
+                className="bg-red-500 text-white py-2 px-4 rounded"
+                onClick={() => deleteSingleModule(moduleToDelete)}
+              >
+                Eliminar
+              </button>
+              <button
+                className="bg-gray-300 text-black py-2 px-4 rounded"
+                onClick={() => setOpenModalToDeleteModule(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal de ver el moulo */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white p-10 rounded-lg shadow-lg flex flex-col max-h-screen overflow-y-auto">

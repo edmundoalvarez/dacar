@@ -272,9 +272,9 @@ function EditFurnitureSingleModuleComponent({
       const updatedModule = {
         ...currentModule,
         name,
-        length,
-        width,
-        height,
+        length: parseInt(length),
+        width: parseInt(width),
+        height: parseInt(height),
         category,
         pieces_number: piecesNumber,
         supplies_module,

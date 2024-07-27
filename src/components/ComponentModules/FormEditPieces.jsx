@@ -15,7 +15,7 @@ function FormEditPieces({
   const [material, setMaterial] = useState("");
 
   useEffect(() => {
-    console.log('Pieza: ', piece);
+    console.log("Pieza: ", piece);
     if (piece) {
       if (piece.edgeLength || piece.edgeWidth) {
         setShowEdgePiece(true);
@@ -82,9 +82,7 @@ function FormEditPieces({
           name="pieceId"
           id="pieceId"
           defaultValue={piece?._id}
-          {...register("pieceId", {
-            required: "El campo es obligatorio",
-          })}
+          {...register("pieceId")}
         />
         <label htmlFor={`namePiece${index}`}>Nombre de la pieza</label>
         <input

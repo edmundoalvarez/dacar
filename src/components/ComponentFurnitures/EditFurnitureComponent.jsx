@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import {
-  createFurniture,
   getAllModules,
   getFurnitureById,
   getPiecesByModuleId,
+  updateFurniture,
 } from "../../index.js";
 
 function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
+  const [originalFurnitureModules, setOriginalFurnitureModules] = useState([]);
   const [modules, setModules] = useState([]);
   const [selectedModules, setSelectedModules] = useState([]);
   const [formData, setFormData] = useState({});
@@ -31,17 +32,12 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
 
     getFurnitureById(idFurniture).then((furnitureData) => {
       const furniture = furnitureData.data;
-      console.log("furniture", furniture);
-
-      setValue("name", furnitureData.data.name);
-      setValue("height", furnitureData.data.height);
-      setValue("length", furnitureData.data.length);
-      setValue("width", furnitureData.data.width);
-      setValue("category", furnitureData.data.category);
-      furniture.modules_furniture.forEach((element) => {
-        setValue(`module-${element._id}`, true); // Establece los checkboxes marcados
-        setSelectedModuleIds((prev) => [...prev, element._id]);
-      });
+      setOriginalFurnitureModules(furniture.modules_furniture);
+      setValue("name", furniture.name);
+      setValue("height", furniture.height);
+      setValue("length", furniture.length);
+      setValue("width", furniture.width);
+      setValue("category", furniture.category);
     });
   };
 
@@ -60,7 +56,7 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
     getAllModules()
       .then((modulesData) => {
         setModules(modulesData.data);
-        console.log(modulesData.data);
+        // console.log(modulesData.data);
       })
       .catch((error) => {
         console.error(error);
@@ -110,37 +106,52 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
 
   const onSubmit = async (data, event) => {
     event.preventDefault();
-
+    console.log("Data del form", data);
+    console.log("selectedModules", selectedModules);
+    console.log("moduleQuantities", moduleQuantities);
+    console.log("originalFurnitureModules", originalFurnitureModules);
     try {
       const editedModules = await Promise.all(
         selectedModules.flatMap(async (module) => {
           const moduleId = module._id;
           const quantity = moduleQuantities[moduleId] || 1;
           const modulePieces = await getPiecesByModuleId(moduleId);
-          const isEdited =
-            JSON.stringify(formData[moduleId]) !==
-            JSON.stringify(originalData[moduleId]);
 
-          const newModules = Array.from({ length: quantity }, (_, i) => ({
-            ...module,
-            ...formData[moduleId],
-            _id: `${moduleId}-${i + 1}`, // Generar un nuevo ID único
-            name: isEdited
-              ? `${formData[moduleId].name} (editado ${i + 1})`
-              : `${formData[moduleId].name} (${i + 1})`,
-            pieces: modulePieces,
-          }));
+          const matchingModules = originalFurnitureModules.filter(
+            (originalModule) => originalModule._id.startsWith(moduleId) // Coincide por el prefijo
+          );
+
+          const newModules = Array.from({ length: quantity }, (_, i) => {
+            const highestSuffix = matchingModules.reduce((max, mod) => {
+              const suffix = parseInt(mod._id.split("-").pop(), 10);
+              return suffix > max ? suffix : max;
+            }, 0);
+
+            const newId = matchingModules.length
+              ? `${moduleId}-${highestSuffix + i + 1}`
+              : `${moduleId}-${i + 1}`;
+
+            return {
+              ...module,
+              ...formData[moduleId],
+              _id: newId,
+              name: `${formData[moduleId].name} (${highestSuffix + i + 1})`,
+              pieces: modulePieces,
+            };
+          });
 
           return newModules;
         })
       ).then((modules) => modules.flat());
-
-      await createFurniture({
+      console.log("data", data, "editedModules", editedModules);
+      const allModules = [...originalFurnitureModules, ...editedModules];
+      console.log("allModules", allModules);
+      await updateFurniture(idFurniture, {
         ...data,
-        modules_furniture: editedModules,
+        modules_furniture: allModules,
       }).then((res) => {
         const furnitureId = res.data._id;
-        console.log("¡Creaste el mueble con éxito!");
+        console.log("¡Mueble actualizado con éxito!");
         setTimeout(() => {
           navigate(`/editar-modulos-mueble/${furnitureId}`);
         }, 100);
@@ -251,7 +262,7 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
           )}
         </div>
         <div className="flex flex-col w-11/12 my-2">
-          <label htmlFor="modules">Módulos</label>
+          <label htmlFor="modules">Agregar Módulos</label>
           <div className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12 overflow-y-auto max-h-40">
             {modules.map((module) => (
               <div key={module._id} className="flex items-center p-2">
