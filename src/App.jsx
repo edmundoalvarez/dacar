@@ -6,17 +6,25 @@ import {
   NotFoundPage,
   ProtectedRoute,
   Furniture,
+  //Furniture
   CreateFurniture,
+  //Piece
+  Pieces,
+  // Modulos
   Modules,
   CreateModule,
   EditModule,
-  Pieces,
+  EditFurnitureMultipleModules,
+  //Insumos
   Supplies,
   CreateSupplie,
-  // EditFurnitureSingleModule,
-  EditFurnitureMultipleModules,
-  CreateBudget,
   EditSupplie,
+  //Servicios
+  ServicesFurniture,
+  CreateServicesFurniture,
+  EditService,
+  //Presupuesto
+  CreateBudget,
 } from "./index.js";
 
 function App() {
@@ -53,6 +61,10 @@ function App() {
         <Route path="/ver-insumos" element={<Supplies />} />
         <Route path="/crear-insumo" element={<CreateSupplie />} />
         <Route path="/editar-insumo/:idSupplie" element={<EditSupplie />} />
+        {/* servicios */}
+        <Route path="/ver-servicios" element={<ServicesFurniture />} />
+        <Route path="/crear-servicio" element={<CreateServicesFurniture />} />
+        <Route path="/editar-servicio/:idService" element={<EditService />} />
       </Routes>
       {/*     {<Footer />} */}
     </>

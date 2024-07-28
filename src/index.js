@@ -31,6 +31,13 @@ export { deleteSupplie } from "./services/Supplies/deleteSupplie.js";
 export { getSupplieById } from "./services/Supplies/getSupplieById.js";
 export { updateSupplie } from "./services/Supplies/updateSupplie.js";
 
+//SERVICES FURNITURE
+export { getAllServices } from "./services/ServicesFurniture/getAllServices.js";
+export { createService } from "./services/ServicesFurniture/createService.js";
+export { updateService } from "./services/ServicesFurniture/updateService.js";
+export { getServiceById } from "./services/ServicesFurniture/getServiceById.js";
+export { deleteService } from "./services/ServicesFurniture/deleteService.js";
+
 //CLIENTS
 export { createClient } from "./services/Clients/createClient.js";
 export { getAllClients } from "./services/Clients/getAllClients.js";
@@ -70,6 +77,11 @@ export { Pieces } from "./views/PiecesForModules/Pieces";
 export { Supplies } from "./views/Supplies/Supplies";
 export { CreateSupplie } from "./views/Supplies/CreateSupplie";
 export { EditSupplie } from "./views/Supplies/EditSupplie";
+
+//SERVICES FURNITURE
+export { ServicesFurniture } from "./views/ServicesFurniture/ServicesFurniture";
+export { CreateServicesFurniture } from "./views/ServicesFurniture/CreateServicesFurniture";
+export { EditService } from "./views/ServicesFurniture/EditService";
 
 //BUDGETS
 export { CreateBudget } from "./views/Budgets/CreateBudget";

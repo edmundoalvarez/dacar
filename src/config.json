@@ -2,6 +2,7 @@
   "apiUsers": "http://localhost:3000/users",
   "apiSuppliers": "http://localhost:3000/suppliers",
   "apiSupplies": "http://localhost:3000/supplies",
+  "apiServices": "http://localhost:3000/services",
   "apiFurnitures": "http://localhost:3000/furnitures",
   "apiModules": "http://localhost:3000/modules",
   "apiPieces": "http://localhost:3000/pieces",
