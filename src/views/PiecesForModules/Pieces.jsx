@@ -1,21 +1,29 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getAllPieces, deletePiece, getModuleById } from "../../index.js";
+import { useForm } from "react-hook-form";
+import {
+  getAllPieces,
+  getAllTables,
+  deletePiece,
+  getModuleById,
+  FormCreatePieces,
+  createPieces,
+} from "../../index.js";
 
 function Pieces() {
-  const { id } = useParams();
+  const { moduleId } = useParams();
   const [pieces, setPieces] = useState([]);
   const [module, setModule] = useState([]);
-
+  const [tables, setTables] = useState([]);
+  const [showAddPiece, setShowAddPiece] = useState(false);
   const getAllPiecesToSet = () => {
     getAllPieces()
       .then((piecesData) => {
-        // console.log(piecesData);
         const filteredPieces = piecesData.data.filter(
-          (piece) => piece.module_id === id
+          (piece) => piece.module_id === moduleId
         );
         setPieces(filteredPieces);
-        console.log(filteredPieces);
+        // console.log(filteredPieces);
       })
       .catch((error) => {
         console.error(error);
@@ -23,15 +31,34 @@ function Pieces() {
   };
 
   const getModuleToSet = () => {
-    getModuleById(id)
+    getModuleById(moduleId)
       .then((moduleData) => {
         setModule(moduleData.data);
-        console.log(moduleData.data);
+        // console.log(moduleData.data);
       })
       .catch((error) => {
         console.error(error);
       });
   };
+  // TRAER PLACAS: para el formulario de las piezas, se le pasar por prop
+  const getAllTablesToSet = () => {
+    getAllTables()
+      .then((tablesData) => {
+        setTables(tablesData.data);
+        // console.log(tablesData.data);
+      })
+      .catch((error) => {
+        console.error("Este es el error:", error);
+      });
+  };
+  // FORMULARIO PARA CREAR
+  const {
+    register,
+    handleSubmit,
+    resetField,
+    reset,
+    formState: { errors },
+  } = useForm();
   //Eliminar pieza
   const [openModalToDelete, setOpenModalToDelete] = useState(false);
   const [pieceToDelete, setPieceToDelete] = useState(null);
@@ -44,7 +71,7 @@ function Pieces() {
     deletePiece(pieceId)
       .then((res) => {
         getAllPiecesToSet();
-        console.log(res.data);
+        // console.log(res.data);
       })
       .catch((error) => {
         console.error(error);
@@ -58,11 +85,65 @@ function Pieces() {
   //traer las placas
   useEffect(() => {
     getAllPiecesToSet();
+    getAllTablesToSet();
   }, []);
 
   useEffect(() => {
     getModuleToSet();
   }, []);
+
+  //ON SUBMIT PARA CREAR PIEZA A AGREGAR
+  const onSubmit = async (data, event) => {
+    event.preventDefault();
+    try {
+      let lacqueredPiece;
+      let veneer;
+      let melamine;
+      if (data[`finishing1`] === "lacqueredPiece") {
+        lacqueredPiece = true;
+        veneer = false;
+        melamine = false;
+      }
+      if (data[`finishing1`] === "veneer") {
+        lacqueredPiece = false;
+        veneer = true;
+        melamine = false;
+      }
+      if (data[`finishing1`] === "melamine") {
+        lacqueredPiece = false;
+        veneer = false;
+        melamine = true;
+      }
+      const pieceData = {
+        // Mapeo de los nombres de los campos del formulario a los nombres esperados en la base de datos
+        name: data[`namePiece1`],
+        length: data[`lengthPiece1`],
+        width: data[`widthPiece1`],
+        orientation: data[`orientation1`],
+        category: data[`categoryPiece1`],
+        material: data[`materialPiece1`],
+        lacqueredPiece: lacqueredPiece,
+        lacqueredPieceSides: data[`lacqueredPieceSides1`],
+        veneer: veneer,
+        veneerFinishing: data[`veneerOption1`],
+        melamine: melamine,
+        melamineLacquered: data[`melamineLacquered1`],
+        pantographed: data[`pantographed1`],
+        edgeLength: data[`edgeLength1`],
+        edgeLengthSides: data[`edgeLengthSides1`],
+        edgeWidth: data[`edgeWidth1`],
+        edgeWidthSides: data[`edgeWidthSides1`],
+        lacqueredEdge: data[`lacqueredEdge1`],
+        moduleId, // Asigna el ID del módulo a cada pieza
+      };
+      await createPieces(pieceData);
+      setShowAddPiece(false);
+      getAllPiecesToSet();
+      reset();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <>
@@ -70,12 +151,58 @@ function Pieces() {
         <div className="flex gap-4">
           <h1 className="text-4xl">Piezas del módulo: {module.name}</h1>
           <Link
+            to={`/editar-modulo/${module._id}`}
+            className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium"
+          >
+            Volver al módulo
+          </Link>
+          <Link
             to="/ver-modulos"
             className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium"
           >
-            Volver a los Módulos
+            Ir los Módulos
           </Link>
+          <button
+            className="bg-blue-600 py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
+            onClick={() => setShowAddPiece(true)}
+          >
+            Agregar pieza
+          </button>
         </div>
+        {/* crear pieza */}
+        {showAddPiece && (
+          <>
+            <form
+              action=""
+              className="flex flex-wrap w-full px-6"
+              onSubmit={handleSubmit(onSubmit)}
+            >
+              <FormCreatePieces
+                key={`FormCreatePiecess${1}`}
+                register={register}
+                index={1}
+                errors={errors}
+                tables={tables}
+                resetField={resetField}
+              ></FormCreatePieces>
+              <div className="flex gap-6">
+                <button
+                  className="bg-orange hover:bg-amber-500 text-white py-1 px-2 rounded"
+                  type="submit"
+                >
+                  Agregar pieza
+                </button>
+                <button
+                  className="bg-dark py-2 px-4 rounded hover:bg-emerald-600 text-light font-medium "
+                  onClick={() => setShowAddPiece(false)}
+                  type="button"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </>
+        )}
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full divide-y divide-gray-700">
             <thead className="bg-gray-700">

@@ -150,11 +150,8 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
         ...data,
         modules_furniture: allModules,
       }).then((res) => {
-        const furnitureId = res.data._id;
-        console.log("¡Mueble actualizado con éxito!");
-        setTimeout(() => {
-          navigate(`/editar-modulos-mueble/${furnitureId}`);
-        }, 100);
+        // console.log("¡Mueble actualizado con éxito!");
+        onModified();
       });
     } catch (error) {
       console.error(error);
@@ -170,19 +167,12 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
     <div className="m-4">
       <div className="flex gap-4">
         <h1 className="text-4xl">Editar Mueble</h1>
-
-        <Link
-          to="/"
-          className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
+        <button
+          onClick={notModified}
+          className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium"
         >
-          Volver al Inicio
-        </Link>
-        <Link
-          to={`/ver-muebles`}
-          className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
-        >
-          Ver muebles
-        </Link>
+          Cerrar
+        </button>
       </div>
       <form action="" className="w-1/2" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col w-11/12 my-2">

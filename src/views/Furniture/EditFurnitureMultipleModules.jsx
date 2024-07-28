@@ -59,6 +59,7 @@ function EditFurnitureMultipleModules() {
   //Cuando el modulo es modificado y se desrenderice
   const handleModification = () => {
     setModuleToEdit(null);
+    setFurnitureToEdit(null);
     getFurnituresToSet();
   };
   const closeComponentEdit = () => {
@@ -139,7 +140,7 @@ function EditFurnitureMultipleModules() {
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Módulos
+                  Editar Mueble
                 </th>
               </tr>
             </thead>
@@ -147,12 +148,6 @@ function EditFurnitureMultipleModules() {
               <tr key={singleFurniture._id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {singleFurniture.name}
-                  <button
-                    onClick={() => handleEditFurniture(singleFurniture._id)}
-                    className="ml-2 bg-lightblue text-white py-1 px-2 rounded"
-                  >
-                    Editar Mueble
-                  </button>
                 </td>
 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -167,55 +162,64 @@ function EditFurnitureMultipleModules() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {singleFurniture.category}
                 </td>
-                <td className="px-6 whitespace-nowrap text-sm text-gray-500 flex flex-col gap-0">
-                  {Array.isArray(singleFurniture.modules_furniture) ? (
-                    singleFurniture.modules_furniture.map((module, index) => (
-                      <div
-                        key={module._id || index}
-                        className={`flex flex-col items-start py-4 ${
-                          index < singleFurniture.modules_furniture.length - 1
-                            ? "border-b border-gray-200"
-                            : ""
-                        }`}
-                      >
-                        <div className="flex items-center">
-                          <p className="w-[140px]">{module.name}</p>
-                          <button
-                            onClick={() => handleOpenModal(module)}
-                            className="ml-2 bg-blue-500 text-white py-1 px-2 rounded"
-                          >
-                            Ver
-                          </button>
-
-                          <button
-                            onClick={() =>
-                              handleEditModule(singleFurniture._id, module._id)
-                            }
-                            className="ml-2 bg-orange text-white py-1 px-2 rounded"
-                          >
-                            Editar Módulos
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleDeleteModule(
-                                singleFurniture._id,
-                                module._id
-                              )
-                            }
-                            className="ml-2 bg-red-500 text-white py-1 px-2 rounded"
-                          >
-                            Eliminar Modulo
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p>Sin Módulos</p>
-                  )}
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <button
+                    onClick={() => handleEditFurniture(singleFurniture._id)}
+                    className="ml-2 bg-lightblue text-white py-1 px-2 rounded"
+                  >
+                    Editar
+                  </button>
                 </td>
               </tr>
             </tbody>
           </table>
+          {/* modulos */}
+
+          <div className="px-6 whitespace-nowrap text-sm text-gray-500">
+            {Array.isArray(singleFurniture.modules_furniture) ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {singleFurniture.modules_furniture
+                  .slice()
+                  .sort((a, b) => a.name.localeCompare(b.name)) // Ordena alfabéticamente
+                  .map((module, index) => (
+                    <div
+                      key={module._id || index}
+                      className="border border-gray-200 rounded-lg p-4 flex flex-col items-start"
+                    >
+                      <p className="mb-2 font-bold">{module.name}</p>
+                      <div className="mt-auto flex gap-2">
+                        <button
+                          onClick={() => handleOpenModal(module)}
+                          className="bg-blue-500 text-white py-1 px-2 rounded"
+                        >
+                          Ver
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleEditModule(singleFurniture._id, module._id)
+                          }
+                          className="bg-orange text-white py-1 px-2 rounded"
+                        >
+                          Editar Módulo
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleDeleteModule(singleFurniture._id, module._id)
+                          }
+                          className="bg-red-500 text-white py-1 px-2 rounded"
+                        >
+                          Eliminar Módulo
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            ) : (
+              <p>Sin Módulos</p>
+            )}
+          </div>
+
+          {/* fin modulos */}
         </div>
       </div>
       {/* modal de desea eliminar el modulo */}

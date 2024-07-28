@@ -262,18 +262,16 @@ function EditModule() {
         pieces_number: parseInt(piecesNumber, 10),
         supplies_module,
       };
-      console.log("updatedModule", updatedModule);
-      console.log("pieces", pieces);
+      // console.log("updatedModule", updatedModule);
+      // console.log("pieces", pieces);
       await updateModule(idModule, updatedModule);
       pieces.forEach((piece) => {
         updatePiece(piece._id, piece);
       });
-      // await updatePiece(idModule, updatedModule);
-      // console.log("¡Módulo actualizado con éxito!", updatedModule);
 
-      // setTimeout(() => {
-      //   navigate(`/ver-muebles`);
-      // }, 500);
+      setTimeout(() => {
+        navigate(`/ver-modulos`);
+      }, 500);
     } catch (error) {
       console.error(error);
     }
@@ -300,6 +298,12 @@ function EditModule() {
           className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium"
         >
           Volver a Módulos
+        </Link>
+        <Link
+          to={`/ver-modulos/${idModule}/piezas`}
+          className="bg-blue-600 py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
+        >
+          Agregar o eliminar piezas
         </Link>
       </div>
       <form

@@ -8,9 +8,6 @@ export { updateModuleOfFurniture } from "./services/Furniture/updateModuleOfFurn
 export { deleteModuleOnFurniture } from "./services/Furniture/deleteModuleOnFurniture.js";
 export { updateFurniture } from "./services/Furniture/updateFurniture.js";
 
-//MAIN TABLE
-export { createMainTable } from "./services/mainTable/createMainTable.js";
-// export { getAllTables } from "./services/mainTable/getAllTables.js";
 //MODULES
 export { createModule } from "./services/ModulesForFurniture/createModule.js";
 export { getAllModules } from "./services/ModulesForFurniture/getAllModules.js";
@@ -30,6 +27,9 @@ export { createSupplies } from "./services/Supplies/createSupplies.js";
 export { getAllSupplies } from "./services/Supplies/getAllSupplies.js";
 export { getAllTables } from "./services/Supplies/getAllTables.js";
 export { getAllSuppliesExceptTables } from "./services/Supplies/getAllSuppliesExceptTables.js";
+export { deleteSupplie } from "./services/Supplies/deleteSupplie.js";
+export { getSupplieById } from "./services/Supplies/getSupplieById.js";
+export { updateSupplie } from "./services/Supplies/updateSupplie.js";
 
 //CLIENTS
 export { createClient } from "./services/Clients/createClient.js";
@@ -60,9 +60,6 @@ export { CreateFurniture } from "./views/Furniture/CreateFurniture";
 // export { EditFurnitureSingleModule } from "./views/Furniture/EditFurnitureSingleModule.jsx";
 export { EditFurnitureMultipleModules } from "./views/Furniture/EditFurnitureMultipleModules";
 
-//MAIN TABLE
-export { MainTable } from "./views/MainTable/MainTable";
-export { CreateMainTable } from "./views/MainTable/CreateMainTable";
 //MODULES
 export { Modules } from "./views/ModulesForFurniture/Modules";
 export { CreateModule } from "./views/ModulesForFurniture/CreateModule";
@@ -72,6 +69,7 @@ export { Pieces } from "./views/PiecesForModules/Pieces";
 //SUPPLIES
 export { Supplies } from "./views/Supplies/Supplies";
 export { CreateSupplie } from "./views/Supplies/CreateSupplie";
+export { EditSupplie } from "./views/Supplies/EditSupplie";
 
 //BUDGETS
 export { CreateBudget } from "./views/Budgets/CreateBudget";
