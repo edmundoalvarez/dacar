@@ -13,6 +13,7 @@ export { createModule } from "./services/ModulesForFurniture/createModule.js";
 export { getAllModules } from "./services/ModulesForFurniture/getAllModules.js";
 export { getModuleById } from "./services/ModulesForFurniture/getModuleById.js";
 export { updateModule } from "./services/ModulesForFurniture/updateModule.js";
+export { updateModulePiecesNumber } from "./services/ModulesForFurniture/updateModulePiecesNumber.js";
 
 //PIECES
 export { createPieces } from "./services/Pieces/createPieces.js";
@@ -30,6 +31,9 @@ export { getAllSuppliesExceptTables } from "./services/Supplies/getAllSuppliesEx
 export { deleteSupplie } from "./services/Supplies/deleteSupplie.js";
 export { getSupplieById } from "./services/Supplies/getSupplieById.js";
 export { updateSupplie } from "./services/Supplies/updateSupplie.js";
+
+//SUPPLIES-CATEGORIES
+export { getAllSuppliesCategories } from "./services/SuppliesCategories/getAllSuppliesCategories.js";
 
 //SERVICES FURNITURE
 export { getAllServices } from "./services/ServicesFurniture/getAllServices.js";

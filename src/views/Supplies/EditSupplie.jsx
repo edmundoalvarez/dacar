@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { getSupplieById, updateSupplie } from "../../index.js";
+import {
+  getSupplieById,
+  updateSupplie,
+  getAllSuppliesCategories,
+} from "../../index.js";
 
 function EditSupplie() {
   const { idSupplie } = useParams(); // Obtener los ID del mueble y del módulo desde la URL
+  const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
 
   const {
@@ -13,6 +18,18 @@ function EditSupplie() {
     setValue,
     formState: { errors },
   } = useForm();
+
+  // TRAER CATEGORIAS: para el formulario
+  const getAllCategoriesToSet = () => {
+    getAllSuppliesCategories()
+      .then((categoriesData) => {
+        setCategories(categoriesData.data);
+        // console.log(tablesData.data);
+      })
+      .catch((error) => {
+        console.error("Este es el error:", error);
+      });
+  };
 
   const getSuppliesToSet = () => {
     getSupplieById(idSupplie)
@@ -31,6 +48,7 @@ function EditSupplie() {
       });
   };
   useEffect(() => {
+    getAllCategoriesToSet();
     getSuppliesToSet();
   }, []);
 
@@ -129,15 +147,20 @@ function EditSupplie() {
           </div>
           <div className="flex flex-col w-11/12 my-2">
             <label htmlFor="category">Categoria</label>
-            <input
-              className=" border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
-              type="text"
+            <select
+              className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
               name="category"
               id="category"
               {...register("category", {
                 required: "El campo es obligatorio",
               })}
-            />
+            >
+              {categories.map((category, index) => (
+                <option key={category.name} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
             {errors.category && (
               <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                 {errors.category.message}

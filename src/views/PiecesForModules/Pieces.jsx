@@ -7,6 +7,7 @@ import {
   deletePiece,
   getModuleById,
   FormCreatePieces,
+  updateModulePiecesNumber,
   createPieces,
 } from "../../index.js";
 
@@ -34,7 +35,6 @@ function Pieces() {
     getModuleById(moduleId)
       .then((moduleData) => {
         setModule(moduleData.data);
-        // console.log(moduleData.data);
       })
       .catch((error) => {
         console.error(error);
@@ -71,6 +71,8 @@ function Pieces() {
     deletePiece(pieceId)
       .then((res) => {
         getAllPiecesToSet();
+        let newPiecesNumber = module.pieces_number - 1;
+        updateModulePiecesNumber(moduleId, newPiecesNumber);
         // console.log(res.data);
       })
       .catch((error) => {
@@ -139,6 +141,8 @@ function Pieces() {
       await createPieces(pieceData);
       setShowAddPiece(false);
       getAllPiecesToSet();
+      let newPiecesNumber = module.pieces_number + 1;
+      updateModulePiecesNumber(moduleId, newPiecesNumber);
       reset();
     } catch (error) {
       console.error(error);
