@@ -136,6 +136,7 @@ function Pieces() {
         edgeWidth: data[`edgeWidth1`],
         edgeWidthSides: data[`edgeWidthSides1`],
         lacqueredEdge: data[`lacqueredEdge1`],
+        loose_piece: data[`loose_piece1`],
         moduleId, // Asigna el ID del módulo a cada pieza
       };
       await createPieces(pieceData);

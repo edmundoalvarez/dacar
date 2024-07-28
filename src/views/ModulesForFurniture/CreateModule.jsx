@@ -121,6 +121,7 @@ function CreateModule() {
           edgeWidth: data[`edgeWidth${i}`],
           edgeWidthSides: data[`edgeWidthSides${i}`],
           lacqueredEdge: data[`lacqueredEdge${i}`],
+          loose_piece: data[`loose_piece${i}`],
           moduleId, // Asigna el ID del módulo a cada pieza
         };
         await createPieces(pieceData);
@@ -149,7 +150,7 @@ function CreateModule() {
   }, []);
 
   return (
-    <div className="m-4">
+    <div className="m-4 px-4">
       <div className="flex gap-4">
         <h1 className="text-4xl">Crear Módulo</h1>
         <Link

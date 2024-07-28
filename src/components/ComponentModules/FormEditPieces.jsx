@@ -102,6 +102,16 @@ function FormEditPieces({
         )}
       </div>
       <div className="flex flex-col w-2/12 my-2">
+        <label>
+          <input
+            type="checkbox"
+            defaultChecked={piece?.loose_piece || false}
+            {...register(`loose_piece${index}`)}
+          />
+          Pieza suelta
+        </label>
+      </div>
+      <div className="flex flex-col w-2/12 my-2">
         <label htmlFor={`orientation${index}`}>Orientación</label>
         <input
           type="hidden"

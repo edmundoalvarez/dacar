@@ -266,6 +266,7 @@ function EditFurnitureSingleModuleComponent({
           edgeWidth: data[`edgeWidth${index}`],
           edgeWidthSides: data[`edgeWidthSides${index}`],
           lacqueredEdge: data[`lacqueredEdge${index}`],
+          loose_piece: data[`loose_piece${index}`],
         };
       });
 

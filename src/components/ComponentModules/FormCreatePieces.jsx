@@ -57,7 +57,7 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
   };
 
   return (
-    <div className="flex flex-wrap gap-x-4 w-full">
+    <div className="flex flex-wrap gap-x-4 w-full border-t-2 border-gray-400 pb-4">
       <div className="flex flex-col w-2/12 my-2">
         <label htmlFor={`namePiece${index}`}>Nombre de la pieza</label>
         <input
@@ -74,6 +74,10 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
             {errors[`namePiece${index}`].message}
           </span>
         )}
+      </div>
+      <div className="flex flex-col w-1/12 my-2">
+        <label>Pieza suelta</label>
+        <input type="checkbox" {...register(`loose_piece${index}`)} />
       </div>
       <div className="flex flex-col w-2/12 my-2">
         <label htmlFor={`orientation${index}`}>Orientación</label>
@@ -363,7 +367,7 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
             )}
             {/* filo laqueado */}
           </div>
-          <div className="flex flex-col w-2/12 my-2">
+          <div className="flex flex-col w-2/12 ml-4">
             <label>
               <input type="checkbox" {...register(`lacqueredEdge${index}`)} />
               Filo Laqueado
