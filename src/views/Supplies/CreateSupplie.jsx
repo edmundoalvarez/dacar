@@ -133,6 +133,9 @@ function CreateSupplie() {
               required: "El campo es obligatorio",
             })}
           >
+            <option key="" value="">
+              Elegir una opción
+            </option>
             {categories.map((category, index) => (
               <option key={category.name} value={category.name}>
                 {category.name}
@@ -152,9 +155,7 @@ function CreateSupplie() {
             type="text"
             name="material"
             id="material"
-            {...register("material", {
-              required: "El campo es obligatorio",
-            })}
+            {...register("material")}
           />
           {errors.material && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">

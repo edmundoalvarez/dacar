@@ -27,6 +27,8 @@ export { updatePiece } from "./services/Pieces/updatePiece.js";
 export { createSupplies } from "./services/Supplies/createSupplies.js";
 export { getAllSupplies } from "./services/Supplies/getAllSupplies.js";
 export { getAllTables } from "./services/Supplies/getAllTables.js";
+export { getAllEdgesSupplies } from "./services/Supplies/getAllEdgesSupplies.js";
+export { getAllVeneerSupplies } from "./services/Supplies/getAllVeneerSupplies.js";
 export { getAllSuppliesExceptTables } from "./services/Supplies/getAllSuppliesExceptTables.js";
 export { deleteSupplie } from "./services/Supplies/deleteSupplie.js";
 export { getSupplieById } from "./services/Supplies/getSupplieById.js";
