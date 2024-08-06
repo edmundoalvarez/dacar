@@ -174,9 +174,7 @@ function EditSupplie() {
               type="text"
               name="material"
               id="material"
-              {...register("material", {
-                required: "El campo es obligatorio",
-              })}
+              {...register("material")}
             />
             {errors.material && (
               <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">

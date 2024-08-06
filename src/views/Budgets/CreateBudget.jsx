@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Await, Link, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import {
   getFurnitureById,
@@ -7,10 +7,13 @@ import {
   getAllEdgesSupplies,
   getAllVeneerSupplies,
   FormCreateClient,
-  createClient,
   getAllClients,
   getAllServices,
   getAllSuppliesExceptTables,
+  createClient,
+  getClientById,
+  createBudget,
+  getLastBudgetNum,
 } from "../../index.js";
 
 function CreateBudget() {
@@ -393,38 +396,209 @@ function CreateBudget() {
     // console.log(option);
     const selectedVeneer = veneer.find((veneer) => veneer._id === option);
     let veneerPrice = selectedVeneer.price * (totalVeneer / 100);
-    setValue("veneer_price", veneerPrice);
+    setValue("chapa_price", veneerPrice);
     setChapa(veneerPrice.toLocaleString("es-ES"));
   };
 
+  //AL SELECCIONAR LA PLACA OBTENER EL VALOR
+  const handleMaterialOption = (index) => (event) => {
+    let option = event.target.value;
+    const selectedTable = tables.find((table) => table.name === option);
+    setValue(`materialPrice${index}`, selectedTable.price);
+  };
+
   //OBTENER EL PRECIO DE LOS INSUMOS
-  const getSupplyPrice = (supplyName) => {
-    const supply = supplies.find((s) => s._id === supplyName);
-    return supply ? supply.price : 0;
+  const getSupplyPrice = (
+    supplyId,
+    supplyQty,
+    supplyName,
+    supplyLength,
+    suppliePrice
+  ) => {
+    const supply = supplies.find((s) => s._id === supplyId);
+    setValue(
+      suppliePrice,
+      supply
+        ? supply.price *
+            supplyQty *
+            (supplyName === "Barral" ? supplyLength : 1)
+        : 0
+    );
+    return supply
+      ? supply.price * supplyQty * (supplyName === "Barral" ? supplyLength : 1)
+      : 0;
   };
 
   //FORMULARIO GENERAR PRESUPUESTO
   const onSubmit = async (data, event) => {
     event.preventDefault();
     console.log("data formulario", data);
-    let clientId;
-    /* carga cliente */
+    //Budget Number
+
+    // Creación del objeto supplies agrupado por módulos
+    const supplies = {};
+    Object.keys(data).forEach((key) => {
+      const match = key.match(/(supplie\w+)(\d+)-(\d+)/);
+      if (match) {
+        const [_, prefix, moduleIndex, supplyIndex] = match;
+        const moduleKey = `moduleName${moduleIndex}`;
+
+        if (!supplies[moduleKey]) {
+          supplies[moduleKey] = {
+            moduleName: data[moduleKey],
+            supplies: [],
+          };
+        }
+
+        const supply = supplies[moduleKey].supplies[supplyIndex] || {};
+        if (prefix === "supplieName") supply.name = data[key];
+        if (prefix === "suppliePrice") supply.price = data[key];
+        if (prefix === "supplieLength") supply.length = data[key];
+        if (prefix === "supplieQty") supply.qty = data[key];
+
+        supplies[moduleKey].supplies[supplyIndex] = supply;
+      }
+    });
+
+    // Transformar el objeto supplies en una lista
+    const suppliesList = Object.values(supplies);
+
+    // Carga cliente
+    let clientData;
+    // Código para crear o seleccionar cliente (comentado para ejemplo)
     if (clientOption === "new") {
       try {
         await createClient({
           ...data,
         }).then((res) => {
           clientId = res.data._id;
-          console.log("clientId", clientId);
+          clientData = res.data;
           console.log("¡Creaste cliente!");
         });
       } catch (error) {
         console.error(error);
       }
     } else if (clientOption === "existing") {
-      console.log("elseif", data.clientId);
+      try {
+        await getClientById(data.clientId).then((res) => {
+          clientData = res.data;
+        });
+      } catch (error) {
+        console.error(error);
+      }
     }
-    console.log("clientId2", clientId);
+
+    // Creación del objeto materials
+    const materials = {};
+    Object.keys(data).forEach((key) => {
+      const match = key.match(/(material\w+)(\d+)/);
+      if (match) {
+        const [_, prefix, index] = match;
+        const materialKey = `material${index}`;
+
+        if (!materials[materialKey]) {
+          materials[materialKey] = {};
+        }
+
+        if (prefix === "materialPrice")
+          materials[materialKey].price = data[key];
+        if (prefix === "materialQty") materials[materialKey].qty = data[key];
+        if (prefix === "materialTable")
+          materials[materialKey].table = data[key];
+      }
+    });
+
+    // Transformar el objeto materials en una lista (opcional)
+    const materialsList = Object.values(materials);
+
+    // Creación del objeto extra_items
+    const extraItems = {};
+    Object.keys(data).forEach((key) => {
+      const match = key.match(/(itemExtra\w*)(\d+)/);
+      if (match) {
+        const [_, prefix, index] = match;
+        const itemExtraKey = `itemExtra${index}`;
+
+        if (!extraItems[itemExtraKey]) {
+          extraItems[itemExtraKey] = {};
+        }
+
+        if (prefix === "itemExtra") extraItems[itemExtraKey].name = data[key];
+        if (prefix === "itemExtraPrice")
+          extraItems[itemExtraKey].price = data[key];
+      }
+    });
+
+    // Transformar el objeto extraItems en una lista (opcional)
+    const extraItemsList = Object.values(extraItems);
+
+    //obtetener el ultimo budget_number
+    let lastnumber;
+    try {
+      lastnumber = await getLastBudgetNum();
+    } catch (error) {
+      console.error("Error ", error);
+    }
+    console.log(lastnumber);
+    // Objeto final para crear el presupuesto
+    const budgetData = {
+      budget_number: lastnumber + 1,
+      furniture_name: data.furniture_name,
+      length: data.length,
+      width: data.width,
+      height: data.height,
+      category: data.category,
+      furniture: singleFurniture,
+      veneer: {
+        veneerM2: data.veneerM2,
+        veneerPrice: data.veneerPrice,
+      },
+      veneerPolished: {
+        veneerPolishedM2: data.veneerPolishedM2,
+        veneerPolishedPrice: data.veneerPolishedPrice,
+      },
+      chapa: {
+        veneerSelect: data.veneerSelect,
+        chapa_price: data.chapa_price,
+      },
+      lacquered: {
+        lacqueredM2: data.lacqueredM2,
+        lacqueredPrice: data.lacqueredPrice,
+      },
+      pantographed: {
+        pantographedM2: data.pantographedM2,
+        pantographedPrice: data.pantographedPrice,
+      },
+      edge_lacquered: {
+        edgeLaqueredSelect: data.edgeLaqueredSelect,
+        edgeLaqueredM2: data.edgeLaqueredM2,
+        edgeLaqueredPrice: data.edgeLaqueredPrice,
+      },
+      edge_no_lacquered: {
+        edgeSelect: data.edgeSelect,
+        edgeM2: data.edgeM2,
+        edgePrice: data.edgePrice,
+      },
+      supplies: suppliesList,
+      material: materialsList,
+      extra_items: extraItemsList,
+      adjustment_reason: data.adjustment_reason,
+      adjustment_price: data.adjustment_price,
+      total_price: 50000,
+      deliver_date: data.deliver_date,
+      comments: data.comments,
+      client: clientData,
+    };
+
+    //TODO AGREGAR USERNAME
+    console.log(budgetData);
+
+    try {
+      await createBudget(budgetData);
+      console.log("Presupuesto creado", budgetData);
+    } catch (error) {
+      console.error("Error creando presupuesto:", error);
+    }
   };
 
   return (
@@ -447,224 +621,419 @@ function CreateBudget() {
             Ver Muebles
           </Link>
         </div>
-
-        <div className="p-4 bg-gray-100 rounded-md shadow-md">
-          <h2 className="text-2xl font-semibold mb-2">Datos del Mueble</h2>
-          <div className="flex gap-4">
-            <p className="mb-1">
-              <span className="font-bold">Alto:</span> {singleFurniture.height}
-            </p>
-            <p className="mb-1">
-              <span className="font-bold">Largo:</span> {singleFurniture.length}
-            </p>
-            <p className="mb-1">
-              <span className="font-bold">Profundidad:</span>{" "}
-              {singleFurniture.width}
-            </p>
-            <p className="mb-1">
-              <span className="font-bold">Categoría:</span>{" "}
-              {singleFurniture.category}
-            </p>
-          </div>
-          <div className="flex gap-16">
-            <div className="w-1/3">
-              <h2 className="text-2xl font-semibold mb-2">
-                Acabados del Mueble
-              </h2>
-              <p className="mb-1">
-                <span className="font-bold">Enchapado en m2:</span>{" "}
-                {totalVeneer / 100} m<sup>2</sup> Precio: $
-                {(enchapadoService?.price * (totalVeneer / 100)).toLocaleString(
-                  "es-ES"
-                )}
-              </p>
-              <p className="mb-1">
-                <span className="font-bold">Lustrado en m2:</span>{" "}
-                {totalVeneerPolished / 100} m<sup>2</sup> Precio: $
-                {(
-                  lustreService?.price *
-                  (totalVeneerPolished / 100)
-                ).toLocaleString("es-ES")}
-              </p>
-
-              <p className="mb-1">
-                <span className="font-bold">Laqueado en m2:</span>{" "}
-                {totalLacqueredAll / 100} m<sup>2</sup> Precio: $
-                {(
-                  laqueadoService?.price *
-                  (totalLacqueredAll / 100)
-                ).toLocaleString("es-ES")}
-              </p>
-              <p className="mb-1">
-                <span className="font-bold">Pantografiado en m2:</span>{" "}
-                {totalPantographed / 100} m<sup>2</sup> Precio: $
-                {(
-                  pantografiadoService?.price *
-                  (totalPantographed / 100)
-                ).toLocaleString("es-ES")}
-              </p>
-              {/* FILO */}
-              <div className="flex gap-y-4">
-                <p className="font-bold">Filo total (laqueado):</p>
-                <div className="flex flex-col w-1/3  ">
-                  {materialEdgeLaquered > 0 ? (
-                    <p className="mb-1">
-                      {(
-                        (totalLacqueredEdgeLength * materialEdgeLaquered) /
-                        100
-                      ).toFixed(2)}{" "}
-                      m<sup>2</sup> Precio: $
-                      {(
-                        laqueadoService?.price *
-                        (
-                          (totalLacqueredEdgeLength * materialEdgeLaquered) /
-                          100
-                        ).toFixed(2)
-                      ).toLocaleString("es-ES")}
-                    </p>
-                  ) : (
-                    <p className="text-red-500">Elegir una placa</p>
-                  )}
-                </div>
-                <div className="flex flex-col w-1/3  ">
-                  <select
-                    name={`edgeLaqueredSelect`}
-                    id={`edgeLaqueredSelect`}
-                    className="border-solid border-2 border-opacity mb-2 rounded-md"
-                    {...register(`edgeLaqueredSelect`, {
-                      required: "El campo es obligatorio",
-                    })}
-                    onChange={handleMaterialEdgeLaqueredOption}
-                  >
-                    <option value="">Elegir una opción</option>
-                    {tables.map((table) => (
-                      <option key={table._id} value={table._id}>
-                        {table.name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors[`edgeLaqueredSelect`] && (
-                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                      {errors[`edgeLaqueredSelect`].message}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <p className="mb-1">
-                  <span className="font-bold">Filo total (sin laquear):</span>{" "}
-                  {(totalEdgeLength / 100).toFixed(2)} m Precio: $
-                  {(
-                    filoService?.price *
-                    (totalLacqueredEdgeLength / 100) *
-                    materialEdge
-                  ).toLocaleString("es-ES")}
-                </p>
-                <div className="flex flex-col w-1/2 ">
-                  <select
-                    name={`edgeSelect`}
-                    id={`edgeSelect`}
-                    className="border-solid border-2 border-opacity mb-2 rounded-md"
-                    {...register(`edgeSelect`, {
-                      required: "El campo es obligatorio",
-                    })}
-                    onChange={handleMaterialEdgeOption}
-                  >
-                    <option value="">Elegir una opción</option>
-                    {edges.map((edge) => (
-                      <option key={edge._id} value={edge._id}>
-                        {edge.name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors[`edgeSelect`] && (
-                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                      {errors[`edgeSelect`].message}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            {/* INSUMOS */}
-            <div className="w-2/3">
-              <h2 className="text-2xl font-semibold mb-2">
-                Insumos totales del mueble
-              </h2>
-              <div className="flex flex-wrap -mx-2">
-                {sortedModules &&
-                  sortedModules.map((module, moduleIndex) => (
-                    <div
-                      key={moduleIndex}
-                      className="w-full sm:w-1/2 lg:w-1/3 px-2 mb-4"
-                    >
-                      <div className=" p-4 rounded shadow">
-                        <h4>{module.name}</h4>
-                        {module.supplies_module.map((supply, supplyIndex) => (
-                          <div key={supplyIndex} className="mb-2">
-                            <p>
-                              <span className="font-bold">Nombre:</span>{" "}
-                              {supply.supplie_name}
-                            </p>
-                            <p>
-                              <span className="font-bold">Cantidad:</span>{" "}
-                              {supply.supplie_qty}
-                            </p>
-                            <p>
-                              <span className="font-bold">Largo:</span>{" "}
-                              {supply.supplie_length}
-                            </p>
-                            <p>
-                              <span className="font-bold">Precio total:</span> $
-                              {getSupplyPrice(supply.supplie_id) *
-                                supply.supplie_qty *
-                                (supply.supplie_name === "Barral"
-                                  ? supply.supplie_length
-                                  : 1)}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* cargar cantidad de placas a usar */}
-        <div className="p-4 bg-gray-300 rounded-md shadow-md">
-          <div className="flex items-center gap-2">
-            <p className="text-md font-semibold">Cantidad de materiales</p>{" "}
+        <form action="" className="" onSubmit={handleSubmit(onSubmit)}>
+          <input
+            name={`furniture_name`}
+            type="hidden"
+            value={singleFurniture.name}
+            {...register(`furniture_name`)}
+          />
+          <div className="p-4 bg-gray-100 rounded-md shadow-md">
+            <h2 className="text-2xl font-semibold mb-2">Datos del Mueble</h2>
             <div className="flex gap-4">
-              <button
-                className="text-xl font-semibold bg-slate-100 rounded-md p-1 w-6 h-6 flex items-center justify-center"
-                onClick={counterMaterial}
-              >
-                +
-              </button>
-              <button
-                className="text-xl font-semibold bg-slate-100 rounded-md p-1 w-6 h-6 flex items-center justify-center"
-                onClick={counterMaterial}
-              >
-                -
-              </button>
-              <p>Count: {countMaterial}</p>
+              <p className="mb-1">
+                <span className="font-bold">Alto:</span>{" "}
+                {singleFurniture.height}
+              </p>
+              <input
+                name={`height`}
+                type="hidden"
+                value={singleFurniture.height}
+                {...register(`height`)}
+              />
+              <p className="mb-1">
+                <span className="font-bold">Largo:</span>{" "}
+                {singleFurniture.length}
+              </p>
+              <input
+                name={`length`}
+                type="hidden"
+                value={singleFurniture.length}
+                {...register(`length`)}
+              />
+              <p className="mb-1">
+                <span className="font-bold">Profundidad:</span>{" "}
+                {singleFurniture.width}
+              </p>
+              <input
+                name={`width`}
+                type="hidden"
+                value={singleFurniture.width}
+                {...register(`width`)}
+              />
+              <p className="mb-1">
+                <span className="font-bold">Categoría:</span>{" "}
+                {singleFurniture.category}
+              </p>{" "}
+              <input
+                name={`category`}
+                type="hidden"
+                value={singleFurniture.category}
+                {...register(`category`)}
+              />
+            </div>
+            <div className="flex gap-16">
+              <div className="w-1/3">
+                <h2 className="text-2xl font-semibold mb-2">
+                  Acabados del Mueble
+                </h2>
+                {/* ENCHAPADO */}
+                <p className="mb-1">
+                  <span className="font-bold">Enchapado en m2:</span>{" "}
+                  {totalVeneer / 100} m<sup>2</sup> Precio: $
+                  {(
+                    enchapadoService?.price *
+                    (totalVeneer / 100)
+                  ).toLocaleString("es-ES")}
+                  {setValue(
+                    "veneerPrice",
+                    enchapadoService?.price * (totalVeneer / 100)
+                  )}
+                </p>
+                <input
+                  name={`veneerM2`}
+                  type="hidden"
+                  value={totalVeneer / 100}
+                  {...register(`veneerM2`)}
+                />
+                <input
+                  name={`veneerPrice`}
+                  type="hidden"
+                  value={enchapadoService?.price * (totalVeneer / 100)}
+                  {...register(`veneerPrice`)}
+                />
+                {/* LUSTRADO */}
+                <p className="mb-1">
+                  <span className="font-bold">Lustrado en m2:</span>{" "}
+                  {totalVeneerPolished / 100} m<sup>2</sup> Precio: $
+                  {(
+                    lustreService?.price *
+                    (totalVeneerPolished / 100)
+                  ).toLocaleString("es-ES")}
+                  {setValue(
+                    "veneerPolishedPrice",
+                    lustreService?.price * (totalVeneerPolished / 100)
+                  )}
+                </p>
+                <input
+                  name={`veneerPolishedM2`}
+                  type="hidden"
+                  value={totalVeneerPolished / 100}
+                  {...register(`veneerPolishedM2`)}
+                />
+                <input
+                  name={`veneerPolishedPrice`}
+                  type="hidden"
+                  value={lustreService?.price * (totalVeneerPolished / 100)}
+                  {...register(`veneerPolishedPrice`)}
+                />
+                {/* LAQUEADO */}
+                <p className="mb-1">
+                  <span className="font-bold">Laqueado en m2:</span>{" "}
+                  {totalLacqueredAll / 100} m<sup>2</sup> Precio: $
+                  {(
+                    laqueadoService?.price *
+                    (totalLacqueredAll / 100)
+                  ).toLocaleString("es-ES")}
+                  {setValue(
+                    "lacqueredPrice",
+                    laqueadoService?.price * (totalLacqueredAll / 100)
+                  )}
+                </p>
+                <input
+                  name={`lacqueredM2`}
+                  type="hidden"
+                  value={totalLacqueredAll / 100}
+                  {...register(`lacqueredM2`)}
+                />
+                <input
+                  name={`lacqueredPrice`}
+                  type="hidden"
+                  {...register(`lacqueredPrice`)}
+                  value={laqueadoService?.price * (totalLacqueredAll / 100)}
+                />
+                {/* PANTOGRAFIADO */}
+                <p className="mb-1">
+                  <span className="font-bold">Pantografiado en m2:</span>{" "}
+                  {totalPantographed / 100} m<sup>2</sup> Precio: $
+                  {(
+                    pantografiadoService?.price *
+                    (totalPantographed / 100)
+                  ).toLocaleString("es-ES")}
+                  {setValue(
+                    "pantographedPrice",
+                    pantografiadoService?.price * (totalPantographed / 100)
+                  )}
+                </p>
+                <input
+                  name={`pantographedM2`}
+                  type="hidden"
+                  value={totalPantographed / 100}
+                  {...register(`pantographedM2`)}
+                />
+                <input
+                  name={`pantographedPrice`}
+                  type="hidden"
+                  value={
+                    pantografiadoService?.price * (totalPantographed / 100)
+                  }
+                  {...register(`pantographedPrice`)}
+                />
+                {/* FILO */}
+                <div className="flex gap-y-4">
+                  <p className="font-bold">Filo total (laqueado):</p>
+                  <div className="flex flex-col w-1/3  ">
+                    {materialEdgeLaquered > 0 ? (
+                      <>
+                        <p className="mb-1">
+                          {(
+                            (totalLacqueredEdgeLength * materialEdgeLaquered) /
+                            100
+                          ).toFixed(2)}{" "}
+                          m<sup>2</sup> Precio: $
+                          {(
+                            laqueadoService?.price *
+                            (
+                              (totalLacqueredEdgeLength *
+                                materialEdgeLaquered) /
+                              100
+                            ).toFixed(2)
+                          ).toLocaleString("es-ES")}
+                          {setValue(
+                            "edgeLaqueredPrice",
+                            laqueadoService?.price *
+                              (
+                                (totalLacqueredEdgeLength *
+                                  materialEdgeLaquered) /
+                                100
+                              ).toFixed(2)
+                          )}
+                        </p>
+                        <input
+                          name={`edgeLaqueredM2`}
+                          type="hidden"
+                          value={(
+                            (totalLacqueredEdgeLength * materialEdgeLaquered) /
+                            100
+                          ).toFixed(2)}
+                          {...register(`edgeLaqueredM2`)}
+                        />
+                        <input
+                          name={`edgeLaqueredPrice`}
+                          type="hidden"
+                          value={
+                            laqueadoService?.price *
+                            (
+                              (totalLacqueredEdgeLength *
+                                materialEdgeLaquered) /
+                              100
+                            ).toFixed(2)
+                          }
+                          {...register(`edgeLaqueredPrice`)}
+                        />
+                      </>
+                    ) : (
+                      <p className="text-red-500">Elegir una placa</p>
+                    )}
+                  </div>
+                  <div className="flex flex-col w-1/3  ">
+                    <select
+                      name={`edgeLaqueredSelect`}
+                      id={`edgeLaqueredSelect`}
+                      className="border-solid border-2 border-opacity mb-2 rounded-md"
+                      {...register(`edgeLaqueredSelect`)}
+                      onChange={handleMaterialEdgeLaqueredOption}
+                    >
+                      <option value="">Elegir una opción</option>
+                      {tables.map((table) => (
+                        <option key={table._id} value={table._id}>
+                          {table.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors[`edgeLaqueredSelect`] && (
+                      <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                        {errors[`edgeLaqueredSelect`].message}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <p className="mb-1">
+                    <span className="font-bold">Filo total (sin laquear):</span>{" "}
+                    {(totalEdgeLength / 100).toFixed(2)} m Precio: $
+                    {(
+                      filoService?.price *
+                      (totalLacqueredEdgeLength / 100) *
+                      materialEdge
+                    ).toLocaleString("es-ES")}
+                    {setValue(
+                      "edgePrice",
+                      filoService?.price *
+                        (totalLacqueredEdgeLength / 100) *
+                        materialEdge
+                    )}
+                  </p>
+                  <input
+                    name={`edgeM2`}
+                    type="hidden"
+                    value={(totalEdgeLength / 100).toFixed(2)}
+                    {...register(`edgeM2`)}
+                  />
+                  <input
+                    name={`edgePrice`}
+                    type="hidden"
+                    value={
+                      filoService?.price *
+                      (totalLacqueredEdgeLength / 100) *
+                      materialEdge
+                    }
+                    {...register(`edgePrice`)}
+                  />
+                  <div className="flex flex-col w-1/2 ">
+                    <select
+                      name={`edgeSelect`}
+                      id={`edgeSelect`}
+                      className="border-solid border-2 border-opacity mb-2 rounded-md"
+                      {...register(`edgeSelect`)}
+                      onChange={handleMaterialEdgeOption}
+                    >
+                      <option value="">Elegir una opción</option>
+                      {edges.map((edge) => (
+                        <option key={edge._id} value={edge._id}>
+                          {edge.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors[`edgeSelect`] && (
+                      <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                        {errors[`edgeSelect`].message}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {/* INSUMOS */}
+              <div className="w-2/3">
+                <h2 className="text-2xl font-semibold mb-2">
+                  Insumos totales del mueble
+                </h2>
+                <div className="flex flex-wrap -mx-2">
+                  {sortedModules &&
+                    sortedModules.map((module, moduleIndex) => (
+                      <div
+                        key={moduleIndex}
+                        className="w-full sm:w-1/2 lg:w-1/3 px-2 mb-4"
+                      >
+                        <div className=" p-4 rounded shadow">
+                          <h4>{module.name}</h4>
+                          <input
+                            name={`moduleName${moduleIndex}`}
+                            type="hidden"
+                            value={module.name}
+                            {...register(`moduleName${moduleIndex}`)}
+                          />
+                          {module.supplies_module.map((supply, supplyIndex) => (
+                            <div key={`sup${supplyIndex}`} className="mb-2">
+                              <p>
+                                <span className="font-bold">Nombre:</span>{" "}
+                                {supply.supplie_name}
+                              </p>
+                              <input
+                                name={`supplieName${moduleIndex}-${supplyIndex}`}
+                                type="hidden"
+                                value={supply.supplie_name}
+                                {...register(
+                                  `supplieName${moduleIndex}-${supplyIndex}`
+                                )}
+                              />
+                              <p>
+                                <span className="font-bold">Cantidad:</span>{" "}
+                                {supply.supplie_qty}
+                              </p>
+                              <input
+                                name={`supplieQty${moduleIndex}-${supplyIndex}`}
+                                type="hidden"
+                                value={supply.supplie_qty}
+                                {...register(
+                                  `supplieQty${moduleIndex}-${supplyIndex}`
+                                )}
+                              />
+                              <p>
+                                <span className="font-bold">Largo:</span>{" "}
+                                {supply.supplie_length}
+                              </p>
+                              <input
+                                name={`supplieLength${moduleIndex}-${supplyIndex}`}
+                                type="hidden"
+                                value={supply.supplie_length}
+                                {...register(
+                                  `supplieLength${moduleIndex}-${supplyIndex}`
+                                )}
+                              />
+                              <p>
+                                <span className="font-bold">Precio total:</span>{" "}
+                                $
+                                {getSupplyPrice(
+                                  supply.supplie_id,
+                                  supply.supplie_qty,
+                                  supply.supplie_name,
+                                  supply.supplie_length,
+                                  `suppliePrice${moduleIndex}-${supplyIndex}`
+                                )}
+                              </p>
+                              <input
+                                name={`suppliePrice${moduleIndex}-${supplyIndex}`}
+                                type="hidden"
+                                {...register(
+                                  `suppliePrice${moduleIndex}-${supplyIndex}`
+                                )}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
             </div>
           </div>
-          <form action="" className="" onSubmit={handleSubmit(onSubmit)}>
+          {/* cargar cantidad de placas a usar */}
+          <div className="p-4 bg-gray-300 rounded-md shadow-md">
+            <div className="flex items-center gap-2">
+              <p className="text-md font-semibold">Cantidad de placas</p>{" "}
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  className="text-xl font-semibold bg-slate-100 rounded-md p-1 w-6 h-6 flex items-center justify-center"
+                  onClick={counterMaterial}
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  className="text-xl font-semibold bg-slate-100 rounded-md p-1 w-6 h-6 flex items-center justify-center"
+                  onClick={counterMaterial}
+                >
+                  -
+                </button>
+                <p>Count: {countMaterial}</p>
+              </div>
+            </div>
+
             <div className="flex flex-col">
               {[...Array(countMaterial)].map((_, index) => (
                 <div key={`containerMaterial${index}`}>
                   <div className="flex w-1/2 my-2 gap-4">
                     <label htmlFor={`materialTable${index}`}>
-                      Seleccionar material
+                      Seleccionar placa
                     </label>
                     <select
                       name={`materialTable${index}`}
                       id={`materialTable${index}`}
                       className="border-solid border-2 border-opacity mb-2 rounded-md"
-                      {...register(`materialTable${index}`, {
-                        required: "El campo es obligatorio",
-                      })}
+                      {...register(`materialTable${index}`)}
+                      onChange={handleMaterialOption(index)}
                     >
                       <option value="">Elegir una opción</option>
                       {tables.map((table) => (
@@ -678,22 +1047,27 @@ function CreateBudget() {
                         {errors[`materialTable${index}`].message}
                       </span>
                     )}
-                    <label htmlFor={`tablesQty${index}`}>
+
+                    <label htmlFor={`materialQty${index}`}>
                       Cantidad de placas
                     </label>
                     <input
-                      name={`tablesQty${index}`}
+                      name={`materialQty${index}`}
                       type="number"
                       className="border-solid border-2 border-opacity mb-2 rounded-md w-16"
-                      {...register(`tablesQty${index}`, {
-                        required: "El campo es obligatorio",
-                      })}
+                      {...register(`materialQty${index}`)}
                     />
-                    {errors[`tablesQty${index}`] && (
+                    {errors[`materialQty${index}`] && (
                       <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                        {errors[`tablesQty${index}`].message}
+                        {errors[`materialQty${index}`].message}
                       </span>
                     )}
+                    {/* placa price */}
+                    <input
+                      name={`materialPrice${index}`}
+                      type="hidden"
+                      {...register(`materialPrice${index}`)}
+                    />
                   </div>
                 </div>
               ))}
@@ -730,9 +1104,7 @@ function CreateBudget() {
                       name={`itemExtra${index}`}
                       type="text"
                       className="border-solid border-2 border-opacity mb-2 rounded-md "
-                      {...register(`itemExtra${index}`, {
-                        required: "El campo es obligatorio",
-                      })}
+                      {...register(`itemExtra${index}`)}
                     />
                     {errors[`itemExtra${index}`] && (
                       <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -746,9 +1118,7 @@ function CreateBudget() {
                       name={`itemExtraPrice${index}`}
                       type="text"
                       className="border-solid border-2 border-opacity mb-2 rounded-md "
-                      {...register(`itemExtraPrice${index}`, {
-                        required: "El campo es obligatorio",
-                      })}
+                      {...register(`itemExtraPrice${index}`)}
                     />
                     {errors[`itemExtraPrice${index}`] && (
                       <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -771,9 +1141,7 @@ function CreateBudget() {
                         name={`veneerSelect`}
                         id={`veneerSelect`}
                         className="border-solid border-2 border-opacity mb-2 rounded-md"
-                        {...register(`veneerSelect`, {
-                          required: "El campo es obligatorio",
-                        })}
+                        {...register(`veneerSelect`)}
                         onChange={handleChapaOption}
                       >
                         <option value="">Elegir una opción</option>
@@ -792,22 +1160,13 @@ function CreateBudget() {
 
                     <div className="flex flex-col w-1/4  ">
                       {" "}
-                      <label htmlFor={`veneer_price`}>Precio chapa</label>
+                      <label htmlFor={`chapa_price`}>Precio chapa</label>
                       <p>$ {chapa}</p>
                       <input
-                        name={`veneer_price`}
+                        name={`chapa_price`}
                         type="hidden"
-                        readOnly
-                        className="border-solid border-2 border-opacity mb-2 rounded-md "
-                        {...register(`veneer_price`, {
-                          required: "El campo es obligatorio",
-                        })}
+                        {...register(`chapa_price`)}
                       />
-                      {errors[`veneer_price`] && (
-                        <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                          {errors[`veneer_price`].message}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </>
@@ -825,9 +1184,7 @@ function CreateBudget() {
                     name={`adjustment_reason`}
                     type="text"
                     className="border-solid border-2 border-opacity mb-2 rounded-md "
-                    {...register(`adjustment_reason`, {
-                      required: "El campo es obligatorio",
-                    })}
+                    {...register(`adjustment_reason`)}
                   />
                   {errors[`adjustment_reason`] && (
                     <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -842,9 +1199,7 @@ function CreateBudget() {
                     name={`adjustment_price`}
                     type="number"
                     className="border-solid border-2 border-opacity mb-2 rounded-md "
-                    {...register(`adjustment_price`, {
-                      required: "El campo es obligatorio",
-                    })}
+                    {...register(`adjustment_price`)}
                   />
                   {errors[`adjustment_price`] && (
                     <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -862,9 +1217,7 @@ function CreateBudget() {
                     type="radio"
                     id="newClient"
                     value="new"
-                    {...register("clientOption", {
-                      required: "Este campo es obligatorio",
-                    })}
+                    {...register("clientOption")}
                     onChange={handleClientOption}
                   />
                   <label htmlFor="newClient" className="ml-2">
@@ -876,9 +1229,7 @@ function CreateBudget() {
                     type="radio"
                     id="existingClient"
                     value="existing"
-                    {...register("clientOption", {
-                      required: "Este campo es obligatorio",
-                    })}
+                    {...register("clientOption")}
                     onChange={handleClientOption}
                   />
                   <label htmlFor="existingClient" className="ml-2">
@@ -925,23 +1276,53 @@ function CreateBudget() {
                         {errors.clientId.message}
                       </span>
                     )}
-                    <input
-                      type="hidden"
-                      {...register("clientId", {
-                        required: "Este campo es obligatorio",
-                      })}
-                    />
+                    <input type="hidden" {...register("clientId")} />
                   </div>
                 </>
               ) : (
                 ""
               )}
-              <button className="text-white bg-lightblue rounded-md px-2 py-1 mb-2 w-1/6 m-auto">
+              <div className="flex gap-4">
+                <div className="flex flex-col w-2/4  ">
+                  {" "}
+                  <label htmlFor={`comments`}>Comentarios</label>
+                  <textarea
+                    name={`comments`}
+                    type="text"
+                    className="border-solid border-2 border-opacity mb-2 rounded-md "
+                    {...register(`comments`)}
+                  />
+                  {errors[`comments`] && (
+                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                      {errors[`comments`].message}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-col w-1/4  ">
+                  {" "}
+                  <label htmlFor={`deliver_date`}>Fecha de entrega</label>
+                  <input
+                    name={`deliver_date`}
+                    type="date"
+                    className="border-solid border-2 border-opacity mb-2 rounded-md "
+                    {...register(`deliver_date`)}
+                  />
+                  {errors[`deliver_date`] && (
+                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                      {errors[`deliver_date`].message}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                type="submit"
+                className="text-white bg-lightblue rounded-md px-2 py-1 mb-2 w-1/6 m-auto"
+              >
                 Generar presupuesto
               </button>
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
         <div className="p-4">
           <h2 className="text-2xl font-semibold mb-2">Despiece por módulo</h2>
           {sortedModules?.map((module) => (

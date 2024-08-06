@@ -8,5 +8,6 @@
   "apiModules": "http://localhost:3000/modules",
   "apiPieces": "http://localhost:3000/pieces",
   "apiMainTable": "http://localhost:3000/main-table",
-  "apiClients": "http://localhost:3000/clients"
+  "apiClients": "http://localhost:3000/clients",
+  "apiBudgets": "http://localhost:3000/budgets"
 }

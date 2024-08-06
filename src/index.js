@@ -47,6 +47,10 @@ export { deleteService } from "./services/ServicesFurniture/deleteService.js";
 //CLIENTS
 export { createClient } from "./services/Clients/createClient.js";
 export { getAllClients } from "./services/Clients/getAllClients.js";
+export { getClientById } from "./services/Clients/getClientById.js";
+//BUDGETS
+export { createBudget } from "./services/Budgets/createBudget.js";
+export { getLastBudgetNum } from "./services/Budgets/getLastBudgetNum.js";
 
 //Components --->
 
