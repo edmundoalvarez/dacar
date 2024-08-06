@@ -429,6 +429,15 @@ function CreateBudget() {
       : 0;
   };
 
+  // obtener el valor de corte de placa
+  function getServicePriceById(id, servicesArray) {
+    const service = servicesArray.find((service) => service._id === id);
+    return service ? service.price : null;
+  }
+
+  const cortePlacaId = "66a5baf9218ee6221506c11c";
+  const cortePlacaPrice = getServicePriceById(cortePlacaId, services);
+
   //FORMULARIO GENERAR PRESUPUESTO
   const onSubmit = async (data, event) => {
     event.preventDefault();
@@ -437,6 +446,8 @@ function CreateBudget() {
 
     // Creación del objeto supplies agrupado por módulos
     const supplies = {};
+    let totalSuppliesPrice = 0; // Inicializa la variable totalSuppliesPrice
+
     Object.keys(data).forEach((key) => {
       const match = key.match(/(supplie\w+)(\d+)-(\d+)/);
       if (match) {
@@ -451,10 +462,47 @@ function CreateBudget() {
         }
 
         const supply = supplies[moduleKey].supplies[supplyIndex] || {};
+
         if (prefix === "supplieName") supply.name = data[key];
-        if (prefix === "suppliePrice") supply.price = data[key];
-        if (prefix === "supplieLength") supply.length = data[key];
-        if (prefix === "supplieQty") supply.qty = data[key];
+        if (prefix === "suppliePrice") {
+          const price = Number(data[key]); // Convierte a número
+          supply.price = price;
+
+          // Si ya existen qty y length (si es "Barral"), calcula el precio total
+          if (supply.qty !== undefined) {
+            if (supply.name === "Barral" && supply.length !== undefined) {
+              totalSuppliesPrice += price * supply.qty * Number(supply.length);
+            } else {
+              totalSuppliesPrice += price * supply.qty;
+            }
+          }
+        }
+        if (prefix === "supplieLength") {
+          const length = Number(data[key]); // Convierte a número
+          supply.length = length;
+
+          // Si ya existen price y qty, calcula el precio total para "Barral"
+          if (
+            supply.name === "Barral" &&
+            supply.price !== undefined &&
+            supply.qty !== undefined
+          ) {
+            totalSuppliesPrice += supply.price * supply.qty * length;
+          }
+        }
+        if (prefix === "supplieQty") {
+          const qty = Number(data[key]); // Convierte a número
+          supply.qty = qty;
+
+          // Si ya existen price y length (si es "Barral"), calcula el precio total
+          if (supply.price !== undefined) {
+            if (supply.name === "Barral" && supply.length !== undefined) {
+              totalSuppliesPrice += supply.price * qty * Number(supply.length);
+            } else {
+              totalSuppliesPrice += supply.price * qty;
+            }
+          }
+        }
 
         supplies[moduleKey].supplies[supplyIndex] = supply;
       }
@@ -490,6 +538,9 @@ function CreateBudget() {
 
     // Creación del objeto materials
     const materials = {};
+    let totalMaterialPrice = 0; // Inicializa la variable totalMaterialPrice
+    let totalMaterialQty = 0; // Inicializa la variable totalMaterialQty
+
     Object.keys(data).forEach((key) => {
       const match = key.match(/(material\w+)(\d+)/);
       if (match) {
@@ -500,19 +551,41 @@ function CreateBudget() {
           materials[materialKey] = {};
         }
 
-        if (prefix === "materialPrice")
-          materials[materialKey].price = data[key];
-        if (prefix === "materialQty") materials[materialKey].qty = data[key];
-        if (prefix === "materialTable")
+        if (prefix === "materialPrice") {
+          const price = Number(data[key]); // Convierte a número
+          materials[materialKey].price = price;
+
+          // Si ya existe qty, calcula el precio total para este material
+          if (materials[materialKey].qty !== undefined) {
+            totalMaterialPrice += price * materials[materialKey].qty;
+          }
+        }
+
+        if (prefix === "materialQty") {
+          const qty = Number(data[key]); // Convierte a número
+          materials[materialKey].qty = qty;
+
+          // Suma el qty al totalMaterialQty
+          totalMaterialQty += qty;
+
+          // Si ya existe price, calcula el precio total para este material
+          if (materials[materialKey].price !== undefined) {
+            totalMaterialPrice += qty * materials[materialKey].price;
+          }
+        }
+
+        if (prefix === "materialTable") {
           materials[materialKey].table = data[key];
+        }
       }
     });
-
     // Transformar el objeto materials en una lista (opcional)
     const materialsList = Object.values(materials);
 
     // Creación del objeto extra_items
     const extraItems = {};
+    let extraItemPrice = 0; // Inicializa la variable extraItemPrice
+
     Object.keys(data).forEach((key) => {
       const match = key.match(/(itemExtra\w*)(\d+)/);
       if (match) {
@@ -523,9 +596,15 @@ function CreateBudget() {
           extraItems[itemExtraKey] = {};
         }
 
-        if (prefix === "itemExtra") extraItems[itemExtraKey].name = data[key];
-        if (prefix === "itemExtraPrice")
-          extraItems[itemExtraKey].price = data[key];
+        if (prefix === "itemExtra") {
+          extraItems[itemExtraKey].name = data[key];
+        }
+
+        if (prefix === "itemExtraPrice") {
+          const price = Number(data[key]); // Convierte a número
+          extraItems[itemExtraKey].price = price;
+          extraItemPrice += price; // Suma el precio a extraItemPrice
+        }
       }
     });
 
@@ -539,7 +618,22 @@ function CreateBudget() {
     } catch (error) {
       console.error("Error ", error);
     }
-    console.log(lastnumber);
+
+    //sumar precio final
+    let total_price =
+      data.chapa_price +
+      data.edgeLaqueredPrice +
+      data.edgePrice +
+      data.lacqueredPrice +
+      totalMaterialPrice +
+      totalSuppliesPrice +
+      data.pantographedPrice +
+      data.veneerPolishedPrice +
+      data.veneerPrice +
+      cortePlacaPrice * totalMaterialQty +
+      extraItemPrice -
+      Number(data.adjustment_price);
+
     // Objeto final para crear el presupuesto
     const budgetData = {
       budget_number: lastnumber + 1,
@@ -584,7 +678,7 @@ function CreateBudget() {
       extra_items: extraItemsList,
       adjustment_reason: data.adjustment_reason,
       adjustment_price: data.adjustment_price,
-      total_price: 50000,
+      total_price: total_price,
       deliver_date: data.deliver_date,
       comments: data.comments,
       client: clientData,
@@ -600,7 +694,7 @@ function CreateBudget() {
       console.error("Error creando presupuesto:", error);
     }
   };
-
+  console.log(services);
   return (
     <>
       <div className="p-4">
