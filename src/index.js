@@ -95,3 +95,6 @@ export { EditService } from "./views/ServicesFurniture/EditService";
 
 //BUDGETS
 export { CreateBudget } from "./views/Budgets/CreateBudget";
+export { Budgets } from "./views/Budgets/Budgets";
+export { BudgetDetails } from "./views/Budgets/BudgetDetails";
+

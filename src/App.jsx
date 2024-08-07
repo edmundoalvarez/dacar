@@ -25,6 +25,8 @@ import {
   EditService,
   //Presupuesto
   CreateBudget,
+  Budgets,
+  BudgetDetails
 } from "./index.js";
 
 function App() {
@@ -65,6 +67,8 @@ function App() {
         <Route path="/ver-servicios" element={<ServicesFurniture />} />
         <Route path="/crear-servicio" element={<CreateServicesFurniture />} />
         <Route path="/editar-servicio/:idService" element={<EditService />} />
+        <Route path="/ver-presupuestos" element={<Budgets />} />
+        <Route path="/ver-presupuestos/:idBudget" element={<BudgetDetails />} />
       </Routes>
       {/*     {<Footer />} */}
     </>

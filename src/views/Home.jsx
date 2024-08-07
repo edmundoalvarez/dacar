@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 function Home() {
   return (
     <>
@@ -28,6 +28,12 @@ function Home() {
             className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
           >
             Servicios
+          </Link>
+          <Link
+            to={`/ver-presupuestos`}
+            className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
+          >
+            Presupuestos
           </Link>
         </div>
       </div>

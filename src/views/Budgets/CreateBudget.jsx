@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Await, Link, useParams } from "react-router-dom";
+import { Await, Link, useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import {
   getFurnitureById,
@@ -33,6 +33,8 @@ function CreateBudget() {
   const [materialEdge, setMaterialEdge] = useState(1);
   const [materialEdgeLaquered, setMaterialEdgeLaquered] = useState(0);
   const [chapa, setChapa] = useState(0);
+  const navigate = useNavigate();
+
 
   const {
     register,
@@ -682,6 +684,8 @@ function CreateBudget() {
       deliver_date: data.deliver_date,
       comments: data.comments,
       client: clientData,
+      placement: data.placement,
+      shipment: data.shipment
     };
 
     //TODO AGREGAR USERNAME
@@ -690,6 +694,7 @@ function CreateBudget() {
     try {
       await createBudget(budgetData);
       console.log("Presupuesto creado", budgetData);
+      navigate('/ver-presupuestos');
     } catch (error) {
       console.error("Error creando presupuesto:", error);
     }
@@ -1407,6 +1412,40 @@ function CreateBudget() {
                     </span>
                   )}
                 </div>
+              </div>
+              <div className="flex flex-col w-1/2 my-4">
+                <label htmlFor="placement">Colocación</label>
+                <select
+                  name="placement"
+                  id="placement"
+                  className="border-solid border-2 border-opacity mb-2 rounded-md"
+                  {...register("placement")}
+                >
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+                {errors.placement && (
+                  <span className="text-xs xl:text-base text-red-700 mt-2 block text-left">
+                    {errors.placement.message}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-col w-1/2 my-4">
+                <label htmlFor="shipment">Envío</label>
+                <select
+                  name="shipment"
+                  id="shipment"
+                  className="border-solid border-2 border-opacity mb-2 rounded-md"
+                  {...register("shipment")}
+                >
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+                {errors.shipment && (
+                  <span className="text-xs xl:text-base text-red-700 mt-2 block text-left">
+                    {errors.shipment.message}
+                  </span>
+                )}
               </div>
               <button
                 type="submit"
