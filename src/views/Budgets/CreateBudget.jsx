@@ -33,8 +33,8 @@ function CreateBudget() {
   const [materialEdge, setMaterialEdge] = useState(1);
   const [materialEdgeLaquered, setMaterialEdgeLaquered] = useState(0);
   const [chapa, setChapa] = useState(0);
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
 
   const {
     register,
@@ -443,7 +443,7 @@ function CreateBudget() {
   //FORMULARIO GENERAR PRESUPUESTO
   const onSubmit = async (data, event) => {
     event.preventDefault();
-    console.log("data formulario", data);
+    // console.log("data formulario", data);
     //Budget Number
 
     // Creación del objeto supplies agrupado por módulos
@@ -623,16 +623,18 @@ function CreateBudget() {
 
     //sumar precio final
     let total_price =
-      data.chapa_price +
+      data.chapa_price * 3.8 +
       data.edgeLaqueredPrice +
-      data.edgePrice +
+      data.edgePrice * 3.8 +
       data.lacqueredPrice +
-      totalMaterialPrice +
-      totalSuppliesPrice +
+      totalMaterialPrice * 3.8 +
+      totalSuppliesPrice * 3.8 +
       data.pantographedPrice +
       data.veneerPolishedPrice +
-      data.veneerPrice +
+      data.veneerPrice * 3.8 +
       cortePlacaPrice * totalMaterialQty +
+      Number(data.placementPrice) +
+      Number(data.shipmentPrice) +
       extraItemPrice -
       Number(data.adjustment_price);
 
@@ -685,21 +687,24 @@ function CreateBudget() {
       comments: data.comments,
       client: clientData,
       placement: data.placement,
-      shipment: data.shipment
+      placement_price: data.placementPrice,
+      shipment: data.shipment,
+      shipmentt_price: data.shipmentPrice,
+      show_modules: data.showModules,
     };
 
-    //TODO AGREGAR USERNAME
+    // //TODO AGREGAR USERNAME
     console.log(budgetData);
 
     try {
       await createBudget(budgetData);
       console.log("Presupuesto creado", budgetData);
-      navigate('/ver-presupuestos');
+      navigate("/ver-presupuestos");
     } catch (error) {
       console.error("Error creando presupuesto:", error);
     }
   };
-  console.log(services);
+
   return (
     <>
       <div className="p-4">
@@ -1171,7 +1176,6 @@ function CreateBudget() {
                 </div>
               ))}
               {/* item extra inicio */}
-
               <div className="flex items-center gap-2 pt-4">
                 <p className="text-md font-semibold">Items extra</p>{" "}
                 <div className="flex gap-4">
@@ -1316,8 +1320,9 @@ function CreateBudget() {
                     type="radio"
                     id="newClient"
                     value="new"
-                    {...register("clientOption")}
-                    onChange={handleClientOption}
+                    {...register(`clientOption`, {
+                      required: "El campo es obligatorio",
+                    })}
                   />
                   <label htmlFor="newClient" className="ml-2">
                     Cargar cliente
@@ -1328,7 +1333,9 @@ function CreateBudget() {
                     type="radio"
                     id="existingClient"
                     value="existing"
-                    {...register("clientOption")}
+                    {...register(`clientOption`, {
+                      required: "El campo es obligatorio",
+                    })}
                     onChange={handleClientOption}
                   />
                   <label htmlFor="existingClient" className="ml-2">
@@ -1341,7 +1348,6 @@ function CreateBudget() {
                   </span>
                 )}
               </div>
-
               {clientOption === "new" ? (
                 <FormCreateClient
                   register={register}
@@ -1413,14 +1419,17 @@ function CreateBudget() {
                   )}
                 </div>
               </div>
-              <div className="flex flex-col w-1/2 my-4">
+              <div className="flex  w-1/2 my-4 gap-4">
                 <label htmlFor="placement">Colocación</label>
                 <select
                   name="placement"
                   id="placement"
                   className="border-solid border-2 border-opacity mb-2 rounded-md"
-                  {...register("placement")}
+                  {...register("placement", {
+                    required: "El campo es obligatorio",
+                  })}
                 >
+                  <option value="">Elegir una opción</option>
                   <option value="true">Sí</option>
                   <option value="false">No</option>
                 </select>
@@ -1429,15 +1438,28 @@ function CreateBudget() {
                     {errors.placement.message}
                   </span>
                 )}
+
+                <>
+                  <label htmlFor="placementPrice">Precio</label>
+                  <input
+                    name={`placementPrice`}
+                    type="number"
+                    className="border-solid border-2 border-opacity mb-2 rounded-md "
+                    {...register(`placementPrice`)}
+                  />
+                </>
               </div>
-              <div className="flex flex-col w-1/2 my-4">
+              <div className="flex  w-1/2 my-4 gap-4">
                 <label htmlFor="shipment">Envío</label>
                 <select
                   name="shipment"
                   id="shipment"
                   className="border-solid border-2 border-opacity mb-2 rounded-md"
-                  {...register("shipment")}
+                  {...register("shipment", {
+                    required: "El campo es obligatorio",
+                  })}
                 >
+                  <option value="">Elegir opción</option>
                   <option value="true">Sí</option>
                   <option value="false">No</option>
                 </select>
@@ -1446,6 +1468,24 @@ function CreateBudget() {
                     {errors.shipment.message}
                   </span>
                 )}
+                <label htmlFor="shipmentPrice">Precio</label>
+                <input
+                  name={`shipmentPrice`}
+                  type="number"
+                  className="border-solid border-2 border-opacity mb-2 rounded-md "
+                  {...register(`shipmentPrice`)}
+                />
+              </div>
+              <div className="flex  w-1/2 my-4 gap-4">
+                <label htmlFor="showModules">
+                  Mostrar módulos en presupuesto
+                </label>
+                <input
+                  type="checkbox"
+                  name="showModules"
+                  id="showModules"
+                  {...register(`showModules`)}
+                />
               </div>
               <button
                 type="submit"
