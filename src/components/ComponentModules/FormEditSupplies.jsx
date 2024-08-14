@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 
-function FormEditSupplies({ register, index, errors, supplies, supplyModule, setValue }) {
+function FormEditSupplies({
+  register,
+  index,
+  errors,
+  supplies,
+  supplyModule,
+  setValue,
+}) {
   const [selectedSupply, setSelectedSupply] = useState("");
 
   useEffect(() => {
@@ -23,9 +30,14 @@ function FormEditSupplies({ register, index, errors, supplies, supplyModule, set
   return (
     <div className="flex flex-wrap gap-x-4 w-full">
       <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`supplie_id_name${index}`}>Insumo</label>
+        <label
+          htmlFor={`supplie_id_name${index}`}
+          className="font-semibold mb-1"
+        >
+          Insumo
+        </label>
         <select
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          className="border border-gray-300 rounded-md p-2"
           name={`supplie_id_name${index}`}
           id={`supplie_id_name${index}`}
           {...register(`supplie_id_name${index}`, {
@@ -36,10 +48,7 @@ function FormEditSupplies({ register, index, errors, supplies, supplyModule, set
         >
           <option value="">Elegir una opción</option>
           {supplies.map((supplie) => (
-            <option
-              key={supplie._id}
-              value={`${supplie._id}-${supplie.name}`}
-            >
+            <option key={supplie._id} value={`${supplie._id}-${supplie.name}`}>
               {supplie.name}
             </option>
           ))}
@@ -51,9 +60,11 @@ function FormEditSupplies({ register, index, errors, supplies, supplyModule, set
         )}
       </div>
       <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`supplie_qty${index}`}>Cantidad</label>
+        <label htmlFor={`supplie_qty${index}`} className="font-semibold mb-1">
+          Cantidad
+        </label>
         <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          className="border border-gray-300 rounded-md p-2"
           type="number"
           name={`supplie_qty${index}`}
           id={`supplie_qty${index}`}
@@ -70,9 +81,14 @@ function FormEditSupplies({ register, index, errors, supplies, supplyModule, set
         )}
       </div>
       <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`supplie_length${index}`}>Largo (opcional)</label>
+        <label
+          htmlFor={`supplie_length${index}`}
+          className="font-semibold mb-1"
+        >
+          Largo (opcional)
+        </label>
         <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          className="border border-gray-300 rounded-md p-2"
           type="text"
           name={`supplie_length${index}`}
           id={`supplie_length${index}`}

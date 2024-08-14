@@ -12,9 +12,14 @@ function FormAddSupplies({ register, index, errors, supplies }) {
     <>
       <div className="flex flex-wrap gap-x-4 w-full">
         <div className="flex flex-col w-2/12 my-2">
-          <label htmlFor={`supplie_id_name${index}`}>Insumo</label>
+          <label
+            htmlFor={`supplie_id_name${index}`}
+            className="font-semibold mb-1"
+          >
+            Insumo
+          </label>
           <select
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+            className="border border-gray-300 rounded-md p-2"
             name={`supplie_id_name${index}`}
             id={`supplie_id_name${index}`}
             {...register(`supplie_id_name${index}`, {
@@ -39,9 +44,11 @@ function FormAddSupplies({ register, index, errors, supplies }) {
           )}
         </div>
         <div className="flex flex-col w-2/12 my-2">
-          <label htmlFor={`supplie_qty${index}`}>Cantidad</label>
+          <label htmlFor={`supplie_qty${index}`} className="font-semibold mb-1">
+            Cantidad
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-3/12"
+            className="border border-gray-300 rounded-md p-2"
             type="number"
             name={`supplie_qty${index}`}
             id={`supplie_qty${index}`}
@@ -56,9 +63,14 @@ function FormAddSupplies({ register, index, errors, supplies }) {
           )}
         </div>
         <div className="flex flex-col w-2/12 my-2">
-          <label htmlFor={`supplie_length${index}`}>Largo (opcional)</label>
+          <label
+            htmlFor={`supplie_length${index}`}
+            className="font-semibold mb-1"
+          >
+            Largo (opcional)
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-3/12"
+            className="border border-gray-300 rounded-md p-2"
             type="text"
             name={`supplie_length${index}`}
             id={`supplie_length${index}`}

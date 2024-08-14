@@ -313,9 +313,11 @@ function EditModule() {
         onSubmit={handleSubmit(onSubmit)}
       >
         <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="name">Nombre del módulo</label>
+          <label htmlFor="name" className="font-semibold mb-1">
+            Nombre del módulo
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="text"
             name="name"
             id="name"
@@ -330,9 +332,11 @@ function EditModule() {
           )}
         </div>
         <div className="flex flex-col w-3/12 my-2 ">
-          <label htmlFor="height">Alto</label>
+          <label htmlFor="height" className="font-semibold mb-1">
+            Alto
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="text"
             name="height"
             id="height"
@@ -347,7 +351,7 @@ function EditModule() {
           )}
           {/* input hidden */}
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="hidden"
             name="heightHidden"
             id="heightHidden"
@@ -358,9 +362,11 @@ function EditModule() {
           />
         </div>
         <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="length">Largo</label>
+          <label htmlFor="length" className="font-semibold mb-1">
+            Largo
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="text"
             name="length"
             id="length"
@@ -375,7 +381,7 @@ function EditModule() {
           )}
           {/* input hidden */}
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="hidden"
             name="lengthHidden"
             id="lengthHidden"
@@ -386,9 +392,11 @@ function EditModule() {
           />
         </div>
         <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="width">Profundidad</label>
+          <label htmlFor="width" className="font-semibold mb-1">
+            Profundidad
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="text"
             name="width"
             id="width"
@@ -403,7 +411,7 @@ function EditModule() {
           )}
           {/* input hidden */}
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="hidden"
             name="widthHidden"
             id="widthHidden"
@@ -414,9 +422,11 @@ function EditModule() {
           />
         </div>
         <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="category">Categoria</label>
+          <label htmlFor="category" className="font-semibold mb-1">
+            Categoria
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="text"
             name="category"
             id="category"
@@ -433,9 +443,11 @@ function EditModule() {
 
         <div className="flex flex-col w-full my-2">
           <h2 className="text-3xl">Insumos</h2>
-          <label htmlFor="suppliesNumber">Cantidad de insumos</label>
+          <label htmlFor="suppliesNumber" className="font-semibold mb-1">
+            Cantidad de insumos
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-3/12"
+            className="border border-gray-300 rounded-md p-2 w-1/12"
             type="number"
             name="suppliesNumber"
             id="suppliesNumber"
@@ -464,9 +476,11 @@ function EditModule() {
           ))}
         <h2 className="text-3xl">Piezas</h2>
         <div className="flex flex-col w-full my-2">
-          <label htmlFor="piecesNumber">Cantidad de piezas</label>
+          <label htmlFor="piecesNumber" className="font-semibold mb-1">
+            Cantidad de piezas
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-3/12"
+            className="border border-gray-300 rounded-md p-2 w-1/12"
             type="number"
             name="piecesNumber"
             id="piecesNumber"
@@ -498,10 +512,10 @@ function EditModule() {
           ))}
         <div className="w-full">
           <button
-            className="bg-blue-700 hover:bg-blue-500 text-white px-4 rounded-md"
+            className="bg-blue-700 hover:bg-blue-500 text-white text-xl px-4 rounded-md"
             type="submit"
           >
-            Enviar
+            Guardar
           </button>
         </div>
       </form>

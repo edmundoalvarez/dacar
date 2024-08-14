@@ -171,10 +171,12 @@ function CreateModule() {
         className="flex flex-wrap w-full"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="name">Nombre del módulo</label>
+        <div className="flex flex-col w-4/12 my-2">
+          <label className="font-semibold mb-1" htmlFor="name">
+            Nombre del módulo
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2"
             type="text"
             name="name"
             id="name"
@@ -188,10 +190,12 @@ function CreateModule() {
             </span>
           )}
         </div>
-        <div className="flex flex-col w-3/12 my-2 ">
-          <label htmlFor="height">Alto</label>
+        <div className="flex flex-col w-2/12 my-2 ml-4">
+          <label className="font-semibold mb-1" htmlFor="height">
+            Alto
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2"
             type="text"
             name="height"
             id="height"
@@ -205,10 +209,12 @@ function CreateModule() {
             </span>
           )}
         </div>
-        <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="length">Largo</label>
+        <div className="flex flex-col w-2/12  my-2 ml-4">
+          <label className="font-semibold mb-1" htmlFor="length">
+            Largo
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2"
             type="text"
             name="length"
             id="length"
@@ -222,10 +228,12 @@ function CreateModule() {
             </span>
           )}
         </div>
-        <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="width">Profundidad</label>
+        <div className="flex flex-col w-2/12 my-2 ml-4">
+          <label className="font-semibold mb-1" htmlFor="width">
+            Profundidad
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2"
             type="text"
             name="width"
             id="width"
@@ -240,9 +248,11 @@ function CreateModule() {
           )}
         </div>
         <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="category">Categoria</label>
+          <label className="font-semibold mb-1" htmlFor="category">
+            Categoria
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2"
             type="text"
             name="category"
             id="category"
@@ -259,9 +269,11 @@ function CreateModule() {
 
         <div className="flex flex-col w-full my-2">
           <h2 className="text-3xl">Insumos</h2>
-          <label htmlFor="suppliesNumber">Cantidad de insumos</label>
+          <label className="font-semibold mb-1" htmlFor="suppliesNumber">
+            Cantidad de insumos
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-3/12"
+            className="border border-gray-300 rounded-md p-2 w-1/12"
             type="number"
             name="suppliesNumber"
             id="suppliesNumber"
@@ -286,9 +298,11 @@ function CreateModule() {
         ))}
         <h2 className="text-3xl">Piezas</h2>
         <div className="flex flex-col w-full my-2">
-          <label htmlFor="piecesNumber">Cantidad de piezas</label>
+          <label className="font-semibold mb-1" htmlFor="piecesNumber">
+            Cantidad de piezas
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-3/12"
+            className="border border-gray-300 rounded-md p-2 w-1/12"
             type="number"
             name="piecesNumber"
             id="piecesNumber"

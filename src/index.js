@@ -14,6 +14,8 @@ export { getAllModules } from "./services/ModulesForFurniture/getAllModules.js";
 export { getModuleById } from "./services/ModulesForFurniture/getModuleById.js";
 export { updateModule } from "./services/ModulesForFurniture/updateModule.js";
 export { updateModulePiecesNumber } from "./services/ModulesForFurniture/updateModulePiecesNumber.js";
+export { cloneModule } from "./services/ModulesForFurniture/cloneModule.js";
+export { deleteOriginalModule } from "./services/ModulesForFurniture/deleteOriginalModule.js";
 
 //PIECES
 export { createPieces } from "./services/Pieces/createPieces.js";
@@ -97,4 +99,3 @@ export { EditService } from "./views/ServicesFurniture/EditService";
 export { CreateBudget } from "./views/Budgets/CreateBudget";
 export { Budgets } from "./views/Budgets/Budgets";
 export { BudgetDetails } from "./views/Budgets/BudgetDetails";
-

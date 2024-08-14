@@ -315,9 +315,11 @@ function EditFurnitureSingleModuleComponent({
         onSubmit={handleSubmit(onSubmit)}
       >
         <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="name">Nombre del módulo</label>
+          <label className="font-semibold mb-1" htmlFor="name">
+            Nombre del módulo
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="text"
             name="name"
             id="name"
@@ -332,9 +334,11 @@ function EditFurnitureSingleModuleComponent({
           )}
         </div>
         <div className="flex flex-col w-3/12 my-2 ">
-          <label htmlFor="height">Alto</label>
+          <label className="font-semibold mb-1" htmlFor="height">
+            Alto
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="text"
             name="height"
             id="height"
@@ -349,7 +353,7 @@ function EditFurnitureSingleModuleComponent({
           )}
           {/* input hidden */}
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="hidden"
             name="heightHidden"
             id="heightHidden"
@@ -360,9 +364,11 @@ function EditFurnitureSingleModuleComponent({
           />
         </div>
         <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="length">Largo</label>
+          <label className="font-semibold mb-1" htmlFor="length">
+            Largo
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="text"
             name="length"
             id="length"
@@ -377,7 +383,7 @@ function EditFurnitureSingleModuleComponent({
           )}
           {/* input hidden */}
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="hidden"
             name="lengthHidden"
             id="lengthHidden"
@@ -388,9 +394,11 @@ function EditFurnitureSingleModuleComponent({
           />
         </div>
         <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="width">Profundidad</label>
+          <label className="font-semibold mb-1" htmlFor="width">
+            Profundidad
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="text"
             name="width"
             id="width"
@@ -405,7 +413,7 @@ function EditFurnitureSingleModuleComponent({
           )}
           {/* input hidden */}
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="hidden"
             name="widthHidden"
             id="widthHidden"
@@ -416,9 +424,11 @@ function EditFurnitureSingleModuleComponent({
           />
         </div>
         <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="category">Categoria</label>
+          <label className="font-semibold mb-1" htmlFor="category">
+            Categoria
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            className="border border-gray-300 rounded-md p-2 w-11/12"
             type="text"
             name="category"
             id="category"
@@ -435,9 +445,11 @@ function EditFurnitureSingleModuleComponent({
 
         <div className="flex flex-col w-full my-2">
           <h2 className="text-3xl">Insumos</h2>
-          <label htmlFor="suppliesNumber">Cantidad de insumos</label>
+          <label htmlFor="suppliesNumber" className="font-semibold mb-1">
+            Cantidad de insumos
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-3/12"
+            className="border border-gray-300 rounded-md p-2 w-1/12"
             type="number"
             name="suppliesNumber"
             id="suppliesNumber"
@@ -466,9 +478,11 @@ function EditFurnitureSingleModuleComponent({
           ))}
         <h2 className="text-3xl">Piezas</h2>
         <div className="flex flex-col w-full my-2">
-          <label htmlFor="piecesNumber">Cantidad de piezas</label>
+          <label htmlFor="piecesNumber" className="font-semibold mb-1">
+            Cantidad de piezas
+          </label>
           <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-3/12"
+            className="border border-gray-300 rounded-md p-2 w-1/12"
             type="number"
             name="piecesNumber"
             id="piecesNumber"

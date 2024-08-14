@@ -73,8 +73,8 @@ function FormEditPieces({
   };
 
   return (
-    <div className="flex flex-wrap gap-x-4 w-full">
-      <div className="flex flex-col w-2/12 my-2">
+    <div className="flex flex-wrap gap-x-4 w-full border-b-2 border-gray-300 pb-4 mb-4">
+      <div className="flex flex-col w-1/5">
         {/* input hidden */}
         <input
           className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
@@ -84,9 +84,11 @@ function FormEditPieces({
           defaultValue={piece?._id}
           {...register("pieceId")}
         />
-        <label htmlFor={`namePiece${index}`}>Nombre de la pieza</label>
+        <label htmlFor={`namePiece${index}`} className="font-semibold mb-1">
+          Nombre de la pieza
+        </label>
         <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          className="border border-gray-300 rounded-md p-2"
           type="text"
           name={`namePiece${index}`}
           id={`namePiece${index}`}
@@ -101,18 +103,18 @@ function FormEditPieces({
           </span>
         )}
       </div>
-      <div className="flex flex-col w-2/12 my-2">
-        <label>
-          <input
-            type="checkbox"
-            defaultChecked={piece?.loose_piece || false}
-            {...register(`loose_piece${index}`)}
-          />
-          Pieza suelta
-        </label>
+      <div className="flex flex-col justify-center w-1/12">
+        <label className="font-semibold mb-1 mr-2">Pieza suelta</label>
+        <input
+          type="checkbox"
+          defaultChecked={piece?.loose_piece || false}
+          {...register(`loose_piece${index}`)}
+        />
       </div>
-      <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`orientation${index}`}>Orientación</label>
+      <div className="flex flex-col w-1/5 mb-2">
+        <label htmlFor={`orientation${index}`} className="font-semibold mb-1">
+          Orientación
+        </label>
         <input
           type="hidden"
           name={`orientation${index}`}
@@ -122,7 +124,7 @@ function FormEditPieces({
         />
         <input
           type="text"
-          className="border-solid border-2 bg-gray-300 border-opacity mb-2 rounded-md w-full"
+          className="border border-gray-300 rounded-md p-2"
           name={`orientationShow${index}`}
           id={`orientationShow${index}`}
           value={
@@ -139,8 +141,8 @@ function FormEditPieces({
       </div>
       {/* length */}
 
-      <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`lengthPiece${index}`}>
+      <div className="flex flex-col w-1/5">
+        <label htmlFor={`lengthPiece${index}`} className="font-semibold mb-1">
           {piece.orientation === "cross-vertical"
             ? "Alto:"
             : piece.orientation === "cross-horizontal"
@@ -150,7 +152,7 @@ function FormEditPieces({
             : ""}
         </label>
         <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          className="border border-gray-300 rounded-md p-2"
           type="text"
           name={`lengthPiece${index}`}
           id={`lengthPiece${index}`}
@@ -168,8 +170,8 @@ function FormEditPieces({
 
       {/* width */}
 
-      <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`widthPiece${index}`}>
+      <div className="flex flex-col w-1/5">
+        <label htmlFor={`widthPiece${index}`} className="font-semibold mb-1">
           {" "}
           {piece.orientation === "cross-vertical"
             ? "Largo:"
@@ -180,7 +182,7 @@ function FormEditPieces({
             : ""}
         </label>
         <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          className="border border-gray-300 rounded-md p-2"
           type="text"
           name={`widthPiece${index}`}
           id={`widthPiece${index}`}
@@ -196,10 +198,10 @@ function FormEditPieces({
         )}
       </div>
 
-      <div className="flex flex-col w-2/12 my-2">
+      <div className="flex flex-col w-1/5">
         <label htmlFor={`categoryPiece${index}`}>Categoría</label>
         <input
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          className="border border-gray-300 rounded-md p-2"
           type="text"
           name={`categoryPiece${index}`}
           id={`categoryPiece${index}`}
@@ -214,10 +216,12 @@ function FormEditPieces({
           </span>
         )}
       </div>
-      <div className="flex flex-col w-2/12 my-2">
-        <label htmlFor={`materialPiece${index}`}>Material</label>
+      <div className="flex flex-col w-1/5">
+        <label htmlFor={`materialPiece${index}`} className="font-semibold mb-1">
+          Material
+        </label>
         <select
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          className="border border-gray-300 rounded-md p-2"
           name={`materialPiece${index}`}
           id={`materialPiece${index}`}
           {...register(`materialPiece${index}`, {
@@ -240,10 +244,15 @@ function FormEditPieces({
         )}
       </div>
 
-      <div className="flex flex-col w-3/12 my-2">
-        <label htmlFor={`lacqueredOrVeneer${index}`}>Acabado</label>
+      <div className="flex flex-col w-1/4">
+        <label
+          htmlFor={`lacqueredOrVeneer${index}`}
+          className="font-semibold mb-1"
+        >
+          Acabado
+        </label>
         <select
-          className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+          className="border border-gray-300 rounded-md p-2"
           name={`finishing${index}`}
           id={`lacqueredOrVeneer${index}`}
           {...register(`finishing${index}`, {
@@ -265,12 +274,15 @@ function FormEditPieces({
       </div>
       {/* Condicional para mostrar elementos dependiendo de `finishingModule` */}
       {finishingModule === "lacqueredPiece" && (
-        <div className="flex flex-col w-2/12 my-2">
-          <label htmlFor={`lacqueredPieceSides${index}`}>
+        <div className="flex flex-col w-1/5">
+          <label
+            htmlFor={`lacqueredPieceSides${index}`}
+            className="font-semibold mb-1"
+          >
             Laqueado (opcional)
           </label>
           <select
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+            className="border border-gray-300 rounded-md p-2"
             name={`lacqueredPieceSides${index}`}
             id={`lacqueredPieceSides${index}`}
             {...register(`lacqueredPieceSides${index}`, {
@@ -287,34 +299,33 @@ function FormEditPieces({
               {errors[`lacqueredPieceSides${index}`].message}
             </span>
           )}
-          <div className="flex flex-col w-2/12 my-2">
-            <label>
-              <input
-                type="checkbox"
-                {...register(`pantographed${index}`)}
-                defaultChecked={piece?.pantographed || false}
-              />
-              Pantografiado
-            </label>
+          <div className="flex items-center mt-2">
+            <label className="font-semibold">Pantografiado</label>
+            <input
+              className="ml-2"
+              type="checkbox"
+              {...register(`pantographed${index}`)}
+              defaultChecked={piece?.pantographed || false}
+            />
           </div>
         </div>
       )}
       {finishingModule === "melamine" && (
-        <div className="flex flex-col w-2/12 my-2">
-          <label>
-            <input
-              type="checkbox"
-              {...register(`melamineLacquered${index}`)}
-              defaultChecked={piece?.melamineLacquered || false}
-            />
-            Laqueado
-          </label>
+        <div className="flex items-center mt-5 w-1/5">
+          <label className="font-semibold mb-1">Laqueado</label>
+          <input
+            className="ml-2"
+            type="checkbox"
+            {...register(`melamineLacquered${index}`)}
+            defaultChecked={piece?.melamineLacquered || false}
+          />
         </div>
       )}
       {finishingModule === "veneer" && (
-        <div className="flex flex-col w-2/12 my-2">
+        <div className="flex flex-col w-1/5 mt-5">
           <div>
             <input
+              className="border border-gray-300 rounded-md p-2"
               {...register(`veneerOption${index}`, {
                 required: "Este campo es requerido",
               })}
@@ -351,33 +362,35 @@ function FormEditPieces({
         </div>
       )}
 
-      <div className="flex flex-col w-2/12 my-2">
-        <label>¿Tiene filo?</label>
-        <div>
-          <input
-            type="radio"
-            id={`edgeOptionYes${index}`}
-            name={`edgeOption${index}`}
-            value="yes"
-            onChange={handleEdgeOptionChange}
-            defaultChecked={piece.edgeLength || piece.edgeWidth}
-          />
-          <label htmlFor={`edgeOptionYes${index}`} className="ml-2">
-            Sí
-          </label>
-        </div>
-        <div>
-          <input
-            type="radio"
-            id={`edgeOptionNo${index}`}
-            name={`edgeOption${index}`}
-            value="no"
-            onChange={handleEdgeOptionChange}
-            defaultChecked={!piece.edgeLength && !piece.edgeWidth}
-          />
-          <label htmlFor={`edgeOptionNo${index}`} className="ml-2">
-            No
-          </label>
+      <div className="flex flex-col w-2/12 mt-4">
+        <label className="font-semibold mb-1">¿Tiene filo?</label>
+        <div className="flex gap-4">
+          <div>
+            <input
+              type="radio"
+              id={`edgeOptionYes${index}`}
+              name={`edgeOption${index}`}
+              value="yes"
+              onChange={handleEdgeOptionChange}
+              defaultChecked={piece.edgeLength || piece.edgeWidth}
+            />
+            <label htmlFor={`edgeOptionYes${index}`} className="ml-2">
+              Sí
+            </label>
+          </div>
+          <div>
+            <input
+              type="radio"
+              id={`edgeOptionNo${index}`}
+              name={`edgeOption${index}`}
+              value="no"
+              onChange={handleEdgeOptionChange}
+              defaultChecked={!piece.edgeLength && !piece.edgeWidth}
+            />
+            <label htmlFor={`edgeOptionNo${index}`} className="ml-2">
+              No
+            </label>
+          </div>
         </div>
         {errors[`edgeOption${index}`] && (
           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -386,12 +399,11 @@ function FormEditPieces({
         )}
       </div>
       {showEdgePiece && (
-        <div className="flex">
+        <div className="flex mt-4 gap-8">
           {/* filo length */}
           <div>
             <div>
-              <label>
-                <input type="checkbox" {...register(`edgeLength${index}`)} />
+              <label className="font-semibold mb-1">
                 Filo de{" "}
                 {piece.orientation === "cross-vertical"
                   ? "Alto:"
@@ -401,29 +413,40 @@ function FormEditPieces({
                   ? "Alto:"
                   : ""}
               </label>
+              <input
+                className="ml-2"
+                type="checkbox"
+                {...register(`edgeLength${index}`)}
+              />
             </div>
-            <label htmlFor={`edgeLengthSides${index}`}>Cantidad de lados</label>
-            <select
-              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-              name={`edgeLengthSides${index}`}
-              id={`edgeLengthSides${index}`}
-              {...register(`edgeLengthSides${index}`)}
-            >
-              <option value="">Elegir una opción</option>
-              <option value="1">1 Lado</option>
-              <option value="2">2 Lados</option>
-            </select>
-            {errors[`edgeLengthSides${index}`] && (
-              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                {errors[`edgeLengthSides${index}`].message}
-              </span>
-            )}
+            <div className="flex flex-col">
+              <label
+                htmlFor={`edgeLengthSides${index}`}
+                className="font-semibold mb-1"
+              >
+                Cantidad de lados
+              </label>
+              <select
+                className="border border-gray-300 rounded-md p-2"
+                name={`edgeLengthSides${index}`}
+                id={`edgeLengthSides${index}`}
+                {...register(`edgeLengthSides${index}`)}
+              >
+                <option value="">Elegir una opción</option>
+                <option value="1">1 Lado</option>
+                <option value="2">2 Lados</option>
+              </select>
+              {errors[`edgeLengthSides${index}`] && (
+                <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                  {errors[`edgeLengthSides${index}`].message}
+                </span>
+              )}
+            </div>
           </div>
           <div>
             {/* filo width */}
             <div>
-              <label>
-                <input type="checkbox" {...register(`edgeWidth${index}`)} />
+              <label className="font-semibold mb-1">
                 Filo de{" "}
                 {piece.orientation === "cross-vertical"
                   ? "Largo:"
@@ -433,30 +456,40 @@ function FormEditPieces({
                   ? "Profundidad:"
                   : ""}
               </label>
+              <input
+                className="ml-2"
+                type="checkbox"
+                {...register(`edgeWidth${index}`)}
+              />
             </div>
-            <label htmlFor={`edgeWidthSides${index}`}>Cantidad de lados</label>
-            <select
-              className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
-              name={`edgeWidthSides${index}`}
-              id={`edgeWidthSides${index}`}
-              {...register(`edgeWidthSides${index}`)}
-            >
-              <option value="">Elegir una opción</option>
-              <option value="1">1 Lado</option>
-              <option value="2">2 Lados</option>
-            </select>
-            {errors[`edgeWidthSides${index}`] && (
-              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                {errors[`edgeWidthSides${index}`].message}
-              </span>
-            )}
+            <div className="flex flex-col">
+              <label
+                htmlFor={`edgeWidthSides${index}`}
+                className="font-semibold mb-1"
+              >
+                Cantidad de lados
+              </label>
+              <select
+                className="border border-gray-300 rounded-md p-2"
+                name={`edgeWidthSides${index}`}
+                id={`edgeWidthSides${index}`}
+                {...register(`edgeWidthSides${index}`)}
+              >
+                <option value="">Elegir una opción</option>
+                <option value="1">1 Lado</option>
+                <option value="2">2 Lados</option>
+              </select>
+              {errors[`edgeWidthSides${index}`] && (
+                <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                  {errors[`edgeWidthSides${index}`].message}
+                </span>
+              )}
+            </div>
             {/* filo laqueado */}
           </div>
-          <div className="flex flex-col w-2/12 my-2">
-            <label>
-              <input type="checkbox" {...register(`lacqueredEdge${index}`)} />
-              Filo Laqueado
-            </label>
+          <div className="flex flex-col ml-4">
+            <label className="font-semibold mb-1">Filo Laqueado</label>
+            <input type="checkbox" {...register(`lacqueredEdge${index}`)} />
           </div>
         </div>
       )}
