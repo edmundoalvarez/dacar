@@ -121,8 +121,8 @@ function BudgetDetails() {
                         <ul className="mb-6">
                           {furn.modules_furniture.map((module, idx) => (
                             <li key={idx}>
-                              {module.name} - {module.width} (ancho) x{" "}
-                              {module.height} (alto) x {furn.length}{" "}
+                              {module.name} - {module.height} (alto) x{" "}
+                              {module.length} (largo) x {module.width}{" "}
                               (profundidad)
                             </li>
                           ))}
