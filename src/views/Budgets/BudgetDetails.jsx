@@ -22,7 +22,7 @@ function BudgetDetails() {
   }, [idBudget]);
 
   // Divide total_price by 100 to get the correct monetary value
-  const totalPriceInUnits = budget.total_price / 100;
+  const totalPriceInUnits = budget.total_price;
   const iva = totalPriceInUnits * 0.21;
   const total = totalPriceInUnits + iva;
 

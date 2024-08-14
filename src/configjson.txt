@@ -13,16 +13,16 @@
   "apiBudgets": "https://dacar-api.vercel.app/budgets"
 }
 /* local */
-// {
-//   "apiUsers": "http://localhost:3000/users",
-//   "apiSuppliers": "http://localhost:3000/suppliers",
-//   "apiSupplies": "http://localhost:3000/supplies",
-//   "apiSuppliesCategory": "http://localhost:3000/supplies-categories",
-//   "apiServices": "http://localhost:3000/services",
-//   "apiFurnitures": "http://localhost:3000/furnitures",
-//   "apiModules": "http://localhost:3000/modules",
-//   "apiPieces": "http://localhost:3000/pieces",
-//   "apiMainTable": "http://localhost:3000/main-table",
-//   "apiClients": "http://localhost:3000/clients",
-//   "apiBudgets": "http://localhost:3000/budgets"
-// }
+ {
+  "apiUsers": "http://localhost:3000/users",
+  "apiSuppliers": "http://localhost:3000/suppliers",
+  "apiSupplies": "http://localhost:3000/supplies",
+  "apiSuppliesCategory": "http://localhost:3000/supplies-categories",
+  "apiServices": "http://localhost:3000/services",
+  "apiFurnitures": "http://localhost:3000/furnitures",
+  "apiModules": "http://localhost:3000/modules",
+  "apiPieces": "http://localhost:3000/pieces",
+  "apiMainTable": "http://localhost:3000/main-table",
+  "apiClients": "http://localhost:3000/clients",
+  "apiBudgets": "http://localhost:3000/budgets"
+}

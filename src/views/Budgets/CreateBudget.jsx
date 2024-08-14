@@ -240,6 +240,7 @@ function CreateBudget() {
     modules?.forEach((module) => {
       module.pieces.forEach((piece) => {
         if (piece.lacqueredPiece) {
+          // console.log("piezas", piece.name, "piezas", piece.lacqueredPiece);
           if (piece.lacqueredPieceSides === "single") {
             totalLacquered += piece.length * piece.width;
           }
@@ -397,7 +398,7 @@ function CreateBudget() {
     let option = event.target.value;
     // console.log(option);
     const selectedVeneer = veneer.find((veneer) => veneer._id === option);
-    let veneerPrice = selectedVeneer.price * (totalVeneer / 100);
+    let veneerPrice = selectedVeneer.price * (totalVeneer / 10000);
     setValue("chapa_price", veneerPrice);
     setChapa(veneerPrice.toLocaleString("es-ES"));
   };
@@ -622,17 +623,20 @@ function CreateBudget() {
     }
 
     //sumar precio final
+    let chapa_price = data.chapa_price ?? 0;
+    let edgeLaqueredPrice = data.edgeLaqueredPrice ?? 0;
+    let edgePrice = data.edgePrice ?? 0;
     let total_price =
-      data.chapa_price * 3.8 +
-      data.edgeLaqueredPrice +
-      data.edgePrice * 3.8 +
+      chapa_price * 3.8 +
+      edgeLaqueredPrice +
+      edgePrice * 3.8 +
       data.lacqueredPrice +
       totalMaterialPrice * 3.8 +
       totalSuppliesPrice * 3.8 +
       data.pantographedPrice +
       data.veneerPolishedPrice +
       data.veneerPrice * 3.8 +
-      cortePlacaPrice * totalMaterialQty +
+      Number(cortePlacaPrice) * totalMaterialQty +
       Number(data.placementPrice) +
       Number(data.shipmentPrice) +
       extraItemPrice -
@@ -678,7 +682,7 @@ function CreateBudget() {
         edgePrice: data.edgePrice,
       },
       supplies: suppliesList,
-      material: materialsList,
+      materials: materialsList,
       extra_items: extraItemsList,
       adjustment_reason: data.adjustment_reason,
       adjustment_price: data.adjustment_price,
@@ -784,102 +788,102 @@ function CreateBudget() {
                 {/* ENCHAPADO */}
                 <p className="mb-1">
                   <span className="font-bold">Enchapado en m2:</span>{" "}
-                  {totalVeneer / 100} m<sup>2</sup> Precio: $
+                  {totalVeneer / 10000} m<sup>2</sup> Precio: $
                   {(
                     enchapadoService?.price *
-                    (totalVeneer / 100)
+                    (totalVeneer / 10000)
                   ).toLocaleString("es-ES")}
                   {setValue(
                     "veneerPrice",
-                    enchapadoService?.price * (totalVeneer / 100)
+                    enchapadoService?.price * (totalVeneer / 10000)
                   )}
                 </p>
                 <input
                   name={`veneerM2`}
                   type="hidden"
-                  value={totalVeneer / 100}
+                  value={totalVeneer / 10000}
                   {...register(`veneerM2`)}
                 />
                 <input
                   name={`veneerPrice`}
                   type="hidden"
-                  value={enchapadoService?.price * (totalVeneer / 100)}
+                  value={enchapadoService?.price * (totalVeneer / 10000)}
                   {...register(`veneerPrice`)}
                 />
                 {/* LUSTRADO */}
                 <p className="mb-1">
                   <span className="font-bold">Lustrado en m2:</span>{" "}
-                  {totalVeneerPolished / 100} m<sup>2</sup> Precio: $
+                  {totalVeneerPolished / 10000} m<sup>2</sup> Precio: $
                   {(
                     lustreService?.price *
-                    (totalVeneerPolished / 100)
+                    (totalVeneerPolished / 10000)
                   ).toLocaleString("es-ES")}
                   {setValue(
                     "veneerPolishedPrice",
-                    lustreService?.price * (totalVeneerPolished / 100)
+                    lustreService?.price * (totalVeneerPolished / 10000)
                   )}
                 </p>
                 <input
                   name={`veneerPolishedM2`}
                   type="hidden"
-                  value={totalVeneerPolished / 100}
+                  value={totalVeneerPolished / 10000}
                   {...register(`veneerPolishedM2`)}
                 />
                 <input
                   name={`veneerPolishedPrice`}
                   type="hidden"
-                  value={lustreService?.price * (totalVeneerPolished / 100)}
+                  value={lustreService?.price * (totalVeneerPolished / 10000)}
                   {...register(`veneerPolishedPrice`)}
                 />
                 {/* LAQUEADO */}
                 <p className="mb-1">
                   <span className="font-bold">Laqueado en m2:</span>{" "}
-                  {totalLacqueredAll / 100} m<sup>2</sup> Precio: $
+                  {totalLacqueredAll / 10000} m<sup>2</sup> Precio: $
                   {(
                     laqueadoService?.price *
-                    (totalLacqueredAll / 100)
+                    (totalLacqueredAll / 10000)
                   ).toLocaleString("es-ES")}
                   {setValue(
                     "lacqueredPrice",
-                    laqueadoService?.price * (totalLacqueredAll / 100)
+                    laqueadoService?.price * (totalLacqueredAll / 10000)
                   )}
                 </p>
                 <input
                   name={`lacqueredM2`}
                   type="hidden"
-                  value={totalLacqueredAll / 100}
+                  value={totalLacqueredAll / 10000}
                   {...register(`lacqueredM2`)}
                 />
                 <input
                   name={`lacqueredPrice`}
                   type="hidden"
                   {...register(`lacqueredPrice`)}
-                  value={laqueadoService?.price * (totalLacqueredAll / 100)}
+                  value={laqueadoService?.price * (totalLacqueredAll / 10000)}
                 />
                 {/* PANTOGRAFIADO */}
                 <p className="mb-1">
                   <span className="font-bold">Pantografiado en m2:</span>{" "}
-                  {totalPantographed / 100} m<sup>2</sup> Precio: $
+                  {totalPantographed / 10000} m<sup>2</sup> Precio: $
                   {(
                     pantografiadoService?.price *
-                    (totalPantographed / 100)
+                    (totalPantographed / 10000)
                   ).toLocaleString("es-ES")}
                   {setValue(
                     "pantographedPrice",
-                    pantografiadoService?.price * (totalPantographed / 100)
+                    pantografiadoService?.price * (totalPantographed / 10000)
                   )}
                 </p>
                 <input
                   name={`pantographedM2`}
                   type="hidden"
-                  value={totalPantographed / 100}
+                  value={totalPantographed / 10000}
                   {...register(`pantographedM2`)}
                 />
                 <input
                   name={`pantographedPrice`}
                   type="hidden"
                   value={
-                    pantografiadoService?.price * (totalPantographed / 100)
+                    pantografiadoService?.price * (totalPantographed / 10000)
                   }
                   {...register(`pantographedPrice`)}
                 />
@@ -965,23 +969,23 @@ function CreateBudget() {
                 <div className="flex gap-4">
                   <p className="mb-1">
                     <span className="font-bold">Filo total (sin laquear):</span>{" "}
-                    {(totalEdgeLength / 100).toFixed(2)} m Precio: $
+                    {(totalEdgeLength / 10000).toFixed(2)} m Precio: $
                     {(
                       filoService?.price *
-                      (totalLacqueredEdgeLength / 100) *
+                      (totalLacqueredEdgeLength / 10000) *
                       materialEdge
                     ).toLocaleString("es-ES")}
                     {setValue(
                       "edgePrice",
                       filoService?.price *
-                        (totalLacqueredEdgeLength / 100) *
+                        (totalLacqueredEdgeLength / 10000) *
                         materialEdge
                     )}
                   </p>
                   <input
                     name={`edgeM2`}
                     type="hidden"
-                    value={(totalEdgeLength / 100).toFixed(2)}
+                    value={(totalEdgeLength / 10000).toFixed(2)}
                     {...register(`edgeM2`)}
                   />
                   <input
@@ -989,7 +993,7 @@ function CreateBudget() {
                     type="hidden"
                     value={
                       filoService?.price *
-                      (totalLacqueredEdgeLength / 100) *
+                      (totalLacqueredEdgeLength / 10000) *
                       materialEdge
                     }
                     {...register(`edgePrice`)}
