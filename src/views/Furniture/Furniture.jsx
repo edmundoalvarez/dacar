@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAllFurnitures } from "../../index.js";
+import { Grid } from "react-loader-spinner";
 
 function Furniture() {
   const [furnitures, setFurnitures] = useState([]);
   const [selectedFurniture, setSelectedFurniture] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loader, setLoader] = useState(true);
   const navigate = useNavigate();
 
   const getAllFurnituresToSet = () => {
     getAllFurnitures()
       .then((furnituresData) => {
         setFurnitures(furnituresData.data);
-        console.log("furnitureData (line 11); ", furnituresData.data);
+        setLoader(false);
       })
       .catch((error) => {
         console.error("Este es el error:", error);
@@ -38,10 +40,9 @@ function Furniture() {
   };
 
   // Manejador del botón Editar
-  const handleEditClick = (furnitureId, moduleId) => {
+  const handleDownloadLoosePiece = (furnitureId, moduleId) => {
     console.log("Id mueble:", furnitureId);
     console.log("Id modulo:", moduleId);
-    navigate(`/ver-muebles/${furnitureId}/ver-modulos/${moduleId}/edit`);
   };
 
   return (
@@ -177,6 +178,18 @@ function Furniture() {
               ))}
             </tbody>
           </table>
+          <div className="flex justify-center w-full mt-8">
+            <Grid
+              visible={loader}
+              height="80"
+              width="80"
+              color="rgb(92, 92, 92)"
+              ariaLabel="grid-loading"
+              radius="12.5"
+              wrapperStyle={{}}
+              wrapperClass="grid-wrapper"
+            />
+          </div>
         </div>
       </div>
       {/* Abrimos la modal en caso que el estado isModalOpen cambie */}
@@ -224,7 +237,10 @@ function Furniture() {
             <div className="flex justify-center items-center m-auto gap-2 mt-4">
               <button
                 onClick={() =>
-                  handleEditClick(selectedFurniture._id, selectedModule._id)
+                  handleDownloadLoosePiece(
+                    selectedFurniture._id,
+                    selectedModule._id
+                  )
                 }
                 className="text-white bg-orange py-2 px-4 rounded"
               >

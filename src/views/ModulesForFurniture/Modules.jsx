@@ -5,8 +5,10 @@ import {
   cloneModule,
   deleteOriginalModule,
 } from "../../index.js";
+import { Grid } from "react-loader-spinner";
 function Modules() {
   const [modules, setModules] = useState([]);
+  const [loader, setLoader] = useState(true);
   //eliminar modulo
   const [openModalToDeleteModule, setOpenModalToDeleteModule] = useState(false);
   const [moduleToDelete, setModuleToDelete] = useState(null);
@@ -14,7 +16,7 @@ function Modules() {
     getAllModules()
       .then((modulesData) => {
         setModules(modulesData.data);
-        console.log(modulesData.data);
+        setLoader(false);
       })
       .catch((error) => {
         console.error(error);
@@ -170,6 +172,18 @@ function Modules() {
               ))}
             </tbody>
           </table>
+          <div className="flex justify-center w-full mt-8">
+            <Grid
+              visible={loader}
+              height="80"
+              width="80"
+              color="rgb(92, 92, 92)"
+              ariaLabel="grid-loading"
+              radius="12.5"
+              wrapperStyle={{}}
+              wrapperClass="grid-wrapper"
+            />
+          </div>
         </div>
       </div>
       {/* modal de desea eliminar el modulo */}

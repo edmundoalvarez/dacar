@@ -1,15 +1,17 @@
 import { Link } from "react-router-dom";
 import { getAllBudgets } from "../../services/Budgets/getAllBudgets";
 import { useEffect, useState } from "react";
+import { Grid } from "react-loader-spinner";
 
 function Budgets() {
   const [budgets, setBudgets] = useState([]);
+  const [loader, setLoader] = useState(true);
 
   const getAllBudgetsToSet = () => {
     getAllBudgets()
       .then((budgetsData) => {
         setBudgets(budgetsData.data);
-        console.log("budgetsData (line 11); ", budgetsData.data);
+        setLoader(false);
       })
       .catch((error) => {
         console.error("Este es el error:", error);
@@ -19,7 +21,6 @@ function Budgets() {
   useEffect(() => {
     getAllBudgetsToSet();
   }, []);
-
 
   return (
     <>
@@ -33,7 +34,6 @@ function Budgets() {
           >
             Volver al Inicio
           </Link>
-          
         </div>
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full divide-y divide-gray-700">
@@ -92,9 +92,9 @@ function Budgets() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <Link
-                        to={`/ver-presupuestos/${budget._id}`}
-                        className="bg-gray-500 text-white px-2 py-2 rounded hover:bg-gray-700"
-                      >
+                      to={`/ver-presupuestos/${budget._id}`}
+                      className="bg-gray-500 text-white px-2 py-2 rounded hover:bg-gray-700"
+                    >
                       Ver detalle
                     </Link>
                   </td>
@@ -102,11 +102,22 @@ function Budgets() {
               ))}
             </tbody>
           </table>
+          <div className="flex justify-center w-full mt-8">
+            <Grid
+              visible={loader}
+              height="80"
+              width="80"
+              color="rgb(92, 92, 92)"
+              ariaLabel="grid-loading"
+              radius="12.5"
+              wrapperStyle={{}}
+              wrapperClass="grid-wrapper"
+            />
+          </div>
         </div>
       </div>
     </>
   );
 }
 
-export  { Budgets };
-
+export { Budgets };

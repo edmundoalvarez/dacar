@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllSupplies, deleteSupplie } from "../../index.js";
+import { Grid } from "react-loader-spinner";
 function Supplies() {
   const [supplies, setSupplies] = useState([]);
+  const [loader, setLoader] = useState(true);
 
   const getSuppliesToSet = () => {
     getAllSupplies()
       .then((suppliesData) => {
         setSupplies(suppliesData.data);
+        setLoader(false);
         console.log(suppliesData.data);
       })
       .catch((error) => {
@@ -62,6 +65,7 @@ function Supplies() {
             Crear Insumo
           </Link>
         </div>
+
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full divide-y divide-gray-700">
             <thead className="bg-gray-700">
@@ -122,6 +126,7 @@ function Supplies() {
                 </th>
               </tr>
             </thead>
+
             <tbody className="bg-white divide-y divide-gray-200">
               {supplies
                 .slice()
@@ -172,6 +177,18 @@ function Supplies() {
                 ))}
             </tbody>
           </table>
+          <div className="flex justify-center w-full mt-8">
+            <Grid
+              visible={loader}
+              height="80"
+              width="80"
+              color="rgb(92, 92, 92)"
+              ariaLabel="grid-loading"
+              radius="12.5"
+              wrapperStyle={{}}
+              wrapperClass="grid-wrapper"
+            />
+          </div>
         </div>
       </div>
       {openModalToDelete && (

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { Grid } from "react-loader-spinner";
 import {
   getFurnitureById,
   EditFurnitureSingleModuleComponent,
@@ -9,6 +10,7 @@ import {
 
 function EditFurnitureMultipleModules() {
   const [singleFurniture, setSingleFurniture] = useState([]);
+  const [loader, setLoader] = useState(true);
   const [selectedModule, setSelectedModule] = useState(null);
   const [furnitureToEdit, setFurnitureToEdit] = useState(null);
   const [moduleToEdit, setModuleToEdit] = useState(null);
@@ -24,6 +26,7 @@ function EditFurnitureMultipleModules() {
     getFurnitureById(idFurniture)
       .then((furnituresData) => {
         setSingleFurniture(furnituresData.data);
+        setLoader(false);
       })
       .catch((error) => {
         console.error("Este es el error:", error);
@@ -173,6 +176,18 @@ function EditFurnitureMultipleModules() {
               </tr>
             </tbody>
           </table>
+          <div className="flex justify-center w-full mt-8">
+            <Grid
+              visible={loader}
+              height="80"
+              width="80"
+              color="rgb(92, 92, 92)"
+              ariaLabel="grid-loading"
+              radius="12.5"
+              wrapperStyle={{}}
+              wrapperClass="grid-wrapper"
+            />
+          </div>
           {/* modulos */}
 
           <div className="px-6 whitespace-nowrap text-sm text-gray-500">
@@ -215,7 +230,7 @@ function EditFurnitureMultipleModules() {
                   ))}
               </div>
             ) : (
-              <p>Sin Módulos</p>
+              ""
             )}
           </div>
 

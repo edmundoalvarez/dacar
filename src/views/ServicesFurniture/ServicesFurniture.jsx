@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllServices, deleteService } from "../../index.js";
-
+import { Grid } from "react-loader-spinner";
 function ServicesFurniture() {
   const [services, setServices] = useState([]);
+  const [loader, setLoader] = useState(true);
 
   const getServicesToSet = () => {
     getAllServices()
       .then((servicesData) => {
         setServices(servicesData.data);
-        // console.log(servicesData.data);
+        setLoader(false);
       })
       .catch((error) => {
         console.error("Este es el error:", error);
@@ -123,6 +124,18 @@ function ServicesFurniture() {
                 ))}
             </tbody>
           </table>
+          <div className="flex justify-center w-full mt-8">
+            <Grid
+              visible={loader}
+              height="80"
+              width="80"
+              color="rgb(92, 92, 92)"
+              ariaLabel="grid-loading"
+              radius="12.5"
+              wrapperStyle={{}}
+              wrapperClass="grid-wrapper"
+            />
+          </div>
         </div>
       </div>
       {openModalToDelete && (

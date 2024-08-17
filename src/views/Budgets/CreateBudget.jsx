@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Await, Link, useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { Grid } from "react-loader-spinner";
 import {
   getFurnitureById,
   getAllTables,
@@ -165,7 +166,21 @@ function CreateBudget() {
     }
   }, [searchTerm, allClients]);
 
-  if (!singleFurniture) return <div>Loading...</div>;
+  if (!singleFurniture)
+    return (
+      <div className="flex justify-center w-full mt-8">
+        <Grid
+          visible={true}
+          height="80"
+          width="80"
+          color="rgb(92, 92, 92)"
+          ariaLabel="grid-loading"
+          radius="12.5"
+          wrapperStyle={{}}
+          wrapperClass="grid-wrapper"
+        />
+      </div>
+    );
 
   //CÁLCULO TOTAL DE FILO
   const calculateTotalEdges = (modules) => {
