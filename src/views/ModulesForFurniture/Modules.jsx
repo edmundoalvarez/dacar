@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import debounce from "lodash.debounce";
+import { Grid, Oval } from "react-loader-spinner";
 import {
   getAllModules,
   cloneModule,
   deleteOriginalModule,
+  filterModuleByName,
 } from "../../index.js";
-import { Grid } from "react-loader-spinner";
+
 function Modules() {
   const [modules, setModules] = useState([]);
   const [loader, setLoader] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchLoader, setSearchLoader] = useState(false);
+
   //eliminar modulo
   const [openModalToDeleteModule, setOpenModalToDeleteModule] = useState(false);
   const [moduleToDelete, setModuleToDelete] = useState(null);
@@ -21,6 +27,33 @@ function Modules() {
       .catch((error) => {
         console.error(error);
       });
+  };
+
+  // Manejar la búsqueda de modulos
+  const handleSearch = debounce((term) => {
+    if (term.trim() !== "") {
+      filterModuleByName(term)
+        .then((res) => {
+          setModules(res.data);
+          setLoader(false);
+          setSearchLoader(false);
+        })
+        .catch((error) => {
+          setSearchLoader(true);
+          console.error("Error al filtrar los modulos:", error);
+        });
+    } else {
+      getAllModulesToSet();
+      setSearchLoader(false); // Si no hay término de búsqueda, obtener todos los servicios
+    }
+  }, 800);
+
+  // Actualizar el término de búsqueda y llamar a la función de búsqueda
+  const handleChange = (e) => {
+    setSearchTerm(e.target.value);
+    setLoader(true);
+    setSearchLoader(true);
+    handleSearch(e.target.value);
   };
 
   //eliminar modulo
@@ -58,7 +91,7 @@ function Modules() {
   return (
     <>
       <div className="m-4">
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
           <h1 className="text-4xl">Módulos</h1>
 
           <Link
@@ -73,6 +106,28 @@ function Modules() {
           >
             Crear Modulo
           </Link>
+          {/* Campo de búsqueda */}
+          <div className="flex items-center gap-4">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={handleChange}
+              placeholder="Buscar por nombre"
+              className="border p-2 rounded-lg ml-auto"
+            />
+
+            <Oval
+              visible={searchLoader}
+              height="30"
+              width="30"
+              color="rgb(92, 92, 92)"
+              secondaryColor="rgb(92, 92, 92)"
+              strokeWidth="6"
+              ariaLabel="oval-loading"
+              wrapperStyle={{}}
+              wrapperClass=""
+            />
+          </div>
         </div>
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full divide-y divide-gray-700">

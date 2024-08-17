@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAllServices, deleteService } from "../../index.js";
-import { Grid } from "react-loader-spinner";
+import debounce from "lodash.debounce";
+import { Grid, Oval } from "react-loader-spinner";
+import {
+  getAllServices,
+  deleteService,
+  filterServiceByName,
+} from "../../index.js";
+
 function ServicesFurniture() {
   const [services, setServices] = useState([]);
   const [loader, setLoader] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchLoader, setSearchLoader] = useState(false);
 
   const getServicesToSet = () => {
     getAllServices()
@@ -21,6 +29,33 @@ function ServicesFurniture() {
   useEffect(() => {
     getServicesToSet();
   }, []);
+
+  // Manejar la búsqueda de servicios
+  const handleSearch = debounce((term) => {
+    if (term.trim() !== "") {
+      filterServiceByName(term)
+        .then((res) => {
+          setServices(res.data);
+          setLoader(false);
+          setSearchLoader(false);
+        })
+        .catch((error) => {
+          setSearchLoader(true);
+          console.error("Error al filtrar los servicios:", error);
+        });
+    } else {
+      getServicesToSet();
+      setSearchLoader(false); // Si no hay término de búsqueda, obtener todos los servicios
+    }
+  }, 800);
+
+  // Actualizar el término de búsqueda y llamar a la función de búsqueda
+  const handleChange = (e) => {
+    setSearchTerm(e.target.value);
+    setLoader(true);
+    setSearchLoader(true);
+    handleSearch(e.target.value);
+  };
 
   //Eliminar servicio
   const [openModalToDelete, setOpenModalToDelete] = useState(false);
@@ -48,7 +83,7 @@ function ServicesFurniture() {
   return (
     <>
       <div className="m-4">
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
           <h1 className="text-4xl">Servicios</h1>
 
           <Link
@@ -63,6 +98,28 @@ function ServicesFurniture() {
           >
             Crear Servicio
           </Link>
+          {/* Campo de búsqueda */}
+          <div className="flex items-center gap-4">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={handleChange}
+              placeholder="Buscar por nombre"
+              className="border p-2 rounded-lg ml-auto"
+            />
+
+            <Oval
+              visible={searchLoader}
+              height="30"
+              width="30"
+              color="rgb(92, 92, 92)"
+              secondaryColor="rgb(92, 92, 92)"
+              strokeWidth="6"
+              ariaLabel="oval-loading"
+              wrapperStyle={{}}
+              wrapperClass=""
+            />
+          </div>
         </div>
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full divide-y divide-gray-700">

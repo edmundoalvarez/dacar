@@ -1,11 +1,14 @@
 import { Link } from "react-router-dom";
-import { getAllBudgets } from "../../services/Budgets/getAllBudgets";
 import { useEffect, useState } from "react";
-import { Grid } from "react-loader-spinner";
+import debounce from "lodash.debounce";
+import { Grid, Oval } from "react-loader-spinner";
+import { getAllBudgets, filterBudgetByClientName } from "../../index.js";
 
 function Budgets() {
   const [budgets, setBudgets] = useState([]);
   const [loader, setLoader] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchLoader, setSearchLoader] = useState(false);
 
   const getAllBudgetsToSet = () => {
     getAllBudgets()
@@ -18,6 +21,33 @@ function Budgets() {
       });
   };
 
+  // Manejar la búsqueda de presupuestos
+  const handleSearch = debounce((term) => {
+    if (term.trim() !== "") {
+      filterBudgetByClientName(term)
+        .then((res) => {
+          setBudgets(res.data);
+          setLoader(false);
+          setSearchLoader(false);
+        })
+        .catch((error) => {
+          setSearchLoader(true);
+          console.error("Error al filtrar los presupuestos:", error);
+        });
+    } else {
+      getAllBudgetsToSet();
+      setSearchLoader(false);
+    }
+  }, 800);
+
+  // Actualizar el término de búsqueda y llamar a la función de búsqueda
+  const handleChange = (e) => {
+    setSearchTerm(e.target.value);
+    setLoader(true);
+    setSearchLoader(true);
+    handleSearch(e.target.value);
+  };
+
   useEffect(() => {
     getAllBudgetsToSet();
   }, []);
@@ -25,7 +55,7 @@ function Budgets() {
   return (
     <>
       <div className="m-4">
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
           <h1 className="text-4xl">Presupuestos</h1>
 
           <Link
@@ -34,6 +64,28 @@ function Budgets() {
           >
             Volver al Inicio
           </Link>
+          {/* Campo de búsqueda */}
+          <div className="flex items-center gap-4">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={handleChange}
+              placeholder="Buscar por nombre de cliente"
+              className="border p-2 rounded-lg ml-auto w-64"
+            />
+
+            <Oval
+              visible={searchLoader}
+              height="30"
+              width="30"
+              color="rgb(92, 92, 92)"
+              secondaryColor="rgb(92, 92, 92)"
+              strokeWidth="6"
+              ariaLabel="oval-loading"
+              wrapperStyle={{}}
+              wrapperClass=""
+            />
+          </div>
         </div>
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full divide-y divide-gray-700">

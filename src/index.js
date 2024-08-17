@@ -7,6 +7,7 @@ export { getFurnitureById } from "./services/Furniture/getFurnitureById.js";
 export { updateModuleOfFurniture } from "./services/Furniture/updateModuleOfFurniture.js";
 export { deleteModuleOnFurniture } from "./services/Furniture/deleteModuleOnFurniture.js";
 export { updateFurniture } from "./services/Furniture/updateFurniture.js";
+export { filterFurnitureByName } from "./services/Furniture/filterFurnitureByName.js";
 
 //MODULES
 export { createModule } from "./services/ModulesForFurniture/createModule.js";
@@ -16,6 +17,7 @@ export { updateModule } from "./services/ModulesForFurniture/updateModule.js";
 export { updateModulePiecesNumber } from "./services/ModulesForFurniture/updateModulePiecesNumber.js";
 export { cloneModule } from "./services/ModulesForFurniture/cloneModule.js";
 export { deleteOriginalModule } from "./services/ModulesForFurniture/deleteOriginalModule.js";
+export { filterModuleByName } from "./services/ModulesForFurniture/filterModuleByName.js";
 
 //PIECES
 export { createPieces } from "./services/Pieces/createPieces.js";
@@ -35,6 +37,7 @@ export { getAllSuppliesExceptTables } from "./services/Supplies/getAllSuppliesEx
 export { deleteSupplie } from "./services/Supplies/deleteSupplie.js";
 export { getSupplieById } from "./services/Supplies/getSupplieById.js";
 export { updateSupplie } from "./services/Supplies/updateSupplie.js";
+export { filterSupplieByName } from "./services/Supplies/filterSupplieByName.js";
 
 //SUPPLIES-CATEGORIES
 export { getAllSuppliesCategories } from "./services/SuppliesCategories/getAllSuppliesCategories.js";
@@ -45,14 +48,18 @@ export { createService } from "./services/ServicesFurniture/createService.js";
 export { updateService } from "./services/ServicesFurniture/updateService.js";
 export { getServiceById } from "./services/ServicesFurniture/getServiceById.js";
 export { deleteService } from "./services/ServicesFurniture/deleteService.js";
+export { filterServiceByName } from "./services/ServicesFurniture/filterServiceByName.js";
 
 //CLIENTS
 export { createClient } from "./services/Clients/createClient.js";
 export { getAllClients } from "./services/Clients/getAllClients.js";
 export { getClientById } from "./services/Clients/getClientById.js";
+
 //BUDGETS
+export { getAllBudgets } from "./services/Budgets/getAllBudgets.js";
 export { createBudget } from "./services/Budgets/createBudget.js";
 export { getLastBudgetNum } from "./services/Budgets/getLastBudgetNum.js";
+export { filterBudgetByClientName } from "./services/Budgets/filterBudgetByClientName.js";
 
 //Components --->
 

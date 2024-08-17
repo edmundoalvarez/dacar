@@ -6,6 +6,12 @@ function Home() {
         <h1 className="text-4xl">Bienvenido</h1>
         <div className="flex gap-4 mt-4 ga-6">
           <Link
+            to={`/ver-presupuestos`}
+            className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
+          >
+            Presupuestos
+          </Link>
+          <Link
             to={`/ver-muebles`}
             className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
           >
@@ -28,12 +34,6 @@ function Home() {
             className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
           >
             Servicios
-          </Link>
-          <Link
-            to={`/ver-presupuestos`}
-            className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
-          >
-            Presupuestos
           </Link>
         </div>
       </div>

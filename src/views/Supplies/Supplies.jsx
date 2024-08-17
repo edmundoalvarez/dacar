@@ -1,17 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAllSupplies, deleteSupplie } from "../../index.js";
-import { Grid } from "react-loader-spinner";
+import debounce from "lodash.debounce";
+import { Grid, Oval } from "react-loader-spinner";
+import {
+  getAllSupplies,
+  deleteSupplie,
+  filterSupplieByName,
+} from "../../index.js";
+
 function Supplies() {
   const [supplies, setSupplies] = useState([]);
   const [loader, setLoader] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchLoader, setSearchLoader] = useState(false);
 
   const getSuppliesToSet = () => {
     getAllSupplies()
       .then((suppliesData) => {
         setSupplies(suppliesData.data);
         setLoader(false);
-        console.log(suppliesData.data);
       })
       .catch((error) => {
         console.error("Este es el error:", error);
@@ -22,6 +29,34 @@ function Supplies() {
   useEffect(() => {
     getSuppliesToSet();
   }, []);
+
+  // Manejar la búsqueda de insumos
+  const handleSearch = debounce((term) => {
+    setSearchLoader(true);
+    console.log("asd");
+    if (term.trim() !== "") {
+      filterSupplieByName(term)
+        .then((res) => {
+          setSupplies(res.data);
+          setLoader(false);
+          setSearchLoader(false);
+        })
+        .catch((error) => {
+          setSearchLoader(true);
+          console.error("Error al filtrar los insumos:", error);
+        });
+    } else {
+      getSuppliesToSet();
+      setSearchLoader(false); // Si no hay término de búsqueda, obtener todos los insumos
+    }
+  }, 800);
+
+  // Actualizar el término de búsqueda y llamar a la función de búsqueda
+  const handleChange = (e) => {
+    setSearchTerm(e.target.value);
+    setLoader(true);
+    handleSearch(e.target.value);
+  };
 
   //Eliminar insumo
   const [openModalToDelete, setOpenModalToDelete] = useState(false);
@@ -49,7 +84,7 @@ function Supplies() {
   return (
     <>
       <div className="m-4">
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
           <h1 className="text-4xl">Insumos</h1>
 
           <Link
@@ -64,6 +99,28 @@ function Supplies() {
           >
             Crear Insumo
           </Link>
+          {/* Campo de búsqueda */}
+          <div className="flex items-center gap-4">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={handleChange}
+              placeholder="Buscar por nombre"
+              className="border p-2 rounded-lg ml-auto"
+            />
+
+            <Oval
+              visible={searchLoader}
+              height="30"
+              width="30"
+              color="rgb(92, 92, 92)"
+              secondaryColor="rgb(92, 92, 92)"
+              strokeWidth="6"
+              ariaLabel="oval-loading"
+              wrapperStyle={{}}
+              wrapperClass=""
+            />
+          </div>
         </div>
 
         <div className="overflow-x-auto mt-4">
