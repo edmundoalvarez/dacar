@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import debounce from "lodash.debounce";
 import { Grid, Oval } from "react-loader-spinner";
-import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
+import jsPDF from "jspdf";
+import "jspdf-autotable"; // Para soporte de tablas
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 
@@ -104,85 +104,51 @@ function Furniture() {
     setFurnitureToDelete(null);
   }
 
-  pdfMake.vfs = pdfFonts.pdfMake.vfs;
+  //GENERAR PDFs
 
-  function generateLoosePiecesPDF(loosePieces, furnitureName) {
-    const tableBody = [
-      // Definimos los títulos de las columnas
-      [
-        { text: "Nombre", bold: true },
-        { text: "Alto", bold: true },
-        { text: "Largo", bold: true },
-        { text: "Material", bold: true },
-      ],
-    ];
+  const generateLoosePiecesPDF = (loosePieces, furnitureName) => {
+    const doc = new jsPDF();
 
-    // Agregamos las filas de la tabla
-    loosePieces.forEach((piece) => {
-      tableBody.push([piece.name, piece.length, piece.width, piece.material]);
-    });
+    doc.text("Piezas sueltas", 14, 20);
 
-    const documentDefinition = {
-      content: [
-        { text: "Piezas sueltas", style: "header" },
-        {
-          table: {
-            headerRows: 1,
-            widths: ["*", "*", "*", "*"], // Distribuye las columnas uniformemente
-            body: tableBody,
-          },
-        },
-      ],
-      styles: {
-        header: {
-          fontSize: 18,
-          bold: true,
-          marginBottom: 10,
-        },
-      },
-    };
-    let fileName = "Piezas-Sueltas-" + furnitureName + ".pdf";
-    pdfMake.createPdf(documentDefinition).download(fileName);
-  }
+    const tableColumn = ["Nombre", "Alto", "Largo", "Material"];
+    const tableRows = loosePieces.map((piece) => [
+      piece.name,
+      piece.length,
+      piece.width,
+      piece.material,
+    ]);
 
-  function generatePiecesPDF(pieces, furnitureName) {
-    const tableBody = [
-      // Definimos los títulos de las columnas
-      [
-        { text: "Nombre", bold: true },
-        { text: "Alto", bold: true },
-        { text: "Largo", bold: true },
-        { text: "Material", bold: true },
-      ],
-    ];
+    doc.autoTable(tableColumn, tableRows, { startY: 30 });
 
-    // Agregamos las filas de la tabla
-    pieces.forEach((piece) => {
-      tableBody.push([piece.name, piece.length, piece.width, piece.material]);
-    });
+    const fileName = `Piezas-Sueltas-${furnitureName}.pdf`;
+    doc.save(fileName);
+  };
 
-    const documentDefinition = {
-      content: [
-        { text: "Despiece del mueble " + furnitureName, style: "header" },
-        {
-          table: {
-            headerRows: 1,
-            widths: ["*", "*", "*", "*"], // Distribuye las columnas uniformemente
-            body: tableBody,
-          },
-        },
-      ],
-      styles: {
-        header: {
-          fontSize: 18,
-          bold: true,
-          marginBottom: 10,
-        },
-      },
-    };
-    let fileName = "Despiece-" + furnitureName + ".pdf";
-    pdfMake.createPdf(documentDefinition).download(fileName);
-  }
+  const generatePiecesPDF = (pieces, furnitureName) => {
+    const doc = new jsPDF();
+
+    // Títulos de las columnas de la tabla
+    const tableColumn = ["Nombre", "Alto", "Largo", "Material"];
+
+    // Mapear los datos de las piezas para las filas de la tabla
+    const tableRows = pieces.map((piece) => [
+      piece.name,
+      piece.length,
+      piece.width,
+      piece.material,
+    ]);
+
+    // Agregar texto al documento
+    doc.text(`Despiece del mueble ${furnitureName}`, 14, 20);
+
+    // Agregar la tabla al documento
+    doc.autoTable(tableColumn, tableRows, { startY: 30 });
+
+    // Guardar el documento PDF
+    const fileName = `Despiece-${furnitureName}.pdf`;
+    doc.save(fileName);
+  };
 
   // funcion descargar piezas sueltas
   const handleDownloadLoosePiece = (furnitureId, furnitureName) => {
