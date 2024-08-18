@@ -16,10 +16,7 @@ function CreateServicesFurniture() {
     try {
       await createService(data).then(() => {
         console.log("¡creaste el servicio con exito!");
-        setTimeout(() => {
-          navigate("/ver-servicios");
-          // window.location.reload(true);
-        }, 1000);
+        navigate("/ver-servicios");
       });
     } catch (error) {
       console.error(error);

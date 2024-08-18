@@ -127,9 +127,7 @@ function CreateModule() {
         await createPieces(pieceData);
       }
 
-      setTimeout(() => {
-        navigation(`/ver-modulos`);
-      }, 500);
+      navigation(`/ver-modulos`);
     } catch (error) {
       console.error(error);
     }

@@ -119,9 +119,8 @@ function CreateFurniture() {
       }).then((res) => {
         const furnitureId = res.data._id;
         console.log("¡Creaste el mueble con éxito!");
-        setTimeout(() => {
-          navigate(`/editar-modulos-mueble/${furnitureId}`);
-        }, 100);
+
+        navigate(`/editar-modulos-mueble/${furnitureId}`);
       });
     } catch (error) {
       console.error(error);

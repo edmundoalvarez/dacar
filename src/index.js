@@ -8,6 +8,8 @@ export { updateModuleOfFurniture } from "./services/Furniture/updateModuleOfFurn
 export { deleteModuleOnFurniture } from "./services/Furniture/deleteModuleOnFurniture.js";
 export { updateFurniture } from "./services/Furniture/updateFurniture.js";
 export { filterFurnitureByName } from "./services/Furniture/filterFurnitureByName.js";
+export { getLoosePiecesByFurnitureId } from "./services/Furniture/getLoosePiecesByFurnitureId.js";
+export { getPiecesByFurnitureId } from "./services/Furniture/getPiecesByFurnitureId.js";
 
 //MODULES
 export { createModule } from "./services/ModulesForFurniture/createModule.js";

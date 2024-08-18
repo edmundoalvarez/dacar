@@ -28,10 +28,7 @@ function CreateSupplie() {
     try {
       await createSupplies(data).then(() => {
         console.log("¡creaste el insumo con exito!");
-        setTimeout(() => {
-          navigate("/ver-insumos");
-          window.location.reload(true);
-        }, 1500);
+        navigate("/ver-insumos");
       });
     } catch (error) {
       console.error(error);

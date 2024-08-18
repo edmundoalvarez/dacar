@@ -269,10 +269,7 @@ function EditModule() {
       pieces.forEach((piece) => {
         updatePiece(piece._id, piece);
       });
-
-      setTimeout(() => {
-        navigate(`/ver-modulos`);
-      }, 500);
+      navigate(`/ver-modulos`);
     } catch (error) {
       console.error(error);
     }

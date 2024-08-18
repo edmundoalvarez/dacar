@@ -2,7 +2,15 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import debounce from "lodash.debounce";
 import { Grid, Oval } from "react-loader-spinner";
-import { getAllFurnitures, filterFurnitureByName } from "../../index.js";
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+
+import {
+  getAllFurnitures,
+  filterFurnitureByName,
+  getLoosePiecesByFurnitureId,
+  getPiecesByFurnitureId,
+} from "../../index.js";
 
 function Furniture() {
   const [furnitures, setFurnitures] = useState([]);
@@ -69,10 +77,99 @@ function Furniture() {
     setIsModalOpen(false);
   };
 
-  // Manejador del botón Editar
-  const handleDownloadLoosePiece = (furnitureId, moduleId) => {
-    // console.log("Id mueble:", furnitureId);
-    // console.log("Id modulo:", moduleId);
+  pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
+  function generateLoosePiecesPDF(loosePieces, furnitureName) {
+    const tableBody = [
+      // Definimos los títulos de las columnas
+      [
+        { text: "Nombre", bold: true },
+        { text: "Alto", bold: true },
+        { text: "Largo", bold: true },
+        { text: "Material", bold: true },
+      ],
+    ];
+
+    // Agregamos las filas de la tabla
+    loosePieces.forEach((piece) => {
+      tableBody.push([piece.name, piece.length, piece.width, piece.material]);
+    });
+
+    const documentDefinition = {
+      content: [
+        { text: "Piezas sueltas", style: "header" },
+        {
+          table: {
+            headerRows: 1,
+            widths: ["*", "*", "*", "*"], // Distribuye las columnas uniformemente
+            body: tableBody,
+          },
+        },
+      ],
+      styles: {
+        header: {
+          fontSize: 18,
+          bold: true,
+          marginBottom: 10,
+        },
+      },
+    };
+    let fileName = "Piezas-Sueltas-" + furnitureName + ".pdf";
+    pdfMake.createPdf(documentDefinition).download(fileName);
+  }
+
+  function generatePiecesPDF(pieces, furnitureName) {
+    const tableBody = [
+      // Definimos los títulos de las columnas
+      [
+        { text: "Nombre", bold: true },
+        { text: "Alto", bold: true },
+        { text: "Largo", bold: true },
+        { text: "Material", bold: true },
+      ],
+    ];
+
+    // Agregamos las filas de la tabla
+    pieces.forEach((piece) => {
+      tableBody.push([piece.name, piece.length, piece.width, piece.material]);
+    });
+
+    const documentDefinition = {
+      content: [
+        { text: "Despiece del mueble " + furnitureName, style: "header" },
+        {
+          table: {
+            headerRows: 1,
+            widths: ["*", "*", "*", "*"], // Distribuye las columnas uniformemente
+            body: tableBody,
+          },
+        },
+      ],
+      styles: {
+        header: {
+          fontSize: 18,
+          bold: true,
+          marginBottom: 10,
+        },
+      },
+    };
+    let fileName = "Despiece-" + furnitureName + ".pdf";
+    pdfMake.createPdf(documentDefinition).download(fileName);
+  }
+
+  // funcion descargar piezas sueltas
+  const handleDownloadLoosePiece = (furnitureId, furnitureName) => {
+    getLoosePiecesByFurnitureId(furnitureId).then((loosePiecesData) => {
+      const loosePieces = loosePiecesData.data;
+      generateLoosePiecesPDF(loosePieces, furnitureName);
+    });
+  };
+  //funcion descargar despiece
+  const handleDownloadPieces = (furnitureId, furnitureName) => {
+    getPiecesByFurnitureId(furnitureId).then((piecesData) => {
+      const pieces = piecesData.data;
+      generatePiecesPDF(pieces, furnitureName);
+    });
   };
 
   return (
@@ -158,7 +255,7 @@ function Furniture() {
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Acción
                 </th>
@@ -209,21 +306,41 @@ function Furniture() {
                     )}
                   </td>
                   <td>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2 items-center">
                       <Link
                         to={`/editar-modulos-mueble/${furniture._id}
                         `}
-                        className="text-white bg-orange rounded-md px-2 py-1 mb-2"
+                        className="text-white bg-orange hover:bg-amber-600 rounded-md px-2 py-1 mb-2 text-center w-1/2"
                       >
                         Editar
                       </Link>
                       <Link
                         to={`/presupuestar-mueble/${furniture._id}
                         `}
-                        className="text-white bg-lightblue rounded-md px-2 py-1 mb-2"
+                        className="text-white bg-emerald-500 hover:bg-emerald-600 rounded-md px-2 py-1 mb-2 text-center w-1/2"
                       >
                         Presupuestar
                       </Link>
+
+                      <button
+                        onClick={() =>
+                          handleDownloadPieces(furniture._id, furniture.name)
+                        }
+                        className="text-white bg-sky-800 hover:bg-sky-950 rounded-md px-2 py-1 mb-2 text-center w-1/2"
+                      >
+                        Descargar despiece
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleDownloadLoosePiece(
+                            furniture._id,
+                            furniture.name
+                          )
+                        }
+                        className="text-white bg-gray-700 hover:bg-gray-800 rounded-md px-2 py-1 mb-2 text-center w-1/2"
+                      >
+                        Descargar piezas sueltas
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -287,17 +404,6 @@ function Furniture() {
               </div>
             )}
             <div className="flex justify-center items-center m-auto gap-2 mt-4">
-              <button
-                onClick={() =>
-                  handleDownloadLoosePiece(
-                    selectedFurniture._id,
-                    selectedModule._id
-                  )
-                }
-                className="text-white bg-orange py-2 px-4 rounded"
-              >
-                Descargar piezas sueltas
-              </button>
               <button
                 onClick={handleCloseModal}
                 className="bg-red-500 text-white py-2 px-4 rounded"
