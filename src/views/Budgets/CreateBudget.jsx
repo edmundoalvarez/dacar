@@ -801,241 +801,288 @@ function CreateBudget() {
                   Acabados del Mueble
                 </h2>
                 {/* ENCHAPADO */}
-                <p className="mb-1">
-                  <span className="font-bold">Enchapado en m2:</span>{" "}
-                  {totalVeneer / 10000} m<sup>2</sup> Precio: $
-                  {(
-                    enchapadoService?.price *
-                    (totalVeneer / 10000)
-                  ).toLocaleString("es-ES")}
-                  {setValue(
-                    "veneerPrice",
-                    enchapadoService?.price * (totalVeneer / 10000)
-                  )}
-                </p>
-                <input
-                  name={`veneerM2`}
-                  type="hidden"
-                  value={totalVeneer / 10000}
-                  {...register(`veneerM2`)}
-                />
-                <input
-                  name={`veneerPrice`}
-                  type="hidden"
-                  value={enchapadoService?.price * (totalVeneer / 10000)}
-                  {...register(`veneerPrice`)}
-                />
+                {totalVeneer > 0 ? (
+                  <>
+                    <p className="mb-1">
+                      <span className="font-bold">Enchapado en m2:</span>{" "}
+                      {totalVeneer / 10000} m<sup>2</sup> Precio: $
+                      {(
+                        enchapadoService?.price *
+                        (totalVeneer / 10000)
+                      ).toLocaleString("es-ES")}
+                      {setValue(
+                        "veneerPrice",
+                        enchapadoService?.price * (totalVeneer / 10000)
+                      )}
+                    </p>
+                    <input
+                      name={`veneerM2`}
+                      type="hidden"
+                      value={totalVeneer / 10000}
+                      {...register(`veneerM2`)}
+                    />
+                    <input
+                      name={`veneerPrice`}
+                      type="hidden"
+                      value={enchapadoService?.price * (totalVeneer / 10000)}
+                      {...register(`veneerPrice`)}
+                    />
+                  </>
+                ) : (
+                  ""
+                )}
                 {/* LUSTRADO */}
-                <p className="mb-1">
-                  <span className="font-bold">Lustrado en m2:</span>{" "}
-                  {totalVeneerPolished / 10000} m<sup>2</sup> Precio: $
-                  {(
-                    lustreService?.price *
-                    (totalVeneerPolished / 10000)
-                  ).toLocaleString("es-ES")}
-                  {setValue(
-                    "veneerPolishedPrice",
-                    lustreService?.price * (totalVeneerPolished / 10000)
-                  )}
-                </p>
-                <input
-                  name={`veneerPolishedM2`}
-                  type="hidden"
-                  value={totalVeneerPolished / 10000}
-                  {...register(`veneerPolishedM2`)}
-                />
-                <input
-                  name={`veneerPolishedPrice`}
-                  type="hidden"
-                  value={lustreService?.price * (totalVeneerPolished / 10000)}
-                  {...register(`veneerPolishedPrice`)}
-                />
+                {totalVeneerPolished > 0 ? (
+                  <>
+                    <p className="mb-1">
+                      <span className="font-bold">Lustrado en m2:</span>{" "}
+                      {totalVeneerPolished / 10000} m<sup>2</sup> Precio: $
+                      {(
+                        lustreService?.price *
+                        (totalVeneerPolished / 10000)
+                      ).toLocaleString("es-ES")}
+                      {setValue(
+                        "veneerPolishedPrice",
+                        lustreService?.price * (totalVeneerPolished / 10000)
+                      )}
+                    </p>
+                    <input
+                      name={`veneerPolishedM2`}
+                      type="hidden"
+                      value={totalVeneerPolished / 10000}
+                      {...register(`veneerPolishedM2`)}
+                    />
+                    <input
+                      name={`veneerPolishedPrice`}
+                      type="hidden"
+                      value={
+                        lustreService?.price * (totalVeneerPolished / 10000)
+                      }
+                      {...register(`veneerPolishedPrice`)}
+                    />
+                  </>
+                ) : (
+                  ""
+                )}
                 {/* LAQUEADO */}
-                <p className="mb-1">
-                  <span className="font-bold">Laqueado en m2:</span>{" "}
-                  {totalLacqueredAll / 10000} m<sup>2</sup> Precio: $
-                  {(
-                    laqueadoService?.price *
-                    (totalLacqueredAll / 10000)
-                  ).toLocaleString("es-ES")}
-                  {setValue(
-                    "lacqueredPrice",
-                    laqueadoService?.price * (totalLacqueredAll / 10000)
-                  )}
-                </p>
-                <input
-                  name={`lacqueredM2`}
-                  type="hidden"
-                  value={totalLacqueredAll / 10000}
-                  {...register(`lacqueredM2`)}
-                />
-                <input
-                  name={`lacqueredPrice`}
-                  type="hidden"
-                  {...register(`lacqueredPrice`)}
-                  value={laqueadoService?.price * (totalLacqueredAll / 10000)}
-                />
+                {totalLacqueredAll > 0 ? (
+                  <>
+                    <p className="mb-1">
+                      <span className="font-bold">Laqueado en m2:</span>{" "}
+                      {totalLacqueredAll / 10000} m<sup>2</sup> Precio: $
+                      {(
+                        laqueadoService?.price *
+                        (totalLacqueredAll / 10000)
+                      ).toLocaleString("es-ES")}
+                      {setValue(
+                        "lacqueredPrice",
+                        laqueadoService?.price * (totalLacqueredAll / 10000)
+                      )}
+                    </p>
+                    <input
+                      name={`lacqueredM2`}
+                      type="hidden"
+                      value={totalLacqueredAll / 10000}
+                      {...register(`lacqueredM2`)}
+                    />
+                    <input
+                      name={`lacqueredPrice`}
+                      type="hidden"
+                      {...register(`lacqueredPrice`)}
+                      value={
+                        laqueadoService?.price * (totalLacqueredAll / 10000)
+                      }
+                    />
+                  </>
+                ) : (
+                  ""
+                )}
                 {/* PANTOGRAFIADO */}
-                <p className="mb-1">
-                  <span className="font-bold">Pantografiado en m2:</span>{" "}
-                  {totalPantographed / 10000} m<sup>2</sup> Precio: $
-                  {(
-                    pantografiadoService?.price *
-                    (totalPantographed / 10000)
-                  ).toLocaleString("es-ES")}
-                  {setValue(
-                    "pantographedPrice",
-                    pantografiadoService?.price * (totalPantographed / 10000)
-                  )}
-                </p>
-                <input
-                  name={`pantographedM2`}
-                  type="hidden"
-                  value={totalPantographed / 10000}
-                  {...register(`pantographedM2`)}
-                />
-                <input
-                  name={`pantographedPrice`}
-                  type="hidden"
-                  value={
-                    pantografiadoService?.price * (totalPantographed / 10000)
-                  }
-                  {...register(`pantographedPrice`)}
-                />
+                {totalPantographed > 0 ? (
+                  <>
+                    <p className="mb-1">
+                      <span className="font-bold">Pantografiado en m2:</span>{" "}
+                      {totalPantographed / 10000} m<sup>2</sup> Precio: $
+                      {(
+                        pantografiadoService?.price *
+                        (totalPantographed / 10000)
+                      ).toLocaleString("es-ES")}
+                      {setValue(
+                        "pantographedPrice",
+                        pantografiadoService?.price *
+                          (totalPantographed / 10000)
+                      )}
+                    </p>
+                    <input
+                      name={`pantographedM2`}
+                      type="hidden"
+                      value={totalPantographed / 10000}
+                      {...register(`pantographedM2`)}
+                    />
+                    <input
+                      name={`pantographedPrice`}
+                      type="hidden"
+                      value={
+                        pantografiadoService?.price *
+                        (totalPantographed / 10000)
+                      }
+                      {...register(`pantographedPrice`)}
+                    />
+                  </>
+                ) : (
+                  ""
+                )}
                 {/* FILO */}
-                <div className="flex gap-y-4">
-                  <p className="font-bold">Filo total (laqueado):</p>
-                  <div className="flex flex-col w-1/3  ">
-                    {materialEdgeLaquered > 0 ? (
-                      <>
-                        <p className="mb-1">
-                          {(
-                            (totalLacqueredEdgeLength * materialEdgeLaquered) /
-                            100
-                          ).toFixed(2)}{" "}
-                          m<sup>2</sup> Precio: $
-                          {(
-                            laqueadoService?.price *
-                            (
-                              (totalLacqueredEdgeLength *
-                                materialEdgeLaquered) /
-                              100
-                            ).toFixed(2)
-                          ).toLocaleString("es-ES")}
-                          {setValue(
-                            "edgeLaqueredPrice",
-                            laqueadoService?.price *
-                              (
+                {totalLacqueredEdgeLength > 0 ? (
+                  <>
+                    <div className="flex gap-y-4">
+                      <p className="font-bold">Filo total (laqueado):</p>
+                      <div className="flex flex-col w-1/3  ">
+                        {materialEdgeLaquered > 0 ? (
+                          <>
+                            <p className="mb-1">
+                              {(
                                 (totalLacqueredEdgeLength *
                                   materialEdgeLaquered) /
-                                100
-                              ).toFixed(2)
-                          )}
-                        </p>
-                        <input
-                          name={`edgeLaqueredM2`}
-                          type="hidden"
-                          value={(
-                            (totalLacqueredEdgeLength * materialEdgeLaquered) /
-                            100
-                          ).toFixed(2)}
-                          {...register(`edgeLaqueredM2`)}
-                        />
-                        <input
-                          name={`edgeLaqueredPrice`}
-                          type="hidden"
-                          value={
-                            laqueadoService?.price *
-                            (
-                              (totalLacqueredEdgeLength *
-                                materialEdgeLaquered) /
-                              100
-                            ).toFixed(2)
-                          }
-                          {...register(`edgeLaqueredPrice`)}
-                        />
-                      </>
-                    ) : (
-                      <p className="text-red-500">Elegir una placa</p>
-                    )}
-                  </div>
-                  <div className="flex flex-col w-1/3  ">
-                    <select
-                      name={`edgeLaqueredSelect`}
-                      id={`edgeLaqueredSelect`}
-                      className="border-solid border-2 border-opacity mb-2 rounded-md"
-                      {...register(`edgeLaqueredSelect`)}
-                      onChange={handleMaterialEdgeLaqueredOption}
-                    >
-                      <option value="">Elegir una opción</option>
-                      {tables.map((table) => (
-                        <option key={table._id} value={table._id}>
-                          {table.name}
-                        </option>
-                      ))}
-                    </select>
-                    {errors[`edgeLaqueredSelect`] && (
-                      <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                        {errors[`edgeLaqueredSelect`].message}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <p className="mb-1">
-                    <span className="font-bold">Filo total (sin laquear):</span>{" "}
-                    {(totalEdgeLength / 10000).toFixed(2)} m Precio: $
-                    {(
-                      filoService?.price *
-                      (totalLacqueredEdgeLength / 10000) *
-                      materialEdge
-                    ).toLocaleString("es-ES")}
-                    {setValue(
-                      "edgePrice",
-                      filoService?.price *
-                        (totalLacqueredEdgeLength / 10000) *
-                        materialEdge
-                    )}
-                  </p>
-                  <input
-                    name={`edgeM2`}
-                    type="hidden"
-                    value={(totalEdgeLength / 10000).toFixed(2)}
-                    {...register(`edgeM2`)}
-                  />
-                  <input
-                    name={`edgePrice`}
-                    type="hidden"
-                    value={
-                      filoService?.price *
-                      (totalLacqueredEdgeLength / 10000) *
-                      materialEdge
-                    }
-                    {...register(`edgePrice`)}
-                  />
-                  <div className="flex flex-col w-1/2 ">
-                    <select
-                      name={`edgeSelect`}
-                      id={`edgeSelect`}
-                      className="border-solid border-2 border-opacity mb-2 rounded-md"
-                      {...register(`edgeSelect`)}
-                      onChange={handleMaterialEdgeOption}
-                    >
-                      <option value="">Elegir una opción</option>
-                      {edges.map((edge) => (
-                        <option key={edge._id} value={edge._id}>
-                          {edge.name}
-                        </option>
-                      ))}
-                    </select>
-                    {errors[`edgeSelect`] && (
-                      <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                        {errors[`edgeSelect`].message}
-                      </span>
-                    )}
-                  </div>
-                </div>
+                                10000
+                              ).toFixed(2)}{" "}
+                              m<sup>2</sup> Precio: $
+                              {(
+                                laqueadoService?.price *
+                                (
+                                  (totalLacqueredEdgeLength *
+                                    materialEdgeLaquered) /
+                                  10000
+                                ).toFixed(2)
+                              ).toLocaleString("es-ES")}
+                              {setValue(
+                                "edgeLaqueredPrice",
+                                laqueadoService?.price *
+                                  (
+                                    (totalLacqueredEdgeLength *
+                                      materialEdgeLaquered) /
+                                    10000
+                                  ).toFixed(2)
+                              )}
+                            </p>
+                            <input
+                              name={`edgeLaqueredM2`}
+                              type="hidden"
+                              value={(
+                                (totalLacqueredEdgeLength *
+                                  materialEdgeLaquered) /
+                                10000
+                              ).toFixed(2)}
+                              {...register(`edgeLaqueredM2`)}
+                            />
+                            <input
+                              name={`edgeLaqueredPrice`}
+                              type="hidden"
+                              value={
+                                laqueadoService?.price *
+                                (
+                                  (totalLacqueredEdgeLength *
+                                    materialEdgeLaquered) /
+                                  10000
+                                ).toFixed(2)
+                              }
+                              {...register(`edgeLaqueredPrice`)}
+                            />
+                          </>
+                        ) : (
+                          <p className="text-red-500">Elegir una placa</p>
+                        )}
+                      </div>
+                      <div className="flex flex-col w-1/3  ">
+                        <select
+                          name={`edgeLaqueredSelect`}
+                          id={`edgeLaqueredSelect`}
+                          className="border-solid border-2 border-opacity mb-2 rounded-md"
+                          {...register(`edgeLaqueredSelect`)}
+                          onChange={handleMaterialEdgeLaqueredOption}
+                        >
+                          <option value="">Elegir una opción</option>
+                          {tables.map((table) => (
+                            <option key={table._id} value={table._id}>
+                              {table.name}
+                            </option>
+                          ))}
+                        </select>
+                        {errors[`edgeLaqueredSelect`] && (
+                          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                            {errors[`edgeLaqueredSelect`].message}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  ""
+                )}
+                {totalEdgeLength > 0 ? (
+                  <>
+                    <div className="flex gap-4">
+                      <p className="mb-1">
+                        <span className="font-bold">
+                          Filo total (sin laquear):
+                        </span>{" "}
+                        {(totalEdgeLength / 100).toFixed(2)} m Precio: $
+                        {(
+                          filoService?.price *
+                          (totalEdgeLength / 100) *
+                          materialEdge
+                        ).toLocaleString("es-ES")}
+                        {setValue(
+                          "edgePrice",
+                          filoService?.price *
+                            (totalEdgeLength / 100) *
+                            materialEdge
+                        )}
+                      </p>
+                      <input
+                        name={`edgeM2`}
+                        type="hidden"
+                        value={(totalEdgeLength / 100).toFixed(2)}
+                        {...register(`edgeM2`)}
+                      />
+                      <input
+                        name={`edgePrice`}
+                        type="hidden"
+                        value={
+                          filoService?.price *
+                          (totalEdgeLength / 100) *
+                          materialEdge
+                        }
+                        {...register(`edgePrice`)}
+                      />
+                      <div className="flex flex-col w-1/2 ">
+                        <select
+                          name={`edgeSelect`}
+                          id={`edgeSelect`}
+                          className="border-solid border-2 border-opacity mb-2 rounded-md"
+                          {...register(`edgeSelect`)}
+                          onChange={handleMaterialEdgeOption}
+                        >
+                          <option value="">Elegir una opción</option>
+                          {edges.map((edge) => (
+                            <option key={edge._id} value={edge._id}>
+                              {edge.name}
+                            </option>
+                          ))}
+                        </select>
+                        {errors[`edgeSelect`] && (
+                          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                            {errors[`edgeSelect`].message}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  ""
+                )}
               </div>
+
               {/* INSUMOS */}
               <div className="w-2/3">
                 <h2 className="text-2xl font-semibold mb-2">

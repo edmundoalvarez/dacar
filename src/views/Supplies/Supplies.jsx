@@ -32,8 +32,6 @@ function Supplies() {
 
   // Manejar la búsqueda de insumos
   const handleSearch = debounce((term) => {
-    setSearchLoader(true);
-    console.log("asd");
     if (term.trim() !== "") {
       filterSupplieByName(term)
         .then((res) => {
@@ -55,6 +53,7 @@ function Supplies() {
   const handleChange = (e) => {
     setSearchTerm(e.target.value);
     setLoader(true);
+    setSearchLoader(true);
     handleSearch(e.target.value);
   };
 
@@ -83,8 +82,8 @@ function Supplies() {
   }
   return (
     <>
-      <div className="m-4">
-        <div className="flex gap-4 items-center">
+      <div>
+        <div className="flex gap-4 items-center p-8">
           <h1 className="text-4xl">Insumos</h1>
 
           <Link
@@ -106,7 +105,7 @@ function Supplies() {
               value={searchTerm}
               onChange={handleChange}
               placeholder="Buscar por nombre"
-              className="border p-2 rounded-lg ml-auto"
+              className="border border-gray-400 p-2 rounded-lg ml-auto"
             />
 
             <Oval

@@ -36,8 +36,8 @@ function BudgetDetails() {
 
   return (
     <>
-      <div className="m-4">
-        <div className="flex justify-start items-center gap-4 mb-6">
+      <div className="">
+        <div className="flex justify-start items-center gap-4 p-8">
           <h1 className="text-4xl font-bold text-gray-800">
             Detalle del presupuesto
           </h1>

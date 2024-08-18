@@ -90,8 +90,8 @@ function Modules() {
 
   return (
     <>
-      <div className="m-4">
-        <div className="flex gap-4 items-center">
+      <div className="">
+        <div className="flex gap-4 items-center py-4 px-8">
           <h1 className="text-4xl">Módulos</h1>
 
           <Link
@@ -113,7 +113,7 @@ function Modules() {
               value={searchTerm}
               onChange={handleChange}
               placeholder="Buscar por nombre"
-              className="border p-2 rounded-lg ml-auto"
+              className="border border-gray-400 p-2 rounded-lg ml-auto"
             />
 
             <Oval
@@ -204,7 +204,7 @@ function Modules() {
                     <div className="flex justify-center align-center gap-4">
                       <Link
                         to={`/editar-modulo/${module._id}`}
-                        className="bg-orange px-2 rounded-lg hover:bg-amber-400 text-light font-medium "
+                        className="text-white bg-orange hover:bg-amber-600 rounded-md px-2 py-1 text-center "
                       >
                         Editar
                       </Link>

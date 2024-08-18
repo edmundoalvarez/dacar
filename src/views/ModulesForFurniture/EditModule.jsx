@@ -282,7 +282,7 @@ function EditModule() {
   }, []);
 
   return (
-    <div className="m-4">
+    <div className="m-4 p-4">
       <div className="flex gap-4">
         <h1 className="text-4xl">Editar Módulo</h1>
         <Link

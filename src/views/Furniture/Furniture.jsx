@@ -4,12 +4,15 @@ import debounce from "lodash.debounce";
 import { Grid, Oval } from "react-loader-spinner";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
 
 import {
   getAllFurnitures,
   filterFurnitureByName,
   getLoosePiecesByFurnitureId,
   getPiecesByFurnitureId,
+  deleteFurniture,
 } from "../../index.js";
 
 function Furniture() {
@@ -76,6 +79,30 @@ function Furniture() {
     setSelectedModule(null);
     setIsModalOpen(false);
   };
+
+  //Eliminar mueble
+  const [openModalToDelete, setOpenModalToDelete] = useState(false);
+  const [furnitureToDelete, setFurnitureToDelete] = useState(null);
+
+  function handleDeleteFurniture(furnitureId) {
+    setOpenModalToDelete(true);
+    setFurnitureToDelete(furnitureId);
+  }
+
+  function deleteSingleFurniture(furnitureId) {
+    deleteFurniture(furnitureId)
+      .then((res) => {
+        getAllFurnituresToSet();
+        // console.log(res.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    // Cerrar la modal después de eliminar la pieza
+    setOpenModalToDelete(false);
+    setFurnitureToDelete(null);
+  }
 
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
@@ -197,7 +224,7 @@ function Furniture() {
               value={searchTerm}
               onChange={handleChange}
               placeholder="Buscar por nombre"
-              className="border p-2 rounded-lg ml-auto"
+              className="border border-gray-400 p-2 rounded-lg ml-auto"
             />
 
             <Oval
@@ -219,43 +246,43 @@ function Furniture() {
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Nombre
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Largo
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Profundidad
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Alto
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Categoria
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Módulos
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                  className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Acción
                 </th>
@@ -264,22 +291,22 @@ function Furniture() {
             <tbody className="bg-white divide-y divide-gray-200">
               {furnitures.map((furniture) => (
                 <tr key={furniture._id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
                     {furniture.name}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
                     {furniture.length}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
                     {furniture.width}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
                     {furniture.height}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
                     {furniture.category}
                   </td>
-                  <td className="px-6 whitespace-nowrap text-sm text-gray-500 flex flex-col gap-0">
+                  <td className="px-2 whitespace-nowrap text-sm text-gray-500 flex flex-col gap-0">
                     {Array.isArray(furniture.modules_furniture) ? (
                       furniture.modules_furniture.map((module, index) => (
                         <div
@@ -306,21 +333,30 @@ function Furniture() {
                     )}
                   </td>
                   <td>
-                    <div className="flex flex-col gap-2 items-center">
-                      <Link
-                        to={`/editar-modulos-mueble/${furniture._id}
-                        `}
-                        className="text-white bg-orange hover:bg-amber-600 rounded-md px-2 py-1 mb-2 text-center w-1/2"
-                      >
-                        Editar
-                      </Link>
+                    <div className="flex flex-col gap-2 items-center py-8">
                       <Link
                         to={`/presupuestar-mueble/${furniture._id}
                         `}
-                        className="text-white bg-emerald-500 hover:bg-emerald-600 rounded-md px-2 py-1 mb-2 text-center w-1/2"
+                        className="text-white bg-emerald-700 hover:bg-emerald-900 rounded-md px-2 py-1 mb-2 text-center "
                       >
                         Presupuestar
                       </Link>
+                      <div className="flex gap-2">
+                        <Link
+                          to={`/editar-modulos-mueble/${furniture._id}
+                        `}
+                          className="text-white bg-orange hover:bg-amber-600 rounded-md px-2 py-1 mb-2 text-center "
+                        >
+                          Editar
+                        </Link>
+
+                        <button
+                          className="text-white bg-red-700 rounded-md px-2 py-1 mb-2"
+                          onClick={() => handleDeleteFurniture(furniture._id)}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
 
                       <button
                         onClick={() =>
@@ -328,7 +364,8 @@ function Furniture() {
                         }
                         className="text-white bg-sky-800 hover:bg-sky-950 rounded-md px-2 py-1 mb-2 text-center w-1/2"
                       >
-                        Descargar despiece
+                        <FontAwesomeIcon icon={faDownload} className="mr-2" />
+                        Despiece
                       </button>
                       <button
                         onClick={() =>
@@ -337,9 +374,10 @@ function Furniture() {
                             furniture.name
                           )
                         }
-                        className="text-white bg-gray-700 hover:bg-gray-800 rounded-md px-2 py-1 mb-2 text-center w-1/2"
+                        className=" text-white bg-gray-700 hover:bg-gray-800 rounded-md px-2 py-1 mb-2 text-center "
                       >
-                        Descargar piezas sueltas
+                        <FontAwesomeIcon icon={faDownload} className="mr-2" />
+                        Piezas Sueltas
                       </button>
                     </div>
                   </td>
@@ -409,6 +447,29 @@ function Furniture() {
                 className="bg-red-500 text-white py-2 px-4 rounded"
               >
                 Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {openModalToDelete && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white p-10 rounded-lg shadow-lg flex justify-center items-center flex-col">
+            <h2 className="text-xl mb-4">
+              ¿Seguro que desea eliminar el mueble?
+            </h2>
+            <div className="flex gap-4">
+              <button
+                className="bg-red-500 text-white py-2 px-4 rounded"
+                onClick={() => deleteSingleFurniture(furnitureToDelete)}
+              >
+                Eliminar
+              </button>
+              <button
+                className="bg-gray-300 text-black py-2 px-4 rounded"
+                onClick={() => setOpenModalToDelete(false)}
+              >
+                Cancelar
               </button>
             </div>
           </div>

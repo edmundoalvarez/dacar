@@ -10,6 +10,7 @@ export { updateFurniture } from "./services/Furniture/updateFurniture.js";
 export { filterFurnitureByName } from "./services/Furniture/filterFurnitureByName.js";
 export { getLoosePiecesByFurnitureId } from "./services/Furniture/getLoosePiecesByFurnitureId.js";
 export { getPiecesByFurnitureId } from "./services/Furniture/getPiecesByFurnitureId.js";
+export { deleteFurniture } from "./services/Furniture/deleteFurniture.js";
 
 //MODULES
 export { createModule } from "./services/ModulesForFurniture/createModule.js";

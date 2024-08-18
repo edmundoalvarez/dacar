@@ -152,8 +152,8 @@ function Pieces() {
 
   return (
     <>
-      <div className="m-4">
-        <div className="flex gap-4">
+      <div className="my-4">
+        <div className="flex gap-4 px-8">
           <h1 className="text-4xl">Piezas del módulo: {module.name}</h1>
           <Link
             to={`/editar-modulo/${module._id}`}

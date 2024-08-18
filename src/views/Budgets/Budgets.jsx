@@ -54,8 +54,8 @@ function Budgets() {
 
   return (
     <>
-      <div className="m-4">
-        <div className="flex gap-4 items-center">
+      <div>
+        <div className="flex gap-4 items-center p-8">
           <h1 className="text-4xl">Presupuestos</h1>
 
           <Link
@@ -71,7 +71,7 @@ function Budgets() {
               value={searchTerm}
               onChange={handleChange}
               placeholder="Buscar por nombre de cliente"
-              className="border p-2 rounded-lg ml-auto w-64"
+              className="border border-gray-400 p-2 rounded-lg ml-auto w-64"
             />
 
             <Oval

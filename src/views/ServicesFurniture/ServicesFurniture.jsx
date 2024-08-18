@@ -82,8 +82,8 @@ function ServicesFurniture() {
   }
   return (
     <>
-      <div className="m-4">
-        <div className="flex gap-4 items-center">
+      <div>
+        <div className="flex gap-4 items-center p-8">
           <h1 className="text-4xl">Servicios</h1>
 
           <Link
@@ -105,7 +105,7 @@ function ServicesFurniture() {
               value={searchTerm}
               onChange={handleChange}
               placeholder="Buscar por nombre"
-              className="border p-2 rounded-lg ml-auto"
+              className="border border-gray-400 p-2 rounded-lg ml-auto"
             />
 
             <Oval
