@@ -13,12 +13,13 @@ import {
   getLoosePiecesByFurnitureId,
   getPiecesByFurnitureId,
   deleteFurniture,
+  ViewModulesFurniture,
 } from "../../index.js";
 
 function Furniture() {
   const [furnitures, setFurnitures] = useState([]);
-  const [selectedFurniture, setSelectedFurniture] = useState(null);
-  const [selectedModule, setSelectedModule] = useState(null);
+
+  const [selectedModules, setSelectedModules] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loader, setLoader] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -68,15 +69,18 @@ function Furniture() {
   };
 
   // Manejo de la ventana modal
-  const handleOpenModal = (furniture, module) => {
-    setSelectedFurniture(furniture);
-    setSelectedModule(module);
+  const handleOpenModal = (furniture) => {
+    //ORDENAR POR NOMBRE LOS MÓDULOS
+    const sortedModules = furniture.modules_furniture?.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    // console.log(sortedModules);
+    setSelectedModules(sortedModules);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
-    setSelectedFurniture(null);
-    setSelectedModule(null);
+    setSelectedModules(null);
     setIsModalOpen(false);
   };
 
@@ -272,32 +276,31 @@ function Furniture() {
                   <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
                     {furniture.category}
                   </td>
-                  <td className="px-2 whitespace-nowrap text-sm text-gray-500 flex flex-col gap-0">
-                    {Array.isArray(furniture.modules_furniture) ? (
-                      furniture.modules_furniture.map((module, index) => (
-                        <div
-                          key={module._id || index}
-                          className={`flex flex-col items-start py-4 ${
-                            index < furniture.modules_furniture.length - 1
-                              ? "border-b border-gray-200"
-                              : ""
-                          }`}
-                        >
-                          <div className="flex items-center">
-                            <p className="w-[140px]">{module.name}</p>
-                            <button
-                              onClick={() => handleOpenModal(furniture, module)}
-                              className="ml-2 bg-blue-500 text-white py-1 px-2 rounded"
-                            >
-                              Ver
-                            </button>
-                          </div>
+                  <td className="px-2 py-4 text-center text-sm whitespace-nowrap max-w-[140px] text-gray-500">
+                    {Array.isArray(furniture.modules_furniture) &&
+                    furniture.modules_furniture.length > 0 ? (
+                      <>
+                        <div className="flex flex-wrap justify-center gap-x-1">
+                          {furniture.modules_furniture.map((module, index) => (
+                            <span key={index}>
+                              {module.name}
+                              {index < furniture.modules_furniture.length - 1 &&
+                                ","}
+                            </span>
+                          ))}
                         </div>
-                      ))
+                        <button
+                          onClick={() => handleOpenModal(furniture)}
+                          className="ml-2 mt-4 bg-blue-500 text-white py-1 px-2 rounded"
+                        >
+                          Ver
+                        </button>
+                      </>
                     ) : (
                       <p>Sin Módulos</p>
                     )}
                   </td>
+
                   <td>
                     <div className="flex flex-col gap-2 items-center py-8">
                       <Link
@@ -367,46 +370,25 @@ function Furniture() {
       </div>
       {/* Abrimos la modal en caso que el estado isModalOpen cambie */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white p-10 rounded-lg shadow-lg flex flex-col max-h-screen overflow-y-auto">
-            <h2 className="text-xl mb-4">
-              <b>Detalles del Módulo</b>
-            </h2>
-            {selectedModule && (
-              <div className="mb-2">
-                <p>
-                  <strong>Nombre:</strong> {selectedModule.name}
-                </p>
-                <p>
-                  <strong>Largo:</strong> {selectedModule.length}
-                </p>
-                <p>
-                  <strong>Profundidad:</strong> {selectedModule.width}
-                </p>
-                <p>
-                  <strong>Alto:</strong> {selectedModule.height}
-                </p>
-                <p>
-                  <strong>Categoría:</strong> {selectedModule.category}
-                </p>
-                <h2 className="text-xl bg-blue-500 text-white w-fit px-2 my-2 rounded-lg">
-                  Insumos del modulo
-                </h2>
-                {selectedModule.supplies_module.map((supplie) => (
-                  <ul key={supplie.supplie_id} className="my-2">
-                    <li>
-                      <strong>Nombre:</strong> {supplie.supplie_name}
-                    </li>
-                    <li>
-                      <strong>Cantidad:</strong> {supplie.supplie_qty}
-                    </li>
-                    <li>
-                      <strong>Largo:</strong> {supplie?.supplie_length}
-                    </li>
-                  </ul>
-                ))}
-              </div>
-            )}
+        <div
+          onClick={handleCloseModal} // Cierra la modal si se hace clic fuera de ella
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()} // Evita que el clic dentro de la modal la cierre
+            className="bg-white p-10 rounded-lg shadow-lg flex flex-col max-h-[550px] overflow-y-auto relative m-8"
+          >
+            {/* Botón de cierre en la esquina superior derecha */}
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-2 right-2 bg-red-600 text-white rounded-md w-8 h-8 flex items-center justify-center"
+            >
+              &times;
+            </button>
+
+            {/* Contenido de la modal */}
+            <ViewModulesFurniture sortedModules={selectedModules} />
+
             <div className="flex justify-center items-center m-auto gap-2 mt-4">
               <button
                 onClick={handleCloseModal}
@@ -418,6 +400,7 @@ function Furniture() {
           </div>
         </div>
       )}
+
       {openModalToDelete && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white p-10 rounded-lg shadow-lg flex justify-center items-center flex-col">

@@ -78,6 +78,7 @@ export { FormEditSupplies } from "./components/ComponentModules/FormEditSupplies
 //FURNITURE
 export { EditFurnitureSingleModuleComponent } from "./components/ComponentFurnitures/EditFurnitureSingleModuleComponent.jsx";
 export { EditFurnitureComponent } from "./components/ComponentFurnitures/EditFurnitureComponent.jsx";
+export { ViewModulesFurniture } from "./components/ComponentFurnitures/ViewModulesFurniture.jsx";
 
 //CLIENTS
 export { FormCreateClient } from "./components/ComponentClients/FormCreateClient.jsx";

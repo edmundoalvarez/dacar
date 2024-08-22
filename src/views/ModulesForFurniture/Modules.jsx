@@ -7,10 +7,14 @@ import {
   cloneModule,
   deleteOriginalModule,
   filterModuleByName,
+  ViewModulesFurniture,
+  getPiecesByModuleId,
 } from "../../index.js";
 
 function Modules() {
   const [modules, setModules] = useState([]);
+  const [selectedModule, setSelectedModule] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loader, setLoader] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
@@ -87,6 +91,30 @@ function Modules() {
   useEffect(() => {
     getAllModulesToSet();
   }, []);
+
+  // Manejo de la ventana modal
+  const handleOpenModal = async (module) => {
+    try {
+      // Obtén las piezas por el ID del módulo
+      const pieces = await getPiecesByModuleId(module._id);
+
+      // Agrega las piezas al módulo bajo el nombre 'pieces'
+      const moduleWithPieces = { ...module, pieces };
+
+      // Envuelve el módulo en un array y establece 'selectedModules'
+      setSelectedModule([moduleWithPieces]);
+
+      // Abre la modal
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Error al obtener las piezas del módulo:", error);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedModule(null);
+    setIsModalOpen(false);
+  };
 
   return (
     <>
@@ -202,6 +230,12 @@ function Modules() {
                   </td>
                   <td>
                     <div className="flex justify-center align-center gap-4">
+                      <button
+                        className="bg-blue-500 px-4 rounded-lg hover:bg-blue-800 text-light font-medium "
+                        onClick={() => handleOpenModal(module)}
+                      >
+                        Ver
+                      </button>
                       <Link
                         to={`/editar-modulo/${module._id}`}
                         className="text-white bg-orange hover:bg-amber-600 rounded-md px-2 py-1 text-center "
@@ -241,6 +275,38 @@ function Modules() {
           </div>
         </div>
       </div>
+      {/* Abrimos la modal en caso que el estado isModalOpen cambie */}
+      {isModalOpen && (
+        <div
+          onClick={handleCloseModal} // Cierra la modal si se hace clic fuera de ella
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()} // Evita que el clic dentro de la modal la cierre
+            className="bg-white p-10 rounded-lg shadow-lg flex flex-col max-h-[550px] overflow-y-auto relative m-8"
+          >
+            {/* Botón de cierre en la esquina superior derecha */}
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-2 right-2 bg-red-600 text-white rounded-md w-8 h-8 flex items-center justify-center"
+            >
+              &times;
+            </button>
+
+            {/* Contenido de la modal */}
+            <ViewModulesFurniture sortedModules={selectedModule} />
+
+            <div className="flex justify-center items-center m-auto gap-2 mt-4">
+              <button
+                onClick={handleCloseModal}
+                className="bg-red-500 text-white py-2 px-4 rounded"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* modal de desea eliminar el modulo */}
       {openModalToDeleteModule && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
