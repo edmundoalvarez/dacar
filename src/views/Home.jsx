@@ -24,6 +24,12 @@ function Home() {
             Módulos
           </Link>
           <Link
+            to={`/ver-clientes`}
+            className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
+          >
+            Clientes
+          </Link>
+          <Link
             to={`/ver-insumos`}
             className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
           >

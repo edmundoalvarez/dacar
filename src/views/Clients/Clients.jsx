@@ -3,21 +3,21 @@ import { Link } from "react-router-dom";
 import debounce from "lodash.debounce";
 import { Grid, Oval } from "react-loader-spinner";
 import {
-  getAllSupplies,
-  deleteSupplie,
-  filterSupplieByName,
+  getAllClients,
+  deleteClient,
+  filterClientByName,
 } from "../../index.js";
 
-function Supplies() {
-  const [supplies, setSupplies] = useState([]);
+function Clients() {
+  const [clients, setClients] = useState([]);
   const [loader, setLoader] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
 
-  const getSuppliesToSet = () => {
-    getAllSupplies()
-      .then((suppliesData) => {
-        setSupplies(suppliesData.data);
+  const getClientsToSet = () => {
+    getAllClients()
+      .then((clientsData) => {
+        setClients(clientsData.data);
         setLoader(false);
       })
       .catch((error) => {
@@ -25,26 +25,26 @@ function Supplies() {
       });
   };
 
-  //traer los insumo
+  //traer los clientes
   useEffect(() => {
-    getSuppliesToSet();
+    getClientsToSet();
   }, []);
 
-  // Manejar la búsqueda de insumos
+  // Manejar la búsqueda de clientes
   const handleSearch = debounce((term) => {
     if (term.trim() !== "") {
-      filterSupplieByName(term)
+      filterClientByName(term)
         .then((res) => {
-          setSupplies(res.data);
+          setClients(res.data);
           setLoader(false);
           setSearchLoader(false);
         })
         .catch((error) => {
           setSearchLoader(true);
-          console.error("Error al filtrar los insumos:", error);
+          console.error("Error al filtrar los clientes:", error);
         });
     } else {
-      getSuppliesToSet();
+      getClientsToSet();
       setSearchLoader(false); // Si no hay término de búsqueda, obtener todos los insumos
     }
   }, 800);
@@ -59,17 +59,17 @@ function Supplies() {
 
   //Eliminar insumo
   const [openModalToDelete, setOpenModalToDelete] = useState(false);
-  const [supplieToDelete, setSupplieToDelete] = useState(null);
+  const [clientToDelete, setClientToDelete] = useState(null);
 
-  function handleDeleteSupplie(supplieId) {
+  function handleDeleteClient(clientId) {
     setOpenModalToDelete(true);
-    setSupplieToDelete(supplieId);
+    setClientToDelete(clientId);
   }
 
-  function deleteSingleSupplie(supplieId) {
-    deleteSupplie(supplieId)
+  function deleteSingleClient(clientId) {
+    deleteClient(clientId)
       .then((res) => {
-        getSuppliesToSet();
+        getClientsToSet();
         // console.log(res.data);
       })
       .catch((error) => {
@@ -78,21 +78,14 @@ function Supplies() {
 
     // Cerrar la modal después de eliminar la pieza
     setOpenModalToDelete(false);
-    setSupplieToDelete(null);
+    setClientToDelete(null);
   }
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-      minimumFractionDigits: 2,
-    }).format(value);
-  };
 
   return (
     <>
       <div>
         <div className="flex gap-4 items-center p-8">
-          <h1 className="text-4xl">Insumos</h1>
+          <h1 className="text-4xl">Clientes</h1>
 
           <Link
             to="/"
@@ -101,10 +94,10 @@ function Supplies() {
             Volver al Inicio
           </Link>
           <Link
-            to="/crear-insumo"
+            to="/crear-cliente"
             className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
           >
-            Crear Insumo
+            Crear Cliente
           </Link>
           {/* Campo de búsqueda */}
           <div className="flex items-center gap-4">
@@ -144,43 +137,38 @@ function Supplies() {
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Largo
+                  Apellido
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Ancho
+                  Teléfono
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Grosor
+                  Email
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Categoria
+                  DNI
+                </th>
+
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                >
+                  CUIT/CUIL
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Material
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                >
-                  Precio
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                >
-                  Proveedor
+                  Dirección
                 </th>
                 <th
                   scope="col"
@@ -192,46 +180,44 @@ function Supplies() {
             </thead>
 
             <tbody className="bg-white divide-y divide-gray-200">
-              {supplies
+              {clients
                 .slice()
                 .sort((a, b) => a.name.localeCompare(b.name)) // Ordena alfabéticamente
-                .map((supplie) => (
-                  <tr key={supplie.name}>
+                .map((client) => (
+                  <tr key={client._id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.name}
+                      {client.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.length}
+                      {client.lastname}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.width}
+                      {client.phone}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.thickness}
+                      {client.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.category}
+                      {client.dni}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.material}
+                      {client.cuil_cuit}
                     </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatCurrency(supplie.price)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.supplier_id}
+                      {client.address}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex gap-2">
                         <Link
-                          to={`/editar-insumo/${supplie._id}`}
+                          to={`/editar-cliente/${client._id}`}
                           className="text-white bg-orange rounded-md px-2 py-1 mb-2"
                         >
                           Editar
                         </Link>
                         <button
                           className="text-white bg-red-500 rounded-md px-2 py-1 mb-2"
-                          onClick={() => handleDeleteSupplie(supplie._id)}
+                          onClick={() => handleDeleteClient(client._id)}
                         >
                           Eliminar
                         </button>
@@ -264,7 +250,7 @@ function Supplies() {
             <div className="flex gap-4">
               <button
                 className="bg-red-500 text-white py-2 px-4 rounded"
-                onClick={() => deleteSingleSupplie(supplieToDelete)}
+                onClick={() => deleteSingleClient(clientToDelete)}
               >
                 Eliminar
               </button>
@@ -282,4 +268,4 @@ function Supplies() {
   );
 }
 
-export { Supplies };
+export { Clients };

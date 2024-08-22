@@ -57,6 +57,9 @@ export { filterServiceByName } from "./services/ServicesFurniture/filterServiceB
 export { createClient } from "./services/Clients/createClient.js";
 export { getAllClients } from "./services/Clients/getAllClients.js";
 export { getClientById } from "./services/Clients/getClientById.js";
+export { filterClientByName } from "./services/Clients/filterClientByName.js";
+export { deleteClient } from "./services/Clients/deleteClient.js";
+export { updateClient } from "./services/Clients/updateClient.js";
 
 //BUDGETS
 export { getAllBudgets } from "./services/Budgets/getAllBudgets.js";
@@ -109,3 +112,8 @@ export { EditService } from "./views/ServicesFurniture/EditService";
 export { CreateBudget } from "./views/Budgets/CreateBudget";
 export { Budgets } from "./views/Budgets/Budgets";
 export { BudgetDetails } from "./views/Budgets/BudgetDetails";
+
+//CLIENTS
+export { Clients } from "./views/Clients/Clients";
+export { CreateClient } from "./views/Clients/CreateClient";
+export { EditClient } from "./views/Clients/EditClient";

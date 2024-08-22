@@ -4,9 +4,9 @@ import config from "../../config.json";
 const token = Cookies.get("token");
 const userId = Cookies.get("userId"); */
 
-//TRAER TODAS LOS CLIENTES CREADOS
-async function getAllClients() {
-  const res = await axios.get(`${config.apiClients}`, {
+//TRAER TODAS LAS PLACAS
+async function deleteClient(clientId) {
+  const res = await axios.delete(`${config.apiClients}/${clientId}`, {
     headers: {
       "Content-Type": "application/json",
       /*       auth: token, */
@@ -15,4 +15,4 @@ async function getAllClients() {
   return res;
 }
 
-export { getAllClients };
+export { deleteClient };

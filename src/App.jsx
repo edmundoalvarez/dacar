@@ -26,7 +26,11 @@ import {
   //Presupuesto
   CreateBudget,
   Budgets,
-  BudgetDetails
+  BudgetDetails,
+  //Clientes
+  Clients,
+  CreateClient,
+  EditClient,
 } from "./index.js";
 
 function App() {
@@ -67,8 +71,13 @@ function App() {
         <Route path="/ver-servicios" element={<ServicesFurniture />} />
         <Route path="/crear-servicio" element={<CreateServicesFurniture />} />
         <Route path="/editar-servicio/:idService" element={<EditService />} />
+        {/* presupuestos */}
         <Route path="/ver-presupuestos" element={<Budgets />} />
         <Route path="/ver-presupuestos/:idBudget" element={<BudgetDetails />} />
+        {/* clientes */}
+        <Route path="/ver-clientes" element={<Clients />} />
+        <Route path="/crear-cliente" element={<CreateClient />} />
+        <Route path="/editar-cliente/:clientId" element={<EditClient />} />
       </Routes>
       {/*     {<Footer />} */}
     </>

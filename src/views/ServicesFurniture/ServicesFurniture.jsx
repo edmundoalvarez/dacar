@@ -80,6 +80,14 @@ function ServicesFurniture() {
     setOpenModalToDelete(false);
     setServiceToDelete(null);
   }
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
+      minimumFractionDigits: 2,
+    }).format(value);
+  };
+
   return (
     <>
       <div>
@@ -158,7 +166,7 @@ function ServicesFurniture() {
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      ${service.price}
+                      {formatCurrency(service.price)}
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

@@ -415,7 +415,7 @@ function CreateBudget() {
     const selectedVeneer = veneer.find((veneer) => veneer._id === option);
     let veneerPrice = selectedVeneer.price * (totalVeneer / 10000);
     setValue("chapa_price", veneerPrice);
-    setChapa(veneerPrice.toLocaleString("es-ES"));
+    setChapa(veneerPrice);
   };
 
   //AL SELECCIONAR LA PLACA OBTENER EL VALOR
@@ -641,6 +641,7 @@ function CreateBudget() {
     let chapa_price = data.chapa_price ?? 0;
     let edgeLaqueredPrice = data.edgeLaqueredPrice ?? 0;
     let edgePrice = data.edgePrice ?? 0;
+    let placementDays = data.placementDays ?? 0;
     let total_price =
       chapa_price * 3.8 +
       edgeLaqueredPrice +
@@ -652,7 +653,7 @@ function CreateBudget() {
       data.veneerPolishedPrice +
       data.veneerPrice * 3.8 +
       Number(cortePlacaPrice) * totalMaterialQty +
-      Number(data.placementPrice) +
+      Number(data.placementPrice) * Number(placementDays) +
       Number(data.shipmentPrice) +
       extraItemPrice -
       Number(data.adjustment_price);
@@ -706,6 +707,7 @@ function CreateBudget() {
       comments: data.comments,
       client: clientData,
       placement: data.placement,
+      placement_days: data.placementDays,
       placement_price: data.placementPrice,
       shipment: data.shipment,
       shipmentt_price: data.shipmentPrice,
@@ -722,6 +724,14 @@ function CreateBudget() {
     } catch (error) {
       console.error("Error creando presupuesto:", error);
     }
+  };
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
+      minimumFractionDigits: 2,
+    }).format(value);
   };
 
   return (
@@ -805,10 +815,9 @@ function CreateBudget() {
                   <>
                     <p className="mb-1">
                       <span className="font-bold">Enchapado en m2:</span>{" "}
-                      {totalVeneer / 10000} m<sup>2</sup> Precio: $
-                      {(
-                        enchapadoService?.price *
-                        (totalVeneer / 10000)
+                      {totalVeneer / 10000} m<sup>2</sup> Precio:
+                      {formatCurrency(
+                        enchapadoService?.price * (totalVeneer / 10000)
                       ).toLocaleString("es-ES")}
                       {setValue(
                         "veneerPrice",
@@ -836,11 +845,10 @@ function CreateBudget() {
                   <>
                     <p className="mb-1">
                       <span className="font-bold">Lustrado en m2:</span>{" "}
-                      {totalVeneerPolished / 10000} m<sup>2</sup> Precio: $
-                      {(
-                        lustreService?.price *
-                        (totalVeneerPolished / 10000)
-                      ).toLocaleString("es-ES")}
+                      {totalVeneerPolished / 10000} m<sup>2</sup> Precio:
+                      {formatCurrency(
+                        lustreService?.price * (totalVeneerPolished / 10000)
+                      )}
                       {setValue(
                         "veneerPolishedPrice",
                         lustreService?.price * (totalVeneerPolished / 10000)
@@ -869,11 +877,10 @@ function CreateBudget() {
                   <>
                     <p className="mb-1">
                       <span className="font-bold">Laqueado en m2:</span>{" "}
-                      {totalLacqueredAll / 10000} m<sup>2</sup> Precio: $
-                      {(
-                        laqueadoService?.price *
-                        (totalLacqueredAll / 10000)
-                      ).toLocaleString("es-ES")}
+                      {totalLacqueredAll / 10000} m<sup>2</sup> Precio:
+                      {formatCurrency(
+                        laqueadoService?.price * (totalLacqueredAll / 10000)
+                      )}
                       {setValue(
                         "lacqueredPrice",
                         laqueadoService?.price * (totalLacqueredAll / 10000)
@@ -902,11 +909,11 @@ function CreateBudget() {
                   <>
                     <p className="mb-1">
                       <span className="font-bold">Pantografiado en m2:</span>{" "}
-                      {totalPantographed / 10000} m<sup>2</sup> Precio: $
-                      {(
+                      {totalPantographed / 10000} m<sup>2</sup> Precio:
+                      {formatCurrency(
                         pantografiadoService?.price *
-                        (totalPantographed / 10000)
-                      ).toLocaleString("es-ES")}
+                          (totalPantographed / 10000)
+                      )}
                       {setValue(
                         "pantographedPrice",
                         pantografiadoService?.price *
@@ -946,15 +953,15 @@ function CreateBudget() {
                                   materialEdgeLaquered) /
                                 10000
                               ).toFixed(2)}{" "}
-                              m<sup>2</sup> Precio: $
-                              {(
+                              m<sup>2</sup> Precio:
+                              {formatCurrency(
                                 laqueadoService?.price *
-                                (
-                                  (totalLacqueredEdgeLength *
-                                    materialEdgeLaquered) /
-                                  10000
-                                ).toFixed(2)
-                              ).toLocaleString("es-ES")}
+                                  (
+                                    (totalLacqueredEdgeLength *
+                                      materialEdgeLaquered) /
+                                    10000
+                                  ).toFixed(2)
+                              )}
                               {setValue(
                                 "edgeLaqueredPrice",
                                 laqueadoService?.price *
@@ -1026,12 +1033,12 @@ function CreateBudget() {
                         <span className="font-bold">
                           Filo total (sin laquear):
                         </span>{" "}
-                        {(totalEdgeLength / 100).toFixed(2)} m Precio: $
-                        {(
+                        {(totalEdgeLength / 100).toFixed(2)} m Precio:
+                        {formatCurrency(
                           filoService?.price *
-                          (totalEdgeLength / 100) *
-                          materialEdge
-                        ).toLocaleString("es-ES")}
+                            (totalEdgeLength / 100) *
+                            materialEdge
+                        )}
                         {setValue(
                           "edgePrice",
                           filoService?.price *
@@ -1143,13 +1150,14 @@ function CreateBudget() {
                               />
                               <p>
                                 <span className="font-bold">Precio total:</span>{" "}
-                                $
-                                {getSupplyPrice(
-                                  supply.supplie_id,
-                                  supply.supplie_qty,
-                                  supply.supplie_name,
-                                  supply.supplie_length,
-                                  `suppliePrice${moduleIndex}-${supplyIndex}`
+                                {formatCurrency(
+                                  getSupplyPrice(
+                                    supply.supplie_id,
+                                    supply.supplie_qty,
+                                    supply.supplie_name,
+                                    supply.supplie_length,
+                                    `suppliePrice${moduleIndex}-${supplyIndex}`
+                                  )
                                 )}
                               </p>
                               <input
@@ -1330,7 +1338,7 @@ function CreateBudget() {
                     <div className="flex flex-col w-1/4  ">
                       {" "}
                       <label htmlFor={`chapa_price`}>Precio chapa</label>
-                      <p>$ {chapa}</p>
+                      <p> {formatCurrency(chapa)}</p>
                       <input
                         name={`chapa_price`}
                         type="hidden"
@@ -1474,7 +1482,7 @@ function CreateBudget() {
                   <label htmlFor={`deliver_date`}>Fecha de entrega</label>
                   <input
                     name={`deliver_date`}
-                    type="date"
+                    type="text"
                     className="border-solid border-2 border-opacity mb-2 rounded-md "
                     {...register(`deliver_date`)}
                   />
@@ -1485,7 +1493,7 @@ function CreateBudget() {
                   )}
                 </div>
               </div>
-              <div className="flex  w-1/2 my-4 gap-4">
+              <div className="flex   my-4 gap-4">
                 <label htmlFor="placement">Colocación</label>
                 <select
                   name="placement"
@@ -1504,16 +1512,28 @@ function CreateBudget() {
                     {errors.placement.message}
                   </span>
                 )}
-
-                <>
-                  <label htmlFor="placementPrice">Precio</label>
+                <div>
+                  <label htmlFor="placementDays" className="mr-4">
+                    Cant. Días
+                  </label>
+                  <input
+                    name={`placementDays`}
+                    type="number"
+                    className="border-solid border-2 border-opacity mb-2 rounded-md "
+                    {...register(`placementDays`)}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="placementPrice" className="mr-4">
+                    Precio
+                  </label>
                   <input
                     name={`placementPrice`}
                     type="number"
                     className="border-solid border-2 border-opacity mb-2 rounded-md "
                     {...register(`placementPrice`)}
                   />
-                </>
+                </div>
               </div>
               <div className="flex  w-1/2 my-4 gap-4">
                 <label htmlFor="shipment">Envío</label>
