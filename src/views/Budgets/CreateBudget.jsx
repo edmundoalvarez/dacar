@@ -538,7 +538,6 @@ function CreateBudget() {
         await createClient({
           ...data,
         }).then((res) => {
-          clientId = res.data._id;
           clientData = res.data;
           console.log("¡Creaste cliente!");
         });
@@ -642,22 +641,47 @@ function CreateBudget() {
     let chapa_price = data.chapa_price ?? 0;
     let edgeLaqueredPrice = data.edgeLaqueredPrice ?? 0;
     let edgePrice = data.edgePrice ?? 0;
+    let lacqueredPrice = data.lacqueredPrice ?? 0;
     let placementDays = data.placementDays ?? 0;
+    let pantographedPrice = data.pantographedPrice ?? 0;
+    let veneerPolishedPrice = data.veneerPolishedPrice ?? 0;
+    let veneerPrice = data.veneerPrice ?? 0;
+    let placementPrice = data.placementPrice ?? 0;
+    let shipmentPrice = data.shipmentPrice ?? 0;
+    let adjustment_price = data.adjustment_price ?? 0;
+
     let total_price =
-      chapa_price * 3.8 +
-      edgeLaqueredPrice +
-      edgePrice * 3.8 +
-      data.lacqueredPrice +
-      totalMaterialPrice * 3.8 +
-      totalSuppliesPrice * 3.8 +
-      data.pantographedPrice +
-      data.veneerPolishedPrice +
-      data.veneerPrice * 3.8 +
-      Number(cortePlacaPrice) * totalMaterialQty +
-      Number(data.placementPrice) * Number(placementDays) +
-      Number(data.shipmentPrice) +
-      extraItemPrice -
-      Number(data.adjustment_price);
+      Number(chapa_price) * 3.8 +
+      Number(edgeLaqueredPrice) +
+      Number(edgePrice) * 3.8 +
+      Number(lacqueredPrice) +
+      Number(totalMaterialPrice) * 3.8 +
+      Number(totalSuppliesPrice) * 3.8 +
+      Number(pantographedPrice) +
+      Number(veneerPolishedPrice) +
+      Number(veneerPrice) * 3.8 +
+      Number(cortePlacaPrice) * Number(totalMaterialQty) +
+      Number(placementPrice) * Number(placementDays) +
+      Number(shipmentPrice) +
+      Number(extraItemPrice) -
+      Number(adjustment_price);
+
+    // console.log("chapa_price:", chapa_price);
+    // console.log("edgeLaqueredPrice:", Number(edgeLaqueredPrice));
+    // console.log("edgePrice:", edgePrice);
+    // console.log("data.lacqueredPrice:", Number(lacqueredPrice));
+    // console.log("totalMaterialPrice:", totalMaterialPrice);
+    // console.log("totalSuppliesPrice:", totalSuppliesPrice);
+    // console.log("data.pantographedPrice2:", pantographedPrice);
+    // console.log("data.veneerPolishedPrice:", data.veneerPolishedPrice);
+    // console.log("data.veneerPrice:", data.veneerPrice);
+    // console.log("cortePlacaPrice:", Number(cortePlacaPrice));
+    // console.log("totalMaterialQty:", totalMaterialQty);
+    // console.log("data.placementPrice:", data.placementPrice);
+    // console.log("placementDays:", placementDays);
+    // console.log("data.shipmentPrice:", Number(data.shipmentPrice));
+    // console.log("extraItemPrice:", Number(extraItemPrice));
+    // console.log("data.adjustment_price:", Number(data.adjustment_price));
 
     // Objeto final para crear el presupuesto
     const budgetData = {
@@ -716,7 +740,7 @@ function CreateBudget() {
     };
 
     // //TODO AGREGAR USERNAME
-    console.log(budgetData);
+    // console.log(budgetData);
 
     try {
       await createBudget(budgetData);
@@ -1398,6 +1422,7 @@ function CreateBudget() {
                     {...register(`clientOption`, {
                       required: "El campo es obligatorio",
                     })}
+                    onChange={handleClientOption}
                   />
                   <label htmlFor="newClient" className="ml-2">
                     Cargar cliente

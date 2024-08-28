@@ -15,7 +15,7 @@ function FormEditPieces({
   const [material, setMaterial] = useState("");
 
   useEffect(() => {
-    console.log("Pieza: ", piece);
+    // console.log("Pieza: ", piece);
     if (piece) {
       if (piece.edgeLength || piece.edgeWidth) {
         setShowEdgePiece(true);

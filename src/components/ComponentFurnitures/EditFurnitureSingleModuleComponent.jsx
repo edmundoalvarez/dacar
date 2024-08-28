@@ -147,7 +147,7 @@ function EditFurnitureSingleModuleComponent({
 
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
         const supplyIdName = data[`supplie_id_name${index}`];
-        const [supplie_id, supplie_name] = supplyIdName.split("-");
+        const [supplie_id, supplie_name] = supplyIdName.split("##");
 
         return {
           supplie_id,

@@ -31,7 +31,7 @@ function FormAddSupplies({ register, index, errors, supplies }) {
             {supplies.map((supplie) => (
               <option
                 key={supplie._id}
-                value={`${supplie._id}-${supplie.name}`}
+                value={`${supplie._id}##${supplie.name}`}
               >
                 {supplie.name}
               </option>

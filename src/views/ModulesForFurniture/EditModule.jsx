@@ -37,7 +37,6 @@ function EditModule() {
     getModuleAndPiecesByModuleId(idModule)
       .then((moduleData) => {
         const module = moduleData;
-        // console.log("module", module);
         setCurrentModule(module); // Guardar el módulo en el estado
         // Rellenar el formulario con los datos del módulo
         setModuleOriginalHeight(module.height || 0);
@@ -130,7 +129,7 @@ function EditModule() {
 
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
         const supplyIdName = data[`supplie_id_name${index}`];
-        const [supplie_id, supplie_name] = supplyIdName.split("-");
+        const [supplie_id, supplie_name] = supplyIdName.split("##");
 
         return {
           supplie_id,

@@ -44,9 +44,7 @@ function FormCreateClient({ register, errors }) {
             name={`dni`}
             type="text"
             className="border-solid border-2 border-opacity mb-2 rounded-md "
-            {...register(`dni`, {
-              required: "El campo es obligatorio",
-            })}
+            {...register(`dni`)}
           />
           {errors[`dni`] && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -61,9 +59,7 @@ function FormCreateClient({ register, errors }) {
             name={`cuil_cuit`}
             type="text"
             className="border-solid border-2 border-opacity mb-2 rounded-md "
-            {...register(`cuil_cuit`, {
-              required: "El campo es obligatorio",
-            })}
+            {...register(`cuil_cuit`)}
           />
           {errors[`cuil_cuit`] && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -78,9 +74,7 @@ function FormCreateClient({ register, errors }) {
             name={`address`}
             type="text"
             className="border-solid border-2 border-opacity mb-2 rounded-md "
-            {...register(`address`, {
-              required: "El campo es obligatorio",
-            })}
+            {...register(`address`)}
           />
           {errors[`address`] && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -95,9 +89,7 @@ function FormCreateClient({ register, errors }) {
             name={`email`}
             type="text"
             className="border-solid border-2 border-opacity mb-2 rounded-md "
-            {...register(`email`, {
-              required: "El campo es obligatorio",
-            })}
+            {...register(`email`)}
           />
           {errors[`email`] && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -112,9 +104,7 @@ function FormCreateClient({ register, errors }) {
             name={`phone`}
             type="text"
             className="border-solid border-2 border-opacity mb-2 rounded-md "
-            {...register(`phone`, {
-              required: "El campo es obligatorio",
-            })}
+            {...register(`phone`)}
           />
           {errors[`phone`] && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">

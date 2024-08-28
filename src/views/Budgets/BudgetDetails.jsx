@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getBudgetById } from "../../services/Budgets/getBudgetById";
+import { getBudgetById } from "../../index.js";
 import { Grid } from "react-loader-spinner";
 function BudgetDetails() {
   const [budget, setBudget] = useState({});

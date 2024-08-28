@@ -65,6 +65,7 @@ export { updateClient } from "./services/Clients/updateClient.js";
 export { getAllBudgets } from "./services/Budgets/getAllBudgets.js";
 export { createBudget } from "./services/Budgets/createBudget.js";
 export { getLastBudgetNum } from "./services/Budgets/getLastBudgetNum.js";
+export { getBudgetById } from "./services/Budgets/getBudgetById.js";
 export { filterBudgetByClientName } from "./services/Budgets/filterBudgetByClientName.js";
 
 //Components --->
@@ -113,6 +114,7 @@ export { EditService } from "./views/ServicesFurniture/EditService";
 export { CreateBudget } from "./views/Budgets/CreateBudget";
 export { Budgets } from "./views/Budgets/Budgets";
 export { BudgetDetails } from "./views/Budgets/BudgetDetails";
+export { EditBudget } from "./views/Budgets/EditBudget";
 
 //CLIENTS
 export { Clients } from "./views/Clients/Clients";

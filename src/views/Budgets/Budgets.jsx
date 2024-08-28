@@ -143,12 +143,20 @@ function Budgets() {
                     {budget.furniture_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <Link
-                      to={`/ver-presupuestos/${budget._id}`}
-                      className="bg-gray-500 text-white px-2 py-2 rounded hover:bg-gray-700"
-                    >
-                      Ver detalle
-                    </Link>
+                    <div className=" flex justify-center gap-4">
+                      <Link
+                        to={`/editar-presupuestos/${budget._id}`}
+                        className="text-white bg-orange hover:bg-amber-600 rounded-md px-2 py-2 text-center "
+                      >
+                        Editar
+                      </Link>
+                      <Link
+                        to={`/ver-presupuestos/${budget._id}`}
+                        className="bg-gray-500 text-white px-2 py-2 rounded hover:bg-gray-700"
+                      >
+                        Ver detalle
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

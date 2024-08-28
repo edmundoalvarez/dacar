@@ -10,10 +10,10 @@ function FormEditSupplies({
   setValue,
 }) {
   const [selectedSupply, setSelectedSupply] = useState("");
-
+  console.log(supplyModule.supplie_name, "index", index);
   useEffect(() => {
     if (supplyModule) {
-      const supplyValue = `${supplyModule.supplie_id}-${supplyModule.supplie_name}`;
+      const supplyValue = `${supplyModule.supplie_id}##${supplyModule.supplie_name}`;
       setSelectedSupply(supplyValue);
       setValue(`supplie_id_name${index}`, supplyValue);
       setValue(`supplie_qty${index}`, supplyModule.supplie_qty);
@@ -48,7 +48,7 @@ function FormEditSupplies({
         >
           <option value="">Elegir una opción</option>
           {supplies.map((supplie) => (
-            <option key={supplie._id} value={`${supplie._id}-${supplie.name}`}>
+            <option key={supplie._id} value={`${supplie._id}##${supplie.name}`}>
               {supplie.name}
             </option>
           ))}

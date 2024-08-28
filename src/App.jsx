@@ -27,6 +27,7 @@ import {
   CreateBudget,
   Budgets,
   BudgetDetails,
+  EditBudget,
   //Clientes
   Clients,
   CreateClient,
@@ -60,10 +61,6 @@ function App() {
           path="/editar-modulos-mueble/:idFurniture"
           element={<EditFurnitureMultipleModules />}
         />
-        <Route
-          path="/presupuestar-mueble/:idFurniture"
-          element={<CreateBudget />}
-        />
         <Route path="/ver-insumos" element={<Supplies />} />
         <Route path="/crear-insumo" element={<CreateSupplie />} />
         <Route path="/editar-insumo/:idSupplie" element={<EditSupplie />} />
@@ -73,7 +70,12 @@ function App() {
         <Route path="/editar-servicio/:idService" element={<EditService />} />
         {/* presupuestos */}
         <Route path="/ver-presupuestos" element={<Budgets />} />
+        <Route
+          path="/presupuestar-mueble/:idFurniture"
+          element={<CreateBudget />}
+        />
         <Route path="/ver-presupuestos/:idBudget" element={<BudgetDetails />} />
+        <Route path="/editar-presupuestos/:budgetId" element={<EditBudget />} />
         {/* clientes */}
         <Route path="/ver-clientes" element={<Clients />} />
         <Route path="/crear-cliente" element={<CreateClient />} />
