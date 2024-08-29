@@ -13,6 +13,8 @@ function FormEditPieces({
   const [showEdgePiece, setShowEdgePiece] = useState(false);
   const [finishingModule, setFinishingModule] = useState("");
   const [material, setMaterial] = useState("");
+  const [lengthLabel, setLengthLabel] = useState("");
+  const [widthLabel, setWidthLabel] = useState("");
 
   useEffect(() => {
     // console.log("Pieza: ", piece);
@@ -35,6 +37,30 @@ function FormEditPieces({
       setValue(`materialPiece${index}`, piece.material || "");
     }
   }, [piece, setValue, index]);
+
+  //CAMBIAR DE ORIENTACIÓN
+  const handleOrientationOptionChange = (option) => {
+    const optionSelected = option.target.value;
+    if (optionSelected === "") {
+      setLengthLabel("");
+      setWidthLabel("");
+    }
+    if (optionSelected === "cross-vertical") {
+      setLengthLabel("Alto");
+      setWidthLabel("Largo");
+    }
+    if (optionSelected === "cross-horizontal") {
+      setLengthLabel("Largo");
+      setWidthLabel("Profundidad");
+    }
+    if (optionSelected === "side") {
+      setLengthLabel("Alto");
+      setWidthLabel("Profundidad");
+    }
+    alert(
+      "Ha cambiado la orientación de la pieza, debe ajustar las medidas a los nuevos parametros de Alto, Largo o Profundidad"
+    );
+  };
 
   const handleEdgeOptionChange = (event) => {
     const isYes = event.target.value === "yes";
@@ -103,6 +129,23 @@ function FormEditPieces({
           </span>
         )}
       </div>
+      <div className="flex flex-col w-1/12">
+        <label htmlFor={`qty${index}`} className="font-semibold mb-1">
+          Cantidad
+        </label>
+        <input
+          className="border border-gray-300 rounded-md p-2"
+          type="number"
+          name={`qty${index}`}
+          id={`qty${index}`}
+          {...register(`qty${index}`)}
+        />
+        {errors[`qty${index}`] && (
+          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+            {errors[`qty${index}`].message}
+          </span>
+        )}
+      </div>
       <div className="flex flex-col justify-center w-1/12">
         <label className="font-semibold mb-1 mr-2">Pieza suelta</label>
         <input
@@ -115,41 +158,32 @@ function FormEditPieces({
         <label htmlFor={`orientation${index}`} className="font-semibold mb-1">
           Orientación
         </label>
-        <input
-          type="hidden"
+        <select
+          className="border border-gray-300 rounded-md p-2"
           name={`orientation${index}`}
           id={`orientation${index}`}
-          defaultValue={piece?.orientation || ""}
-          {...register(`orientation${index}`)}
-        />
-        <input
-          type="text"
-          className="border border-gray-300 rounded-md p-2"
-          name={`orientationShow${index}`}
-          id={`orientationShow${index}`}
-          value={
-            piece.orientation === "cross-vertical"
-              ? "Transversal Vertical"
-              : piece.orientation === "cross-horizontal"
-              ? "Transversal Horizontal"
-              : piece.orientation === "side"
-              ? "Lateral"
-              : ""
-          }
-          disabled
-        />
+          {...register(`orientation${index}`, {
+            required: "El campo es obligatorio",
+          })}
+          onChange={handleOrientationOptionChange}
+        >
+          <option value="cross-vertical">Transversal Vertical</option>
+          <option value="cross-horizontal">Transversal Horizontal</option>
+          <option value="side">Lateral</option>
+        </select>
       </div>
       {/* length */}
 
       <div className="flex flex-col w-1/5">
         <label htmlFor={`lengthPiece${index}`} className="font-semibold mb-1">
-          {piece.orientation === "cross-vertical"
-            ? "Alto:"
-            : piece.orientation === "cross-horizontal"
-            ? "Largo:"
-            : piece.orientation === "side"
-            ? "Alto:"
-            : ""}
+          {lengthLabel ||
+            (piece.orientation === "cross-vertical"
+              ? "Alto"
+              : piece.orientation === "cross-horizontal"
+              ? "Largo"
+              : piece.orientation === "side"
+              ? "Alto"
+              : "")}
         </label>
         <input
           className="border border-gray-300 rounded-md p-2"
@@ -172,14 +206,14 @@ function FormEditPieces({
 
       <div className="flex flex-col w-1/5">
         <label htmlFor={`widthPiece${index}`} className="font-semibold mb-1">
-          {" "}
-          {piece.orientation === "cross-vertical"
-            ? "Largo:"
-            : piece.orientation === "cross-horizontal"
-            ? "Profundidad:"
-            : piece.orientation === "side"
-            ? "Profundidad:"
-            : ""}
+          {widthLabel ||
+            (piece.orientation === "cross-vertical"
+              ? "Largo"
+              : piece.orientation === "cross-horizontal"
+              ? "Profundidad"
+              : piece.orientation === "side"
+              ? "Profundidad"
+              : "")}
         </label>
         <input
           className="border border-gray-300 rounded-md p-2"
@@ -405,13 +439,14 @@ function FormEditPieces({
             <div>
               <label className="font-semibold mb-1">
                 Filo de{" "}
-                {piece.orientation === "cross-vertical"
-                  ? "Alto:"
-                  : piece.orientation === "cross-horizontal"
-                  ? "Largo:"
-                  : piece.orientation === "side"
-                  ? "Alto:"
-                  : ""}
+                {lengthLabel ||
+                  (piece.orientation === "cross-vertical"
+                    ? "Alto:"
+                    : piece.orientation === "cross-horizontal"
+                    ? "Largo:"
+                    : piece.orientation === "side"
+                    ? "Alto:"
+                    : "")}
               </label>
               <input
                 className="ml-2"
@@ -448,13 +483,14 @@ function FormEditPieces({
             <div>
               <label className="font-semibold mb-1">
                 Filo de{" "}
-                {piece.orientation === "cross-vertical"
-                  ? "Largo:"
-                  : piece.orientation === "cross-horizontal"
-                  ? "Profundidad:"
-                  : piece.orientation === "side"
-                  ? "Profundidad:"
-                  : ""}
+                {widthLabel ||
+                  (piece.orientation === "cross-vertical"
+                    ? "Largo:"
+                    : piece.orientation === "cross-horizontal"
+                    ? "Profundidad:"
+                    : piece.orientation === "side"
+                    ? "Profundidad:"
+                    : "")}
               </label>
               <input
                 className="ml-2"

@@ -51,7 +51,7 @@ function Pieces() {
         console.error("Este es el error:", error);
       });
   };
-  // FORMULARIO PARA CREAR
+
   const {
     register,
     handleSubmit,
@@ -59,29 +59,38 @@ function Pieces() {
     reset,
     formState: { errors },
   } = useForm();
+
   //Eliminar pieza
   const [openModalToDelete, setOpenModalToDelete] = useState(false);
-  const [pieceToDelete, setPieceToDelete] = useState(null);
+  const [pieceToDelete, setPieceToDelete] = useState({ id: null, qty: 0 });
 
-  function handleDeletePiece(pieceId) {
+  function handleDeletePiece(pieceId, pieceQty) {
     setOpenModalToDelete(true);
-    setPieceToDelete(pieceId);
+    setPieceToDelete({ id: pieceId, qty: pieceQty });
   }
-  function deleteSinglePiece(pieceId) {
-    deletePiece(pieceId)
-      .then((res) => {
-        getAllPiecesToSet();
-        let newPiecesNumber = module.pieces_number - 1;
-        updateModulePiecesNumber(moduleId, newPiecesNumber);
-        // console.log(res.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+  async function deleteSinglePiece({ id, qty }) {
+    try {
+      // Llamada a la función de eliminación de la pieza
+      await deletePiece(id);
 
-    // Cerrar la modal después de eliminar la pieza
-    setOpenModalToDelete(false);
-    setPieceToDelete(null);
+      // Obtener nuevamente todas las piezas después de la eliminación
+      getAllPiecesToSet();
+
+      console.log("qty a borrar: ", qty);
+
+      // Calcular el nuevo número de piezas y actualizar el módulo
+      let newPiecesNumber = module.pieces_number - qty;
+      await updateModulePiecesNumber(moduleId, newPiecesNumber);
+
+      // Obtener los datos actualizados del módulo
+      getModuleToSet();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      // Cerrar la modal después de eliminar la pieza y limpiar el estado
+      setOpenModalToDelete(false);
+      setPieceToDelete({ id: null, qty: 0 });
+    }
   }
 
   //traer las placas
@@ -116,9 +125,18 @@ function Pieces() {
         veneer = false;
         melamine = true;
       }
+
+      let qty =
+        data[`qty1`] !== undefined &&
+        data[`qty1`] !== "" &&
+        Number(data[`qty1`]) !== 0
+          ? Number(data[`qty1`])
+          : 1;
+      console.log("data[`qty`]", data[`qty1`], "qty", qty);
       const pieceData = {
         // Mapeo de los nombres de los campos del formulario a los nombres esperados en la base de datos
         name: data[`namePiece1`],
+        qty: qty,
         length: data[`lengthPiece1`],
         width: data[`widthPiece1`],
         orientation: data[`orientation1`],
@@ -142,8 +160,10 @@ function Pieces() {
       await createPieces(pieceData);
       setShowAddPiece(false);
       getAllPiecesToSet();
-      let newPiecesNumber = module.pieces_number + 1;
-      updateModulePiecesNumber(moduleId, newPiecesNumber);
+      console.log("module.pieces_number", module.pieces_number, "qty", qty);
+      let newPiecesNumber = module.pieces_number + qty;
+      await updateModulePiecesNumber(moduleId, newPiecesNumber);
+      getModuleToSet();
       reset();
     } catch (error) {
       console.error(error);
@@ -183,7 +203,7 @@ function Pieces() {
               onSubmit={handleSubmit(onSubmit)}
             >
               <FormCreatePieces
-                key={`FormCreatePiecess${1}`}
+                key={`FormCreatePieces${1}`}
                 register={register}
                 index={1}
                 errors={errors}
@@ -217,6 +237,12 @@ function Pieces() {
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
                   Nombre
+                </th>
+                <th
+                  scope="col"
+                  className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                >
+                  Cantidad
                 </th>
                 <th
                   scope="col"
@@ -268,6 +294,9 @@ function Pieces() {
                 <tr key={piece.name} className="text-center">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {piece.name}
+                  </td>
+                  <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {piece.qty}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {piece.length}
@@ -337,7 +366,7 @@ function Pieces() {
                       </Link> */}
                       <button
                         className="text-white bg-red-500 rounded-md px-2 py-1 mb-2"
-                        onClick={() => handleDeletePiece(piece._id)}
+                        onClick={() => handleDeletePiece(piece._id, piece.qty)}
                       >
                         Eliminar
                       </button>

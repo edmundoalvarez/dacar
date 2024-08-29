@@ -59,6 +59,7 @@ function EditModule() {
         module.pieces.forEach((piece, index) => {
           setValue(`pieceId${index}`, piece._id);
           setValue(`namePiece${index}`, piece.name);
+          setValue(`qty${index}`, piece.qty);
           setValue(`lengthPiece${index}`, piece.length.toString());
           setValue(`widthPiece${index}`, piece.width.toString());
           setValue(`orientation${index}`, piece.orientation);
@@ -124,7 +125,6 @@ function EditModule() {
         width,
         widthHidden,
         category,
-        piecesNumber,
       } = data;
 
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
@@ -138,8 +138,18 @@ function EditModule() {
           supplie_length: data[`supplie_length${index}`],
         };
       });
+      let piecesNumber = 0;
 
       const pieces = [...Array(piecesCount)].map((_, index) => {
+        console.log("qty", data[`qty${index}`]);
+        let qty =
+          data[`qty${index}`] !== undefined &&
+          data[`qty${index}`] !== "" &&
+          Number(data[`qty${index}`]) !== 0
+            ? Number(data[`qty${index}`])
+            : 1;
+
+        piecesNumber += qty;
         let lacqueredPiece;
         let veneer;
         let melamine;
@@ -231,6 +241,7 @@ function EditModule() {
         return {
           _id: data[`pieceId${index}`],
           name: data[`namePiece${index}`],
+          qty: qty,
           length: parseFloat(pieceLength.toFixed(2)),
           width: parseFloat(pieceWidth.toFixed(2)),
           orientation: data[`orientation${index}`],
@@ -259,7 +270,7 @@ function EditModule() {
         width: parseFloat(width),
         height: parseFloat(height),
         category,
-        pieces_number: parseInt(piecesNumber, 10),
+        pieces_number: piecesNumber,
         supplies_module,
       };
       // console.log("updatedModule", updatedModule);

@@ -54,8 +54,8 @@ function CreateModule() {
 
     try {
       // Crear el módulo y obtener el ID del módulo creado
-      const { name, length, width, category, piecesNumber } = data; // Extraer datos relevantes para el módulo
-      console.log(data);
+      const { name, length, width, category } = data; // Extraer datos relevantes para el módulo
+      console.log("data del form", data);
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
         const supplyIdName = data[`supplie_id_name${index}`];
         const [supplie_id, supplie_name] = supplyIdName.split("##");
@@ -67,6 +67,17 @@ function CreateModule() {
           supplie_length: data[`supplie_length${index}`],
         };
       });
+      let piecesNumber = 0;
+      for (let i = 0; i < piecesCount; i++) {
+        const qty =
+          data[`qty${i}`] !== undefined &&
+          data[`qty${i}`] !== "" &&
+          Number(data[`qty${i}`]) !== 0
+            ? Number(data[`qty${i}`])
+            : 1;
+
+        piecesNumber += qty;
+      }
 
       const moduleData = {
         name,
@@ -100,10 +111,17 @@ function CreateModule() {
           veneer = false;
           melamine = true;
         }
+        const qty =
+          data[`qty${i}`] !== undefined &&
+          data[`qty${i}`] !== "" &&
+          Number(data[`qty${i}`]) !== 0
+            ? Number(data[`qty${i}`])
+            : 1;
 
         const pieceData = {
           // Mapeo de los nombres de los campos del formulario a los nombres esperados en la base de datos
           name: data[`namePiece${i}`],
+          qty,
           length: data[`lengthPiece${i}`],
           width: data[`widthPiece${i}`],
           orientation: data[`orientation${i}`],

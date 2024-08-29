@@ -35,6 +35,7 @@ function CreateBudget() {
   const [materialEdge, setMaterialEdge] = useState(1);
   const [materialEdgeLaquered, setMaterialEdgeLaquered] = useState(0);
   const [chapa, setChapa] = useState(0);
+  const [showSupplies, setShowSupplies] = useState(true);
 
   const navigate = useNavigate();
 
@@ -48,8 +49,15 @@ function CreateBudget() {
   const getFurnituresToSet = () => {
     getFurnitureById(idFurniture)
       .then((furnituresData) => {
+        // Establecer los datos de muebles
         setSingleFurniture(furnituresData.data);
-        // console.log(furnituresData.data);
+        const modules = furnituresData.data.modules_furniture;
+        // Verifica si todos los módulos tienen supplies_module vacío
+        const allModulesEmpty = modules.every(
+          (module) => module.supplies_module.length === 0
+        );
+
+        setShowSupplies(!allModulesEmpty);
       })
       .catch((error) => {
         console.error("Este es el error:", error);
@@ -192,19 +200,21 @@ function CreateBudget() {
       module.pieces.forEach((piece) => {
         if (piece.edgeLength) {
           if (!piece.lacqueredEdge) {
-            totalEdgeLength += piece.edgeLengthSides * piece.length;
+            totalEdgeLength += piece.edgeLengthSides * piece.length * piece.qty;
           }
           if (piece.lacqueredEdge) {
-            totalLacqueredEdgeLength += piece.edgeLengthSides * piece.length;
+            totalLacqueredEdgeLength +=
+              piece.edgeLengthSides * piece.length * piece.qty;
           }
         }
         if (piece.edgeWidth) {
           if (!piece.lacqueredEdge) {
-            totalEdgeLength += piece.edgeWidthSides * piece.width;
+            totalEdgeLength += piece.edgeWidthSides * piece.width * piece.qty;
           }
 
           if (piece.lacqueredEdge) {
-            totalLacqueredEdgeLength += piece.edgeWidthSides * piece.width;
+            totalLacqueredEdgeLength +=
+              piece.edgeWidthSides * piece.width * piece.qty;
           }
         }
       });
@@ -228,13 +238,14 @@ function CreateBudget() {
     modules?.forEach((module) => {
       module.pieces.forEach((piece) => {
         if (piece.veneer) {
-          totalVeneer += piece.length * piece.width * 1.2; //se suma el enchapado total
+          totalVeneer += piece.length * piece.width * 1.2 * piece.qty; //se suma el enchapado total
           if (piece.veneerFinishing === "veneerLacquered") {
             // console.log(piece);
-            totalVeneerLacquered += piece.length * piece.width * 1.2;
+            totalVeneerLacquered +=
+              piece.length * piece.width * 1.2 * piece.qty;
           }
           if (piece.veneerFinishing === "veneerPolished") {
-            totalVeneerPolished += piece.length * piece.width * 1.2;
+            totalVeneerPolished += piece.length * piece.width * 1.2 * piece.qty;
           }
         }
       });
@@ -258,10 +269,10 @@ function CreateBudget() {
         if (piece.lacqueredPiece) {
           // console.log("piezas", piece.name, "piezas", piece.lacqueredPiece);
           if (piece.lacqueredPieceSides === "single") {
-            totalLacquered += piece.length * piece.width;
+            totalLacquered += piece.length * piece.width * piece.qty;
           }
           if (piece.lacqueredPieceSides === "double") {
-            totalLacquered += piece.length * piece.width * 2;
+            totalLacquered += piece.length * piece.width * 2 * piece.qty;
           }
         }
       });
@@ -284,9 +295,9 @@ function CreateBudget() {
       module.pieces.forEach((piece) => {
         if (piece.melamine) {
           if (piece.melamineLacquered) {
-            totalMelamineLacquered += piece.length * piece.width;
+            totalMelamineLacquered += piece.length * piece.width * piece.qty;
           } else {
-            totalMelamine += piece.length * piece.width * 2;
+            totalMelamine += piece.length * piece.width * 2 * piece.qty;
           }
         }
       });
@@ -308,7 +319,7 @@ function CreateBudget() {
     modules?.forEach((module) => {
       module.pieces.forEach((piece) => {
         if (piece.pantographed) {
-          totalPantographed += piece.length * piece.width;
+          totalPantographed += piece.length * piece.width * piece.qty;
         }
       });
     });
@@ -1116,91 +1127,109 @@ function CreateBudget() {
               </div>
 
               {/* INSUMOS */}
-              <div className="w-2/3">
-                <h2 className="text-2xl font-semibold mb-2">
-                  Insumos totales del mueble
-                </h2>
-                <div className="flex flex-wrap -mx-2">
-                  {sortedModules &&
-                    sortedModules.map((module, moduleIndex) => (
-                      <div
-                        key={moduleIndex}
-                        className="w-full sm:w-1/2 lg:w-1/3 px-2 mb-4"
-                      >
-                        <div className=" p-4 rounded shadow">
-                          <h4>{module.name}</h4>
-                          <input
-                            name={`moduleName${moduleIndex}`}
-                            type="hidden"
-                            value={module.name}
-                            {...register(`moduleName${moduleIndex}`)}
-                          />
-                          {module.supplies_module.map((supply, supplyIndex) => (
-                            <div key={`sup${supplyIndex}`} className="mb-2">
-                              <p>
-                                <span className="font-bold">Nombre:</span>{" "}
-                                {supply.supplie_name}
-                              </p>
+              {showSupplies ? (
+                <div className="w-2/3">
+                  <h2 className="text-2xl font-semibold mb-2">
+                    Insumos totales del mueble
+                  </h2>
+                  <div className="flex flex-wrap -mx-2">
+                    {sortedModules &&
+                      sortedModules.map((module, moduleIndex) =>
+                        module.supplies_module.length > 0 ? (
+                          <div
+                            key={moduleIndex}
+                            className="w-full sm:w-1/2 lg:w-1/3 px-2 mb-4"
+                          >
+                            <div className=" p-4 rounded shadow">
+                              <h4>{module.name}</h4>
                               <input
-                                name={`supplieName${moduleIndex}-${supplyIndex}`}
+                                name={`moduleName${moduleIndex}`}
                                 type="hidden"
-                                value={supply.supplie_name}
-                                {...register(
-                                  `supplieName${moduleIndex}-${supplyIndex}`
-                                )}
+                                value={module.name}
+                                {...register(`moduleName${moduleIndex}`)}
                               />
-                              <p>
-                                <span className="font-bold">Cantidad:</span>{" "}
-                                {supply.supplie_qty}
-                              </p>
-                              <input
-                                name={`supplieQty${moduleIndex}-${supplyIndex}`}
-                                type="hidden"
-                                value={supply.supplie_qty}
-                                {...register(
-                                  `supplieQty${moduleIndex}-${supplyIndex}`
-                                )}
-                              />
-                              <p>
-                                <span className="font-bold">Largo:</span>{" "}
-                                {supply.supplie_length}
-                              </p>
-                              <input
-                                name={`supplieLength${moduleIndex}-${supplyIndex}`}
-                                type="hidden"
-                                value={supply.supplie_length}
-                                {...register(
-                                  `supplieLength${moduleIndex}-${supplyIndex}`
-                                )}
-                              />
-                              <p>
-                                <span className="font-bold">Precio total:</span>{" "}
-                                {formatCurrency(
-                                  getSupplyPrice(
-                                    supply.supplie_id,
-                                    supply.supplie_qty,
-                                    supply.supplie_name,
-                                    supply.supplie_length,
-                                    `suppliePrice${moduleIndex}-${supplyIndex}`
-                                  )
-                                )}
-                              </p>
-                              <input
-                                name={`suppliePrice${moduleIndex}-${supplyIndex}`}
-                                type="hidden"
-                                {...register(
-                                  `suppliePrice${moduleIndex}-${supplyIndex}`
-                                )}
-                              />
+                              {module.supplies_module.map(
+                                (supply, supplyIndex) => (
+                                  <div
+                                    key={`sup${supplyIndex}`}
+                                    className="mb-2"
+                                  >
+                                    <p>
+                                      <span className="font-bold">Nombre:</span>{" "}
+                                      {supply.supplie_name}
+                                    </p>
+                                    <input
+                                      name={`supplieName${moduleIndex}-${supplyIndex}`}
+                                      type="hidden"
+                                      value={supply.supplie_name}
+                                      {...register(
+                                        `supplieName${moduleIndex}-${supplyIndex}`
+                                      )}
+                                    />
+                                    <p>
+                                      <span className="font-bold">
+                                        Cantidad:
+                                      </span>{" "}
+                                      {supply.supplie_qty}
+                                    </p>
+                                    <input
+                                      name={`supplieQty${moduleIndex}-${supplyIndex}`}
+                                      type="hidden"
+                                      value={supply.supplie_qty}
+                                      {...register(
+                                        `supplieQty${moduleIndex}-${supplyIndex}`
+                                      )}
+                                    />
+                                    <p>
+                                      <span className="font-bold">Largo:</span>{" "}
+                                      {supply.supplie_length}
+                                    </p>
+                                    <input
+                                      name={`supplieLength${moduleIndex}-${supplyIndex}`}
+                                      type="hidden"
+                                      value={supply.supplie_length}
+                                      {...register(
+                                        `supplieLength${moduleIndex}-${supplyIndex}`
+                                      )}
+                                    />
+                                    <p>
+                                      <span className="font-bold">
+                                        Precio total:
+                                      </span>{" "}
+                                      {formatCurrency(
+                                        getSupplyPrice(
+                                          supply.supplie_id,
+                                          supply.supplie_qty,
+                                          supply.supplie_name,
+                                          supply.supplie_length,
+                                          `suppliePrice${moduleIndex}-${supplyIndex}`
+                                        )
+                                      )}
+                                    </p>
+                                    <input
+                                      name={`suppliePrice${moduleIndex}-${supplyIndex}`}
+                                      type="hidden"
+                                      {...register(
+                                        `suppliePrice${moduleIndex}-${supplyIndex}`
+                                      )}
+                                    />
+                                  </div>
+                                )
+                              )}
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                          </div>
+                        ) : (
+                          ""
+                        )
+                      )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                ""
+              )}
             </div>
           </div>
+
           {/* cargar cantidad de placas a usar */}
           <div className="p-4 bg-gray-300 rounded-md shadow-md">
             <div className="flex items-center gap-2">

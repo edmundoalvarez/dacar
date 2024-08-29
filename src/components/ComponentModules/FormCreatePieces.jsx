@@ -77,6 +77,23 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
           </span>
         )}
       </div>
+      <div className="flex flex-col w-1/12">
+        <label htmlFor={`qty${index}`} className="font-semibold mb-1">
+          Cantidad
+        </label>
+        <input
+          className="border border-gray-300 rounded-md p-2"
+          type="number"
+          name={`qty${index}`}
+          id={`qty${index}`}
+          {...register(`qty${index}`)}
+        />
+        {errors[`qty${index}`] && (
+          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+            {errors[`qty${index}`].message}
+          </span>
+        )}
+      </div>
       <div className="flex flex-col justify-center w-1/12">
         <label className="font-semibold mb-1 mr-2">Pieza suelta</label>
         <input type="checkbox" {...register(`loose_piece${index}`)} />

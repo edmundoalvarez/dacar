@@ -91,7 +91,6 @@ export { NotFoundPage } from "./views/404/NotFoundPage";
 //FURNITURE
 export { Furniture } from "./views/Furniture/Furniture";
 export { CreateFurniture } from "./views/Furniture/CreateFurniture";
-// export { EditFurnitureSingleModule } from "./views/Furniture/EditFurnitureSingleModule.jsx";
 export { EditFurnitureMultipleModules } from "./views/Furniture/EditFurnitureMultipleModules";
 
 //MODULES

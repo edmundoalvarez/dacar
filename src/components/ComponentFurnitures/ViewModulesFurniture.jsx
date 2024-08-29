@@ -57,6 +57,7 @@ function ViewModulesFurniture({ sortedModules }) {
               <thead>
                 <tr>
                   <th className="px-4 py-2 border-b">Nombre</th>
+                  <th className="px-2 py-2 border-b">Cantidad</th>
                   <th className="px-4 py-2 border-b">Material</th>
                   <th className="px-4 py-2 border-b">Categoría</th>
                   <th className="px-4 py-2 border-b">Alto</th>
@@ -73,12 +74,25 @@ function ViewModulesFurniture({ sortedModules }) {
                   .sort((a, b) => a.material.localeCompare(b.material))
                   .map((piece, index) => (
                     <tr key={index} className="border-t">
-                      <td className="px-4 py-2 border-b">{piece.name}</td>
-                      <td className="px-4 py-2 border-b">{piece.material}</td>
-                      <td className="px-4 py-2 border-b">{piece.category}</td>
-                      <td className="px-4 py-2 border-b">{piece.length}</td>
-                      <td className="px-4 py-2 border-b">{piece.width}</td>
-                      <td className="px-4 py-2 border-b">
+                      <td className="px-4 py-2 text-center border-b">
+                        {piece.name}
+                      </td>
+                      <td className="px-4 py-2 text-center border-b">
+                        {piece.qty}
+                      </td>
+                      <td className="px-4 py-2 text-center border-b">
+                        {piece.material}
+                      </td>
+                      <td className="px-4 py-2 text-center border-b">
+                        {piece.category}
+                      </td>
+                      <td className="px-4 py-2 text-center border-b">
+                        {piece.length}
+                      </td>
+                      <td className="px-4 py-2 text-center border-b">
+                        {piece.width}
+                      </td>
+                      <td className="px-4 py-2 text-center border-b">
                         {piece.orientation === "cross-vertical"
                           ? "Transversal Vertical"
                           : piece.orientation === "cross-horizontal"
@@ -87,7 +101,7 @@ function ViewModulesFurniture({ sortedModules }) {
                           ? "Lateral"
                           : ""}
                       </td>
-                      <td className="px-4 py-2 border-b">
+                      <td className="px-4 py-2 text-center border-b">
                         {piece.lacqueredPiece ? (
                           <>
                             Laqueado
@@ -120,7 +134,7 @@ function ViewModulesFurniture({ sortedModules }) {
                         )}
                       </td>
 
-                      <td className="px-4 py-2 border-b">
+                      <td className="px-4 py-2 text-center border-b">
                         {piece.edgeLength
                           ? `Sí, ${
                               piece.edgeLengthSides === "1"
@@ -131,7 +145,7 @@ function ViewModulesFurniture({ sortedModules }) {
                             }`
                           : "No"}
                       </td>
-                      <td className="px-4 py-2 border-b">
+                      <td className="px-4 py-2 text-center border-b">
                         {piece.edgeWidth
                           ? `Sí, ${
                               piece.edgeWidthSides === "1"
@@ -142,7 +156,7 @@ function ViewModulesFurniture({ sortedModules }) {
                             }`
                           : "No"}
                       </td>
-                      <td className="px-4 py-2 border-b">
+                      <td className="px-4 py-2 text-center border-b">
                         {piece.lacqueredEdge ? "Sí" : "No"}
                       </td>
                     </tr>

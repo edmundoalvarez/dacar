@@ -6,6 +6,8 @@ import {
   EditFurnitureSingleModuleComponent,
   EditFurnitureComponent,
   deleteModuleOnFurniture,
+  ViewModulesFurniture,
+  getPiecesByModuleId,
 } from "../../index.js";
 
 function EditFurnitureMultipleModules() {
@@ -38,11 +40,18 @@ function EditFurnitureMultipleModules() {
   }, []);
 
   // Handle modal for viewing module details
-  const handleOpenModal = (module) => {
-    setSelectedModule(module);
-    setIsModalOpen(true);
-  };
+  const handleOpenModal = async (module) => {
+    console.log(module);
+    try {
+      // Envuelve el módulo en un array y establece 'selectedModules'
+      setSelectedModule([module]);
 
+      // Abre la modal
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Error al obtener las piezas del módulo:", error);
+    }
+  };
   const handleCloseModal = () => {
     setSelectedModule(null);
     setIsModalOpen(false);
@@ -95,8 +104,8 @@ function EditFurnitureMultipleModules() {
 
   return (
     <>
-      <div className="m-4">
-        <div className="flex gap-4">
+      <div className="">
+        <div className="flex gap-4 p-6">
           <h1 className="text-4xl">Mueble: {singleFurniture.name}</h1>
           <Link
             to="/ver-muebles"
@@ -261,145 +270,27 @@ function EditFurnitureMultipleModules() {
           </div>
         </div>
       )}
-      {/* Modal de ver el moulo */}
+      {/* Abrimos la modal en caso que el estado isModalOpen cambie */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white p-10 rounded-lg shadow-lg flex flex-col max-h-screen overflow-y-auto">
-            <h2 className="text-xl mb-4">
-              <b>Detalles del Módulo</b>
-            </h2>
-            {selectedModule && (
-              <div className="mb-2">
-                <p>
-                  <strong>Nombre:</strong> {selectedModule.name}
-                </p>
-                <p>
-                  <strong>Largo:</strong> {selectedModule.length}
-                </p>
-                <p>
-                  <strong>Profundidad:</strong> {selectedModule.width}
-                </p>
-                <p>
-                  <strong>Alto:</strong> {selectedModule.height}
-                </p>
-                <p>
-                  <strong>Categoría:</strong> {selectedModule.category}
-                </p>
-                <h2 className="text-xl bg-blue-500 text-white w-fit px-2 my-2 rounded-lg">
-                  Insumos del modulo
-                </h2>
-                {selectedModule.supplies_module.map((supplie) => (
-                  <ul key={supplie.supplie_id} className="my-2">
-                    <li>
-                      <strong>Nombre:</strong> {supplie.supplie_name}
-                    </li>
-                    <li>
-                      <strong>Cantidad:</strong> {supplie.supplie_qty}
-                    </li>
-                    <li>
-                      <strong>Largo:</strong> {supplie?.supplie_length}
-                    </li>
-                  </ul>
-                ))}
-                <h2 className="text-xl bg-blue-500 text-white w-fit px-2 my-2 rounded-lg">
-                  Piezas del modulo
-                </h2>
-                {selectedModule.pieces.map((piece) => (
-                  <ul key={piece._id} className="my-2">
-                    <li>
-                      <strong>Nombre:</strong> {piece.name}
-                    </li>
-                    <li>
-                      <strong>Orientación:</strong>{" "}
-                      {piece.orientation === "cross-vertical"
-                        ? "Transversal Vertical"
-                        : piece.orientation === "cross-horizontal"
-                        ? "Transversal Horizontal"
-                        : piece.orientation === "side"
-                        ? "Lateral"
-                        : ""}
-                    </li>
-                    <li>
-                      <strong>
-                        {" "}
-                        {piece.orientation === "cross-vertical"
-                          ? "Alto:"
-                          : piece.orientation === "cross-horizontal"
-                          ? "Profundidad:"
-                          : piece.orientation === "side"
-                          ? "Alto:"
-                          : ""}
-                      </strong>{" "}
-                      {piece.length}
-                    </li>
-                    <li>
-                      <strong>
-                        {piece.orientation === "cross-vertical"
-                          ? "Largo:"
-                          : piece.orientation === "cross-horizontal"
-                          ? "Largo:"
-                          : piece.orientation === "side"
-                          ? "Profundidad:"
-                          : ""}
-                      </strong>{" "}
-                      {piece.width}
-                    </li>
-                    <li>
-                      <strong>Categoría:</strong> {piece.category}
-                    </li>
-                    <li>
-                      <strong>Material:</strong> {piece.material}
-                    </li>
-                    <li>
-                      <strong>Acabado:</strong>{" "}
-                      {piece.lacqueredPiece ? (
-                        <>
-                          Laqueado
-                          {piece.lacqueredPieceSides === "single" &&
-                            " (1 lado)"}
-                          {piece.lacqueredPieceSides === "double" &&
-                            " (2 lados)"}{" "}
-                          <br></br>
-                          {piece.pantographed ? "Pantografiado" : ""}
-                        </>
-                      ) : piece.veneer ? (
-                        <>
-                          Enchapado<br></br>
-                          {piece.veneerFinishing &&
-                          piece.veneerFinishing === "veneerLacquered"
-                            ? "Laqueado"
-                            : piece.veneerFinishing &&
-                              piece.veneerFinishing === "veneerPolished"
-                            ? "Lustrado"
-                            : ""}
-                        </>
-                      ) : piece.melamine ? (
-                        <>
-                          Melamina
-                          <br />
-                          {piece.melamineLacquered ? "Laqueada" : ""}
-                        </>
-                      ) : (
-                        "No indica"
-                      )}
-                    </li>
-                    <li>
-                      <strong>Filo:</strong>{" "}
-                      {piece.edge && piece.edge.edgeLength ? (
-                        <>
-                          {piece.edge.edgeLength} cm{" "}
-                          {piece.edge.lacqueredEdge ? "(Laqueado)" : ""}
-                        </>
-                      ) : (
-                        ""
-                      )}
-                    </li>
+        <div
+          onClick={handleCloseModal} // Cierra la modal si se hace clic fuera de ella
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()} // Evita que el clic dentro de la modal la cierre
+            className="bg-white p-10 rounded-lg shadow-lg flex flex-col max-h-[550px] overflow-y-auto relative m-8"
+          >
+            {/* Botón de cierre en la esquina superior derecha */}
+            <button
+              onClick={handleCloseModal}
+              className="absolute top-2 right-2 bg-red-600 text-white rounded-md w-8 h-8 flex items-center justify-center"
+            >
+              &times;
+            </button>
 
-                    <hr className="border border-gray-400" />
-                  </ul>
-                ))}
-              </div>
-            )}
+            {/* Contenido de la modal */}
+            <ViewModulesFurniture sortedModules={selectedModule} />
+
             <div className="flex justify-center items-center m-auto gap-2 mt-4">
               <button
                 onClick={handleCloseModal}
@@ -411,7 +302,6 @@ function EditFurnitureMultipleModules() {
           </div>
         </div>
       )}
-
       {moduleToEdit && (
         <EditFurnitureSingleModuleComponent
           idFurniture={furnitureToEdit}
