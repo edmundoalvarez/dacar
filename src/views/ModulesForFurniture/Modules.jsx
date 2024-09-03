@@ -171,13 +171,13 @@ function Modules() {
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Alto
+                  Largo
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Largo
+                  Alto
                 </th>
                 <th
                   scope="col"
@@ -190,7 +190,7 @@ function Modules() {
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Categoria
+                  Material
                 </th>
                 <th
                   scope="col"
@@ -213,17 +213,17 @@ function Modules() {
                     {module.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {module.height}
+                    {module.length}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {module.length}
+                    {module.height}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {module.width}
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {module.category}
+                    {module.material}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {module.pieces_number}

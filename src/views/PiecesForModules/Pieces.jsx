@@ -140,7 +140,7 @@ function Pieces() {
         length: data[`lengthPiece1`],
         width: data[`widthPiece1`],
         orientation: data[`orientation1`],
-        category: data[`categoryPiece1`],
+        comment: data[`commentPiece1`],
         material: data[`materialPiece1`],
         lacqueredPiece: lacqueredPiece,
         lacqueredPieceSides: data[`lacqueredPieceSides1`],
@@ -261,7 +261,7 @@ function Pieces() {
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Categoria
+                  Comentario
                 </th>
                 <th
                   scope="col"
@@ -306,7 +306,7 @@ function Pieces() {
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {piece.category}
+                    {piece.comment}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {piece.material}

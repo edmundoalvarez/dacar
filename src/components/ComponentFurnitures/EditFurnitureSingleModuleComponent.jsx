@@ -80,7 +80,7 @@ function EditFurnitureSingleModuleComponent({
           setValue(`lengthPiece${index}`, piece.length.toString());
           setValue(`widthPiece${index}`, piece.width.toString());
           setValue(`orientation${index}`, piece.orientation);
-          setValue(`categoryPiece${index}`, piece.category);
+          setValue(`commentPiece${index}`, piece.comment);
           setValue(`materialPiece${index}`, piece.material);
           setValue(`lacqueredPiece${index}`, piece.lacqueredPiece);
           setValue(`lacqueredPieceSides${index}`, piece.lacqueredPieceSides);
@@ -94,7 +94,7 @@ function EditFurnitureSingleModuleComponent({
           setValue(`edgeWidth${index}`, piece.edgeWidth);
           setValue(`edgeWidthSides${index}`, piece.edgeWidthSides);
           setValue(`lacqueredEdge${index}`, piece.lacqueredEdge);
-          console.log("piece", `edgeLength${index}`, piece.edgeLength);
+          // console.log("piece", `edgeLength${index}`, piece.edgeLength);
         });
       })
       .catch((error) => {
@@ -142,7 +142,7 @@ function EditFurnitureSingleModuleComponent({
         lengthHidden,
         width,
         widthHidden,
-        category,
+        material,
       } = data;
 
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
@@ -160,7 +160,6 @@ function EditFurnitureSingleModuleComponent({
       let piecesNumber = 0;
 
       const pieces = [...Array(piecesCount)].map((_, index) => {
-        console.log("qty", data[`qty${index}`]);
         let qty =
           data[`qty${index}`] !== undefined &&
           data[`qty${index}`] !== "" &&
@@ -264,7 +263,7 @@ function EditFurnitureSingleModuleComponent({
           length: parseFloat(pieceLength.toFixed(2)),
           width: parseFloat(pieceWidth.toFixed(2)),
           orientation: data[`orientation${index}`],
-          category: data[`categoryPiece${index}`],
+          comment: data[`commentPiece${index}`],
           material: data[`materialPiece${index}`],
           lacqueredPiece: lacqueredPiece,
           lacqueredPieceSides: data[`lacqueredPieceSides${index}`],
@@ -288,7 +287,7 @@ function EditFurnitureSingleModuleComponent({
         length: parseInt(length),
         width: parseInt(width),
         height: parseInt(height),
-        category,
+        material,
         pieces_number: piecesNumber,
         supplies_module,
         pieces,
@@ -345,36 +344,6 @@ function EditFurnitureSingleModuleComponent({
             </span>
           )}
         </div>
-        <div className="flex flex-col w-3/12 my-2 ">
-          <label className="font-semibold mb-1" htmlFor="height">
-            Alto
-          </label>
-          <input
-            className="border border-gray-300 rounded-md p-2 w-11/12"
-            type="text"
-            name="height"
-            id="height"
-            {...register("height", {
-              required: "El campo es obligatorio",
-            })}
-          />
-          {errors.height && (
-            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.height.message}
-            </span>
-          )}
-          {/* input hidden */}
-          <input
-            className="border border-gray-300 rounded-md p-2 w-11/12"
-            type="hidden"
-            name="heightHidden"
-            id="heightHidden"
-            defaultValue={moduleOriginalHeight}
-            {...register("heightHidden", {
-              required: "El campo es obligatorio",
-            })}
-          />
-        </div>
         <div className="flex flex-col w-3/12 my-2">
           <label className="font-semibold mb-1" htmlFor="length">
             Largo
@@ -405,6 +374,37 @@ function EditFurnitureSingleModuleComponent({
             })}
           />
         </div>
+        <div className="flex flex-col w-3/12 my-2 ">
+          <label className="font-semibold mb-1" htmlFor="height">
+            Alto
+          </label>
+          <input
+            className="border border-gray-300 rounded-md p-2 w-11/12"
+            type="text"
+            name="height"
+            id="height"
+            {...register("height", {
+              required: "El campo es obligatorio",
+            })}
+          />
+          {errors.height && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors.height.message}
+            </span>
+          )}
+          {/* input hidden */}
+          <input
+            className="border border-gray-300 rounded-md p-2 w-11/12"
+            type="hidden"
+            name="heightHidden"
+            id="heightHidden"
+            defaultValue={moduleOriginalHeight}
+            {...register("heightHidden", {
+              required: "El campo es obligatorio",
+            })}
+          />
+        </div>
+
         <div className="flex flex-col w-3/12 my-2">
           <label className="font-semibold mb-1" htmlFor="width">
             Profundidad
@@ -436,21 +436,21 @@ function EditFurnitureSingleModuleComponent({
           />
         </div>
         <div className="flex flex-col w-3/12 my-2">
-          <label className="font-semibold mb-1" htmlFor="category">
-            Categoria
+          <label className="font-semibold mb-1" htmlFor="material">
+            Material
           </label>
           <input
             className="border border-gray-300 rounded-md p-2 w-11/12"
             type="text"
-            name="category"
-            id="category"
-            {...register("category", {
+            name="material"
+            id="material"
+            {...register("material", {
               required: "El campo es obligatorio",
             })}
           />
-          {errors.category && (
+          {errors.material && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.category.message}
+              {errors.material.message}
             </span>
           )}
         </div>
@@ -468,6 +468,7 @@ function EditFurnitureSingleModuleComponent({
             {...register("suppliesNumber")}
             value={suppliesCount}
             onChange={handleSuppliesCountChange}
+            min="0"
           />
           {errors.suppliesNumber && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">

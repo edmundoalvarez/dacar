@@ -115,11 +115,12 @@ function Furniture() {
 
     doc.text("Piezas sueltas", 14, 20);
 
-    const tableColumn = ["Nombre", "Alto", "Largo", "Material"];
+    const tableColumn = ["Nombre", "Cantidad", "Largo", "Alto", "Material"];
     const tableRows = loosePieces.map((piece) => [
       piece.name,
-      piece.length,
+      piece.qty,
       piece.width,
+      piece.length,
       piece.material,
     ]);
 
@@ -133,13 +134,14 @@ function Furniture() {
     const doc = new jsPDF();
 
     // Títulos de las columnas de la tabla
-    const tableColumn = ["Nombre", "Alto", "Largo", "Material"];
+    const tableColumn = ["Nombre", "Cantidad", "Largo", "Alto", "Material"];
 
     // Mapear los datos de las piezas para las filas de la tabla
     const tableRows = pieces.map((piece) => [
       piece.name,
-      piece.length,
+      piece.qty,
       piece.width,
+      piece.length,
       piece.material,
     ]);
 
@@ -230,14 +232,15 @@ function Furniture() {
                   scope="col"
                   className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Profundidad
+                  Alto
                 </th>
                 <th
                   scope="col"
                   className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Alto
+                  Profundidad
                 </th>
+
                 <th
                   scope="col"
                   className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
@@ -268,11 +271,12 @@ function Furniture() {
                     {furniture.length}
                   </td>
                   <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
-                    {furniture.width}
-                  </td>
-                  <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
                     {furniture.height}
                   </td>
+                  <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
+                    {furniture.width}
+                  </td>
+
                   <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
                     {furniture.category}
                   </td>

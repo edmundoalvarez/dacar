@@ -174,21 +174,21 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
         </>
       )}
       <div className="flex flex-col w-1/5">
-        <label htmlFor={`categoryPiece${index}`} className="font-semibold mb-1">
-          Categoría
+        <label htmlFor={`commentPiece${index}`} className="font-semibold mb-1">
+          Comentario
         </label>
         <input
           className="border border-gray-300 rounded-md p-2"
           type="text"
-          name={`categoryPiece${index}`}
-          id={`categoryPiece${index}`}
-          {...register(`categoryPiece${index}`, {
+          name={`commentPiece${index}`}
+          id={`commentPiece${index}`}
+          {...register(`commentPiece${index}`, {
             required: "El campo es obligatorio",
           })}
         />
-        {errors[`categoryPiece${index}`] && (
+        {errors[`commentPiece${index}`] && (
           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`categoryPiece${index}`].message}
+            {errors[`commentPiece${index}`].message}
           </span>
         )}
       </div>

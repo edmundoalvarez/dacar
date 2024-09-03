@@ -10,7 +10,7 @@ function FormEditSupplies({
   setValue,
 }) {
   const [selectedSupply, setSelectedSupply] = useState("");
-  console.log(supplyModule.supplie_name, "index", index);
+  // console.log(supplyModule.supplie_name, "index", index);
   useEffect(() => {
     if (supplyModule) {
       const supplyValue = `${supplyModule.supplie_id}##${supplyModule.supplie_name}`;

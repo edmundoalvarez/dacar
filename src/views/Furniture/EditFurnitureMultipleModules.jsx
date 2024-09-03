@@ -134,14 +134,15 @@ function EditFurnitureMultipleModules() {
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Profundidad
+                  Alto
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Alto
+                  Profundidad
                 </th>
+
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
@@ -166,11 +167,12 @@ function EditFurnitureMultipleModules() {
                   {singleFurniture.length}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {singleFurniture.width}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {singleFurniture.height}
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {singleFurniture.width}
+                </td>
+
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {singleFurniture.category}
                 </td>

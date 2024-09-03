@@ -233,20 +233,20 @@ function FormEditPieces({
       </div>
 
       <div className="flex flex-col w-1/5">
-        <label htmlFor={`categoryPiece${index}`}>Categoría</label>
+        <label htmlFor={`commentPiece${index}`}>Comentario</label>
         <input
           className="border border-gray-300 rounded-md p-2"
           type="text"
-          name={`categoryPiece${index}`}
-          id={`categoryPiece${index}`}
-          {...register(`categoryPiece${index}`, {
+          name={`commentPiece${index}`}
+          id={`commentPiece${index}`}
+          {...register(`commentPiece${index}`, {
             required: "El campo es obligatorio",
           })}
-          defaultValue={piece?.category || ""}
+          defaultValue={piece?.comment || ""}
         />
-        {errors[`categoryPiece${index}`] && (
+        {errors[`commentPiece${index}`] && (
           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-            {errors[`categoryPiece${index}`].message}
+            {errors[`commentPiece${index}`].message}
           </span>
         )}
       </div>
@@ -556,7 +556,7 @@ FormEditPieces.propTypes = {
     ]),
     numeratorWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     denominatorWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    category: PropTypes.string,
+    comment: PropTypes.string,
     material: PropTypes.string,
     orientation: PropTypes.string,
     lacqueredPiece: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),

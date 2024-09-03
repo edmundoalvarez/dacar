@@ -13,7 +13,7 @@ function ViewModulesFurniture({ sortedModules }) {
             <div>
               <h4 className="text-xl font-semibold">Descripción módulo:</h4>
               <p className="mb-1">
-                <span className="font-bold">Categoría:</span> {module.category}
+                <span className="font-bold">Material:</span> {module.material}
               </p>
               <p className="mb-1">
                 <span className="font-bold">Alto:</span> {module.height}
@@ -59,9 +59,9 @@ function ViewModulesFurniture({ sortedModules }) {
                   <th className="px-4 py-2 border-b">Nombre</th>
                   <th className="px-2 py-2 border-b">Cantidad</th>
                   <th className="px-4 py-2 border-b">Material</th>
-                  <th className="px-4 py-2 border-b">Categoría</th>
-                  <th className="px-4 py-2 border-b">Alto</th>
+                  <th className="px-4 py-2 border-b">Comentario</th>
                   <th className="px-4 py-2 border-b">Largo</th>
+                  <th className="px-4 py-2 border-b">Alto</th>
                   <th className="px-4 py-2 border-b">Orientación</th>
                   <th className="px-4 py-2 border-b">Acabado</th>
                   <th className="px-4 py-2 border-b">Filo Alto</th>
@@ -84,13 +84,13 @@ function ViewModulesFurniture({ sortedModules }) {
                         {piece.material}
                       </td>
                       <td className="px-4 py-2 text-center border-b">
-                        {piece.category}
-                      </td>
-                      <td className="px-4 py-2 text-center border-b">
-                        {piece.length}
+                        {piece.comment}
                       </td>
                       <td className="px-4 py-2 text-center border-b">
                         {piece.width}
+                      </td>
+                      <td className="px-4 py-2 text-center border-b">
+                        {piece.length}
                       </td>
                       <td className="px-4 py-2 text-center border-b">
                         {piece.orientation === "cross-vertical"

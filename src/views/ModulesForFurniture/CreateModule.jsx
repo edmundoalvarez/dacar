@@ -54,7 +54,7 @@ function CreateModule() {
 
     try {
       // Crear el módulo y obtener el ID del módulo creado
-      const { name, length, width, category } = data; // Extraer datos relevantes para el módulo
+      const { name, length, width, material } = data; // Extraer datos relevantes para el módulo
       console.log("data del form", data);
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
         const supplyIdName = data[`supplie_id_name${index}`];
@@ -84,7 +84,7 @@ function CreateModule() {
         length,
         width,
         height: data.height,
-        category,
+        material,
         pieces_number: piecesNumber,
         supplies_module, // Asignar el array de insumos
       }; // Crear objeto moduleData con los datos del módulo
@@ -125,7 +125,7 @@ function CreateModule() {
           length: data[`lengthPiece${i}`],
           width: data[`widthPiece${i}`],
           orientation: data[`orientation${i}`],
-          category: data[`categoryPiece${i}`],
+          comment: data[`commentPiece${i}`],
           material: data[`materialPiece${i}`],
           lacqueredPiece: lacqueredPiece,
           lacqueredPieceSides: data[`lacqueredPieceSides${i}`],
@@ -206,25 +206,7 @@ function CreateModule() {
             </span>
           )}
         </div>
-        <div className="flex flex-col w-2/12 my-2 ml-4">
-          <label className="font-semibold mb-1" htmlFor="height">
-            Alto
-          </label>
-          <input
-            className="border border-gray-300 rounded-md p-2"
-            type="text"
-            name="height"
-            id="height"
-            {...register("height", {
-              required: "El campo es obligatorio",
-            })}
-          />
-          {errors.height && (
-            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.height.message}
-            </span>
-          )}
-        </div>
+
         <div className="flex flex-col w-2/12  my-2 ml-4">
           <label className="font-semibold mb-1" htmlFor="length">
             Largo
@@ -241,6 +223,25 @@ function CreateModule() {
           {errors.length && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
               {errors.length.message}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col w-2/12 my-2 ml-4">
+          <label className="font-semibold mb-1" htmlFor="height">
+            Alto
+          </label>
+          <input
+            className="border border-gray-300 rounded-md p-2"
+            type="text"
+            name="height"
+            id="height"
+            {...register("height", {
+              required: "El campo es obligatorio",
+            })}
+          />
+          {errors.height && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors.height.message}
             </span>
           )}
         </div>
@@ -264,21 +265,21 @@ function CreateModule() {
           )}
         </div>
         <div className="flex flex-col w-3/12 my-2">
-          <label className="font-semibold mb-1" htmlFor="category">
-            Categoria
+          <label className="font-semibold mb-1" htmlFor="material">
+            Material
           </label>
           <input
             className="border border-gray-300 rounded-md p-2"
             type="text"
-            name="category"
-            id="category"
-            {...register("category", {
+            name="material"
+            id="material"
+            {...register("material", {
               required: "El campo es obligatorio",
             })}
           />
-          {errors.category && (
+          {errors.material && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.category.message}
+              {errors.material.message}
             </span>
           )}
         </div>
@@ -295,6 +296,7 @@ function CreateModule() {
             id="suppliesNumber"
             {...register("suppliesNumber")}
             onChange={handleSuppliesCountChange}
+            min="0"
           />
           {errors.suppliesNumber && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -326,6 +328,7 @@ function CreateModule() {
               required: "El campo es obligatorio",
             })}
             onChange={handlePiecesCountChange}
+            min="0"
           />
           {errors.piecesNumber && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">

@@ -191,21 +191,6 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
           )}
         </div>
         <div className="flex flex-col w-11/12 my-2">
-          <label htmlFor="height">Alto</label>
-          <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
-            type="text"
-            name="height"
-            id="height"
-            {...register("height", { required: "El campo es obligatorio" })}
-          />
-          {errors.height && (
-            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.height.message}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-col w-11/12 my-2">
           <label htmlFor="length">Largo</label>
           <input
             className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
@@ -217,6 +202,21 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
           {errors.length && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
               {errors.length.message}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col w-11/12 my-2">
+          <label htmlFor="height">Alto</label>
+          <input
+            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
+            type="text"
+            name="height"
+            id="height"
+            {...register("height", { required: "El campo es obligatorio" })}
+          />
+          {errors.height && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors.height.message}
             </span>
           )}
         </div>

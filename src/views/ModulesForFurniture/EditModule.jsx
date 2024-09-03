@@ -63,7 +63,7 @@ function EditModule() {
           setValue(`lengthPiece${index}`, piece.length.toString());
           setValue(`widthPiece${index}`, piece.width.toString());
           setValue(`orientation${index}`, piece.orientation);
-          setValue(`categoryPiece${index}`, piece.category);
+          setValue(`commentPiece${index}`, piece.comment);
           setValue(`materialPiece${index}`, piece.material);
           setValue(`lacqueredPiece${index}`, piece.lacqueredPiece);
           setValue(`lacqueredPieceSides${index}`, piece.lacqueredPieceSides);
@@ -112,6 +112,7 @@ function EditModule() {
   const handleSuppliesCountChange = (e) => {
     setSuppliesCount(Number(e.target.value));
   };
+
   const onSubmit = async (data, event) => {
     event.preventDefault();
 
@@ -124,7 +125,7 @@ function EditModule() {
         lengthHidden,
         width,
         widthHidden,
-        category,
+        material,
       } = data;
 
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
@@ -245,7 +246,7 @@ function EditModule() {
           length: parseFloat(pieceLength.toFixed(2)),
           width: parseFloat(pieceWidth.toFixed(2)),
           orientation: data[`orientation${index}`],
-          category: data[`categoryPiece${index}`],
+          comment: data[`commentPiece${index}`],
           material: data[`materialPiece${index}`],
           lacqueredPiece: lacqueredPiece,
           lacqueredPieceSides: data[`lacqueredPieceSides${index}`],
@@ -269,7 +270,7 @@ function EditModule() {
         length: parseFloat(length),
         width: parseFloat(width),
         height: parseFloat(height),
-        category,
+        material,
         pieces_number: piecesNumber,
         supplies_module,
       };
@@ -338,36 +339,7 @@ function EditModule() {
             </span>
           )}
         </div>
-        <div className="flex flex-col w-3/12 my-2 ">
-          <label htmlFor="height" className="font-semibold mb-1">
-            Alto
-          </label>
-          <input
-            className="border border-gray-300 rounded-md p-2 w-11/12"
-            type="text"
-            name="height"
-            id="height"
-            {...register("height", {
-              required: "El campo es obligatorio",
-            })}
-          />
-          {errors.height && (
-            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.height.message}
-            </span>
-          )}
-          {/* input hidden */}
-          <input
-            className="border border-gray-300 rounded-md p-2 w-11/12"
-            type="hidden"
-            name="heightHidden"
-            id="heightHidden"
-            defaultValue={moduleOriginalHeight}
-            {...register("heightHidden", {
-              required: "El campo es obligatorio",
-            })}
-          />
-        </div>
+
         <div className="flex flex-col w-3/12 my-2">
           <label htmlFor="length" className="font-semibold mb-1">
             Largo
@@ -394,6 +366,36 @@ function EditModule() {
             id="lengthHidden"
             defaultValue={moduleOriginalLength}
             {...register("lengthHidden", {
+              required: "El campo es obligatorio",
+            })}
+          />
+        </div>
+        <div className="flex flex-col w-3/12 my-2 ">
+          <label htmlFor="height" className="font-semibold mb-1">
+            Alto
+          </label>
+          <input
+            className="border border-gray-300 rounded-md p-2 w-11/12"
+            type="text"
+            name="height"
+            id="height"
+            {...register("height", {
+              required: "El campo es obligatorio",
+            })}
+          />
+          {errors.height && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors.height.message}
+            </span>
+          )}
+          {/* input hidden */}
+          <input
+            className="border border-gray-300 rounded-md p-2 w-11/12"
+            type="hidden"
+            name="heightHidden"
+            id="heightHidden"
+            defaultValue={moduleOriginalHeight}
+            {...register("heightHidden", {
               required: "El campo es obligatorio",
             })}
           />
@@ -429,21 +431,21 @@ function EditModule() {
           />
         </div>
         <div className="flex flex-col w-3/12 my-2">
-          <label htmlFor="category" className="font-semibold mb-1">
-            Categoria
+          <label htmlFor="material" className="font-semibold mb-1">
+            Material
           </label>
           <input
             className="border border-gray-300 rounded-md p-2 w-11/12"
             type="text"
-            name="category"
-            id="category"
-            {...register("category", {
+            name="material"
+            id="material"
+            {...register("material", {
               required: "El campo es obligatorio",
             })}
           />
-          {errors.category && (
+          {errors.material && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.category.message}
+              {errors.material.message}
             </span>
           )}
         </div>
@@ -461,6 +463,7 @@ function EditModule() {
             {...register("suppliesNumber")}
             value={suppliesCount}
             onChange={handleSuppliesCountChange}
+            min="0"
           />
           {errors.suppliesNumber && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
