@@ -124,30 +124,6 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
       </div>
       {lengthLabel !== "" && (
         <>
-          {/* Length de la pieza */}
-          <div className="flex flex-col w-1/5">
-            <label
-              htmlFor={`lengthPiece${index}`}
-              className="font-semibold mb-1"
-            >
-              {lengthLabel}
-            </label>
-            <input
-              className="border border-gray-300 rounded-md p-2"
-              type="text"
-              name={`lengthPiece${index}`}
-              id={`lengthPiece${index}`}
-              {...register(`lengthPiece${index}`, {
-                required: "El campo es obligatorio",
-              })}
-            />
-            {errors[`lengthPiece${index}`] && (
-              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                {errors[`lengthPiece${index}`].message}
-              </span>
-            )}
-          </div>
-
           {/* Width de la pieza */}
           <div className="flex flex-col w-1/5">
             <label
@@ -168,6 +144,29 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
             {errors[`widthPiece${index}`] && (
               <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                 {errors[`widthPiece${index}`].message}
+              </span>
+            )}
+          </div>
+          {/* Length de la pieza */}
+          <div className="flex flex-col w-1/5">
+            <label
+              htmlFor={`lengthPiece${index}`}
+              className="font-semibold mb-1"
+            >
+              {lengthLabel}
+            </label>
+            <input
+              className="border border-gray-300 rounded-md p-2"
+              type="text"
+              name={`lengthPiece${index}`}
+              id={`lengthPiece${index}`}
+              {...register(`lengthPiece${index}`, {
+                required: "El campo es obligatorio",
+              })}
+            />
+            {errors[`lengthPiece${index}`] && (
+              <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                {errors[`lengthPiece${index}`].message}
               </span>
             )}
           </div>
@@ -363,42 +362,6 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
       </div>
       {showEdgePiece && (
         <div className="flex mt-4 gap-8">
-          {/* filo length */}
-          <div>
-            <div>
-              <label className="font-semibold mb-1">
-                Filo de {lengthLabel}
-              </label>
-              <input
-                className="ml-2"
-                type="checkbox"
-                {...register(`edgeLength${index}`)}
-              />
-            </div>
-            <div className="flex flex-col">
-              <label
-                htmlFor={`edgeLengthSides${index}`}
-                className="font-semibold mb-1"
-              >
-                Cantidad de lados
-              </label>
-              <select
-                className="border border-gray-300 rounded-md p-2"
-                name={`edgeLengthSides${index}`}
-                id={`edgeLengthSides${index}`}
-                {...register(`edgeLengthSides${index}`)}
-              >
-                <option value="">Elegir una opción</option>
-                <option value="1">1 Lado</option>
-                <option value="2">2 Lados</option>
-              </select>
-              {errors[`edgeLengthSides${index}`] && (
-                <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                  {errors[`edgeLengthSides${index}`].message}
-                </span>
-              )}
-            </div>
-          </div>
           <div>
             {/* filo width */}
             <div>
@@ -431,6 +394,42 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
                   {errors[`edgeWidthSides${index}`].message}
                 </span>
               )}
+            </div>
+            {/* filo length */}
+            <div>
+              <div>
+                <label className="font-semibold mb-1">
+                  Filo de {lengthLabel}
+                </label>
+                <input
+                  className="ml-2"
+                  type="checkbox"
+                  {...register(`edgeLength${index}`)}
+                />
+              </div>
+              <div className="flex flex-col">
+                <label
+                  htmlFor={`edgeLengthSides${index}`}
+                  className="font-semibold mb-1"
+                >
+                  Cantidad de lados
+                </label>
+                <select
+                  className="border border-gray-300 rounded-md p-2"
+                  name={`edgeLengthSides${index}`}
+                  id={`edgeLengthSides${index}`}
+                  {...register(`edgeLengthSides${index}`)}
+                >
+                  <option value="">Elegir una opción</option>
+                  <option value="1">1 Lado</option>
+                  <option value="2">2 Lados</option>
+                </select>
+                {errors[`edgeLengthSides${index}`] && (
+                  <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                    {errors[`edgeLengthSides${index}`].message}
+                  </span>
+                )}
+              </div>
             </div>
             {/* filo laqueado */}
           </div>

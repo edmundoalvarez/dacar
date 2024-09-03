@@ -87,10 +87,15 @@ function ViewModulesFurniture({ sortedModules }) {
                         {piece.comment}
                       </td>
                       <td className="px-4 py-2 text-center border-b">
-                        {piece.width}
+                        {piece.orientation === "cross-horizontal"
+                          ? piece.length
+                          : piece.width}
                       </td>
                       <td className="px-4 py-2 text-center border-b">
-                        {piece.length}
+                        {/* {piece.length} */}
+                        {piece.orientation === "cross-horizontal"
+                          ? piece.width
+                          : piece.length}
                       </td>
                       <td className="px-4 py-2 text-center border-b">
                         {piece.orientation === "cross-vertical"

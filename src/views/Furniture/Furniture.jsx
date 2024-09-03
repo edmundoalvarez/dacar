@@ -119,8 +119,8 @@ function Furniture() {
     const tableRows = loosePieces.map((piece) => [
       piece.name,
       piece.qty,
-      piece.width,
-      piece.length,
+      piece.orientation === "cross-horizontal" ? piece.length : piece.width,
+      piece.orientation === "cross-horizontal" ? piece.width : piece.length,
       piece.material,
     ]);
 
@@ -140,8 +140,8 @@ function Furniture() {
     const tableRows = pieces.map((piece) => [
       piece.name,
       piece.qty,
-      piece.width,
-      piece.length,
+      piece.orientation === "cross-horizontal" ? piece.length : piece.width,
+      piece.orientation === "cross-horizontal" ? piece.width : piece.length,
       piece.material,
     ]);
 
