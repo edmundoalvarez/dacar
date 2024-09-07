@@ -109,20 +109,30 @@ function Pieces() {
     try {
       let lacqueredPiece;
       let veneer;
+      let veneer2;
       let melamine;
       if (data[`finishing1`] === "lacqueredPiece") {
         lacqueredPiece = true;
         veneer = false;
+        veneer2 = false;
         melamine = false;
       }
       if (data[`finishing1`] === "veneer") {
         lacqueredPiece = false;
         veneer = true;
+        veneer2 = false;
+        melamine = false;
+      }
+      if (data[`finishing1`] === "veneer2") {
+        lacqueredPiece = false;
+        veneer = false;
+        veneer2 = true;
         melamine = false;
       }
       if (data[`finishing1`] === "melamine") {
         lacqueredPiece = false;
         veneer = false;
+        veneer2 = false;
         melamine = true;
       }
 
@@ -146,8 +156,15 @@ function Pieces() {
         lacqueredPieceSides: data[`lacqueredPieceSides1`],
         veneer: veneer,
         veneerFinishing: data[`veneerOption1`],
+        veneerLacqueredPieceSides: data[`veneerLacqueredPieceSides1`],
+        veneerLacqueredOpen: data[`veneerLacqueredOpen1`],
+        veneer2: veneer2,
+        veneer2Finishing: data[`veneer2Option1`],
+        veneer2LacqueredPieceSides: data[`veneer2LacqueredPieceSides1`],
+        veneer2LacqueredOpen: data[`veneer2LacqueredOpen1`],
         melamine: melamine,
         melamineLacquered: data[`melamineLacquered1`],
+        melamineLacqueredPieceSides: data[`melamineLacqueredPieceSides1`],
         pantographed: data[`pantographed1`],
         edgeLength: data[`edgeLength1`],
         edgeLengthSides: data[`edgeLengthSides1`],
@@ -157,10 +174,11 @@ function Pieces() {
         loose_piece: data[`loose_piece1`],
         moduleId, // Asigna el ID del módulo a cada pieza
       };
+      console.log(pieceData);
       await createPieces(pieceData);
       setShowAddPiece(false);
       getAllPiecesToSet();
-      console.log("module.pieces_number", module.pieces_number, "qty", qty);
+      // console.log("module.pieces_number", module.pieces_number, "qty", qty);
       let newPiecesNumber = module.pieces_number + qty;
       await updateModulePiecesNumber(moduleId, newPiecesNumber);
       getModuleToSet();
@@ -291,69 +309,151 @@ function Pieces() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {pieces.map((piece) => (
-                <tr key={piece.name} className="text-center">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <tr key={piece._id} className="text-center">
+                  <td className="px-4 py-2 text-center border-b">
                     {piece.name}
                   </td>
-                  <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 py-2 text-center border-b">
                     {piece.qty}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {piece.length}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {piece.width}
-                  </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {piece.comment}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 py-2 text-center border-b">
                     {piece.material}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <p>
-                      {piece.lacqueredPiece ? (
-                        <>
-                          Laqueado
-                          {piece.lacqueredPieceSides === "single" &&
-                            " (1 lado)"}
-                          {piece.lacqueredPieceSides === "double" &&
-                            " (2 lados)"}{" "}
-                          <br></br>
-                          {piece.pantographed ? "Pantografiado" : ""}
-                        </>
-                      ) : piece.veneer ? (
-                        <>
-                          Enchapado<br></br>
-                          {piece.veneerFinishing &&
-                          piece.veneerFinishing === "veneerLacquered"
-                            ? "Laqueado"
-                            : piece.veneerFinishing &&
-                              piece.veneerFinishing === "veneerPolished"
-                            ? "Lustrado"
-                            : ""}
-                        </>
-                      ) : piece.melamine ? (
-                        <>
-                          Melamina
-                          <br />
-                          {piece.melamineLacquered ? "Laqueada" : ""}
-                        </>
-                      ) : (
-                        "No indica"
-                      )}
-                    </p>
+                  <td className="px-4 py-2 text-center border-b">
+                    {piece.comment}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {piece.edge && piece.edge.edgeLength ? (
-                      <p>
-                        {piece.edge.edgeLength} cm{" "}
-                        {piece.edge.lacqueredEdge ? "(Laqueado)" : ""}
-                      </p>
+                  <td className="px-4 py-2 text-center border-b">
+                    {piece.orientation === "cross-horizontal"
+                      ? piece.length
+                      : piece.width}
+                  </td>
+                  <td className="px-4 py-2 text-center border-b">
+                    {/* {piece.length} */}
+                    {piece.orientation === "cross-horizontal"
+                      ? piece.width
+                      : piece.length}
+                  </td>
+                  <td className="px-4 py-2 text-center border-b">
+                    {piece.orientation === "cross-vertical"
+                      ? "Transversal Vertical"
+                      : piece.orientation === "cross-horizontal"
+                      ? "Transversal Horizontal"
+                      : piece.orientation === "side"
+                      ? "Lateral"
+                      : ""}
+                  </td>
+                  <td className="px-4 py-2 text-center border-b">
+                    {piece.lacqueredPiece ? (
+                      <>
+                        Laqueado
+                        <br />
+                        {piece.lacqueredPieceSides === "single" && (
+                          <strong>1 lado</strong>
+                        )}
+                        {piece.lacqueredPieceSides === "double" && (
+                          <strong>2 lados</strong>
+                        )}{" "}
+                        <br></br>
+                        {piece.pantographed ? (
+                          <strong>Pantografiado</strong>
+                        ) : (
+                          ""
+                        )}
+                      </>
+                    ) : piece.veneer ? (
+                      <>
+                        Enchapado Artesanal<br></br>
+                        {piece.veneerFinishing &&
+                        piece.veneerFinishing === "veneerLacquered" &&
+                        piece.veneerLacqueredPieceSides === "single" ? (
+                          <strong>Laqueado 1 lado</strong>
+                        ) : piece.veneerFinishing &&
+                          piece.veneerFinishing === "veneerLacquered" &&
+                          piece.veneerLacqueredPieceSides === "double" ? (
+                          <strong>Laqueado 2 lados</strong>
+                        ) : piece.veneerFinishing &&
+                          piece.veneerFinishing === "veneerPolished" ? (
+                          <strong>Lustrado</strong>
+                        ) : (
+                          ""
+                        )}
+                        <br />
+                        {piece.veneerLacqueredOpen ? (
+                          <strong>Poro abierto</strong>
+                        ) : (
+                          ""
+                        )}
+                      </>
+                    ) : piece.veneer2 ? (
+                      <>
+                        Enchapado No Artesanal<br></br>
+                        {piece.veneer2Finishing &&
+                        piece.veneer2Finishing === "veneer2Lacquered" &&
+                        piece.veneer2LacqueredPieceSides === "single" ? (
+                          <strong>Laqueado 1 lado</strong>
+                        ) : piece.veneer2Finishing &&
+                          piece.veneer2Finishing === "veneer2Lacquered" &&
+                          piece.veneer2LacqueredPieceSides === "double" ? (
+                          <strong>Laqueado 2 lados</strong>
+                        ) : piece.veneer2Finishing &&
+                          piece.veneer2Finishing === "veneer2Polished" ? (
+                          <strong>Lustrado</strong>
+                        ) : (
+                          ""
+                        )}
+                        <br />
+                        {piece.veneer2LacqueredOpen ? (
+                          <strong>Poro abierto</strong>
+                        ) : (
+                          ""
+                        )}
+                      </>
+                    ) : piece.melamine ? (
+                      <>
+                        Melamina
+                        <br />
+                        {piece.melamineLacquered ? (
+                          <strong>Laqueada</strong>
+                        ) : (
+                          ""
+                        )}
+                        <br />
+                        {piece.melamineLacqueredPieceSides === "single" && (
+                          <strong> 1 lado</strong>
+                        )}
+                        {piece.melamineLacqueredPieceSides === "double" && (
+                          <strong>2 lados</strong>
+                        )}{" "}
+                      </>
                     ) : (
-                      ""
+                      "No indica"
                     )}
+                  </td>
+
+                  <td className="px-4 py-2 text-center border-b">
+                    {piece.edgeLength
+                      ? `Sí, ${
+                          piece.edgeLengthSides === "1"
+                            ? "un lado"
+                            : piece.edgeLengthSides === "2"
+                            ? "dos lados"
+                            : "falta cantidad lados"
+                        }`
+                      : "No"}
+                  </td>
+                  <td className="px-4 py-2 text-center border-b">
+                    {piece.edgeWidth
+                      ? `Sí, ${
+                          piece.edgeWidthSides === "1"
+                            ? "un lado"
+                            : piece.edgeWidthSides === "2"
+                            ? "dos lados"
+                            : "falta cantidad lados"
+                        }`
+                      : "No"}
+                  </td>
+                  <td className="px-4 py-2 text-center border-b">
+                    {piece.lacqueredEdge ? "Sí" : "No"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex justify-center items-center gap-x-4">

@@ -95,22 +95,33 @@ function CreateModule() {
       for (let i = 0; i < piecesCount; i++) {
         let lacqueredPiece;
         let veneer;
+        let veneer2;
         let melamine;
         if (data[`finishing${i}`] === "lacqueredPiece") {
           lacqueredPiece = true;
           veneer = false;
+          veneer2 = false;
           melamine = false;
         }
         if (data[`finishing${i}`] === "veneer") {
           lacqueredPiece = false;
           veneer = true;
+          veneer2 = false;
+          melamine = false;
+        }
+        if (data[`finishing${i}`] === "veneer2") {
+          lacqueredPiece = false;
+          veneer = false;
+          veneer2 = true;
           melamine = false;
         }
         if (data[`finishing${i}`] === "melamine") {
           lacqueredPiece = false;
           veneer = false;
+          veneer2 = false;
           melamine = true;
         }
+
         const qty =
           data[`qty${i}`] !== undefined &&
           data[`qty${i}`] !== "" &&
@@ -131,8 +142,15 @@ function CreateModule() {
           lacqueredPieceSides: data[`lacqueredPieceSides${i}`],
           veneer: veneer,
           veneerFinishing: data[`veneerOption${i}`],
+          veneerLacqueredPieceSides: data[`veneerLacqueredPieceSides${i}`],
+          veneerLacqueredOpen: data[`veneerLacqueredOpen${i}`],
+          veneer2: veneer2,
+          veneer2Finishing: data[`veneer2Option${i}`],
+          veneer2LacqueredPieceSides: data[`veneer2LacqueredPieceSides${i}`],
+          veneer2LacqueredOpen: data[`veneer2LacqueredOpen${i}`],
           melamine: melamine,
           melamineLacquered: data[`melamineLacquered${i}`],
+          melamineLacqueredPieceSides: data[`melamineLacqueredPieceSides${i}`],
           pantographed: data[`pantographed${i}`],
           edgeLength: data[`edgeLength${i}`],
           edgeLengthSides: data[`edgeLengthSides${i}`],

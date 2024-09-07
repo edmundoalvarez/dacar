@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Await, Link, useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { Grid } from "react-loader-spinner";
+import { Grid, Oval } from "react-loader-spinner";
 import {
   getFurnitureById,
   getAllTables,
@@ -20,6 +20,7 @@ import {
 
 function CreateBudget() {
   const { idFurniture } = useParams();
+  const [submitLoader, setSubmitLoader] = useState(false);
   const [singleFurniture, setSingleFurniture] = useState(null);
   const [countMaterial, setCountMaterial] = useState(0);
   const [countItemExtra, setCountItemExtra] = useState(0);
@@ -135,8 +136,8 @@ function CreateBudget() {
       });
   };
   //Servicios: obetener valores
-  const enchapadoService = services.find(
-    (service) => service.name === "Enchapado"
+  const enchapadoArtesanalService = services.find(
+    (service) => service.name === "Enchapado Artesanal"
   );
 
   const laqueadoService = services.find(
@@ -238,14 +239,13 @@ function CreateBudget() {
     modules?.forEach((module) => {
       module.pieces.forEach((piece) => {
         if (piece.veneer) {
-          totalVeneer += piece.length * piece.width * 1.2 * piece.qty; //se suma el enchapado total
+          totalVeneer += piece.length * piece.width * 1.2 * piece.qty; //se suma el enchapado artesanal total
           if (piece.veneerFinishing === "veneerLacquered") {
             // console.log(piece);
-            totalVeneerLacquered +=
-              piece.length * piece.width * 1.2 * piece.qty;
+            totalVeneerLacquered += piece.length * piece.width * piece.qty;
           }
           if (piece.veneerFinishing === "veneerPolished") {
-            totalVeneerPolished += piece.length * piece.width * 1.2 * piece.qty;
+            totalVeneerPolished += piece.length * piece.width * piece.qty * 2;
           }
         }
       });
@@ -471,7 +471,7 @@ function CreateBudget() {
   //FORMULARIO GENERAR PRESUPUESTO
   const onSubmit = async (data, event) => {
     event.preventDefault();
-    // console.log("data formulario", data);
+    setSubmitLoader(true);
     //Budget Number
 
     // Creación del objeto supplies agrupado por módulos
@@ -846,18 +846,20 @@ function CreateBudget() {
                 <h2 className="text-2xl font-semibold mb-2">
                   Acabados del Mueble
                 </h2>
-                {/* ENCHAPADO */}
+                {/* ENCHAPADO ARTESANAL */}
                 {totalVeneer > 0 ? (
                   <>
                     <p className="mb-1">
-                      <span className="font-bold">Enchapado en m2:</span>{" "}
+                      <span className="font-bold">
+                        Enchapado Artesanal en m2:
+                      </span>{" "}
                       {totalVeneer / 10000} m<sup>2</sup> Precio:
                       {formatCurrency(
-                        enchapadoService?.price * (totalVeneer / 10000)
+                        enchapadoArtesanalService?.price * (totalVeneer / 10000)
                       ).toLocaleString("es-ES")}
                       {setValue(
                         "veneerPrice",
-                        enchapadoService?.price * (totalVeneer / 10000)
+                        enchapadoArtesanalService?.price * (totalVeneer / 10000)
                       )}
                     </p>
                     <input
@@ -869,7 +871,9 @@ function CreateBudget() {
                     <input
                       name={`veneerPrice`}
                       type="hidden"
-                      value={enchapadoService?.price * (totalVeneer / 10000)}
+                      value={
+                        enchapadoArtesanalService?.price * (totalVeneer / 10000)
+                      }
                       {...register(`veneerPrice`)}
                     />
                   </>
@@ -1360,7 +1364,7 @@ function CreateBudget() {
                 </div>
               ))}
               {/* item extra fin */}
-              {/* chapa enchapado */}
+              {/* chapa enchapado artesanal*/}
               {totalVeneer > 0 ? (
                 <>
                   <h3 className="pt-4 font-semibold">Chapa</h3>
@@ -1404,7 +1408,7 @@ function CreateBudget() {
               ) : (
                 ""
               )}
-              {/* chapa enchapado fin*/}
+              {/* chapa enchapado artesanal fin*/}
               {/* item ajuste */}
               <h3 className="pt-4 font-semibold">Ítem de ajuste</h3>
               <div className="flex gap-4">
@@ -1628,12 +1632,30 @@ function CreateBudget() {
                   {...register(`showModules`)}
                 />
               </div>
-              <button
-                type="submit"
-                className="text-white bg-lightblue rounded-md px-2 py-1 mb-2 w-1/6 m-auto"
-              >
-                Generar presupuesto
-              </button>
+              {!submitLoader ? (
+                <button
+                  type="submit"
+                  className="text-white bg-lightblue rounded-md px-2 py-1 mb-2 w-1/6 m-auto"
+                >
+                  Generar presupuesto
+                </button>
+              ) : (
+                <div className="flex justify-center w-full mt-8">
+                  <div className="flex justify-center bg-lightblue rounded-md px-2 py-1 mb-2 w-1/6 m-auto">
+                    <Oval
+                      visible={submitLoader}
+                      height="30"
+                      width="30"
+                      color="#fff"
+                      secondaryColor="#fff"
+                      strokeWidth="6"
+                      ariaLabel="oval-loading"
+                      wrapperStyle={{}}
+                      wrapperClass=""
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </form>

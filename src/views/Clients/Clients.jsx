@@ -10,6 +10,8 @@ import {
 
 function Clients() {
   const [clients, setClients] = useState([]);
+  const [openModalToDelete, setOpenModalToDelete] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState(null);
   const [loader, setLoader] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
@@ -57,10 +59,7 @@ function Clients() {
     handleSearch(e.target.value);
   };
 
-  //Eliminar insumo
-  const [openModalToDelete, setOpenModalToDelete] = useState(false);
-  const [clientToDelete, setClientToDelete] = useState(null);
-
+  //Eliminar cliente
   function handleDeleteClient(clientId) {
     setOpenModalToDelete(true);
     setClientToDelete(clientId);

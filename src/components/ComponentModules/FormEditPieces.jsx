@@ -15,6 +15,9 @@ function FormEditPieces({
   const [material, setMaterial] = useState("");
   const [lengthLabel, setLengthLabel] = useState("");
   const [widthLabel, setWidthLabel] = useState("");
+  const [selectedVeneerOption, setSelectedVeneerOption] = useState("");
+  const [selectedVeneer2Option, setSelectedVeneer2Option] = useState("");
+  const [isMelamineLacquered, setIsMelamineLacquered] = useState("");
 
   useEffect(() => {
     // console.log("Pieza: ", piece);
@@ -24,6 +27,8 @@ function FormEditPieces({
       }
       const initialFinishing = piece.veneer
         ? "veneer"
+        : piece.veneer2
+        ? "veneer2"
         : piece.melamine
         ? "melamine"
         : piece.lacqueredPiece
@@ -35,6 +40,11 @@ function FormEditPieces({
 
       setMaterial(piece.material || "");
       setValue(`materialPiece${index}`, piece.material || "");
+
+      setSelectedVeneerOption(piece.veneerFinishing);
+      setSelectedVeneer2Option(piece.veneer2Finishing);
+
+      setIsMelamineLacquered(piece.melamineLacquered);
     }
   }, [piece, setValue, index]);
 
@@ -83,12 +93,22 @@ function FormEditPieces({
     if (selectedFinishing !== "lacqueredPiece") {
       resetField(`lacqueredPieceSides${index}`);
       resetField(`pantographed${index}`);
+      setSelectedVeneerOption("");
+      setSelectedVeneer2Option("");
     }
     if (selectedFinishing !== "melamine") {
       resetField(`melamineLacquered${index}`);
+      setSelectedVeneerOption("");
+      setSelectedVeneer2Option("");
+      resetField(`melamineLacqueredPieceSides${index}`);
     }
     if (selectedFinishing !== "veneer") {
       resetField(`veneerOption${index}`);
+      setSelectedVeneer2Option("");
+    }
+    if (selectedFinishing !== "veneer2") {
+      resetField(`veneer2Option${index}`);
+      setSelectedVeneerOption("");
     }
   };
 
@@ -96,6 +116,33 @@ function FormEditPieces({
     const selectedMaterial = event.target.value;
     setMaterial(selectedMaterial);
     setValue(`materialPiece${index}`, selectedMaterial);
+  };
+
+  const handleVeneerOptionChange = (e) => {
+    setSelectedVeneerOption(e.target.value);
+    if (e.target.value !== `veneerLacquered${index}`) {
+      resetField(`veneerLacqueredPieceSides${index}`);
+      resetField(`veneerLacqueredOpen${index}`);
+      setValue(`veneerLacqueredPieceSides${index}`, "");
+      setValue(`veneerLacqueredOpen${index}`, "");
+    }
+  };
+
+  const handleVeneer2OptionChange = (e) => {
+    setSelectedVeneer2Option(e.target.value);
+    if (e.target.value !== `veneer2Lacquered${index}`) {
+      resetField(`veneer2LacqueredPieceSides${index}`);
+      resetField(`veneer2LacqueredOpen${index}`);
+      setValue(`veneer2LacqueredPieceSides${index}`, "");
+      setValue(`veneer2LacqueredOpen${index}`, "");
+    }
+  };
+
+  const handleIsMelamineLacquered = (e) => {
+    setIsMelamineLacquered(e.target.checked);
+    if (e.target.checked) {
+      resetField(`melamineLacqueredPieceSides${index}`);
+    }
   };
 
   return (
@@ -240,9 +287,7 @@ function FormEditPieces({
           type="text"
           name={`commentPiece${index}`}
           id={`commentPiece${index}`}
-          {...register(`commentPiece${index}`, {
-            required: "El campo es obligatorio",
-          })}
+          {...register(`commentPiece${index}`)}
           defaultValue={piece?.comment || ""}
         />
         {errors[`commentPiece${index}`] && (
@@ -298,7 +343,8 @@ function FormEditPieces({
         >
           <option value="">Elegir una opción</option>
           <option value="lacqueredPiece">Laqueado</option>
-          <option value="veneer">Enchapado</option>
+          <option value="veneer">Enchapado Artesanal</option>
+          <option value="veneer2">Enchapado No Artesanal</option>
           <option value="melamine">Melamina</option>
         </select>
         {errors[`finishing${index}`] && (
@@ -346,16 +392,49 @@ function FormEditPieces({
         </div>
       )}
       {finishingModule === "melamine" && (
-        <div className="flex items-center mt-5 w-1/5">
-          <label className="font-semibold mb-1">Laqueado</label>
-          <input
-            className="ml-2"
-            type="checkbox"
-            {...register(`melamineLacquered${index}`)}
-            defaultChecked={piece?.melamineLacquered || false}
-          />
-        </div>
+        <>
+          <div className="flex flex-col  w-1/5 ">
+            <div className="flex items-center mt-5 w-1/5">
+              <label className="font-semibold mb-1">Laqueado</label>
+              <input
+                className="ml-2"
+                type="checkbox"
+                {...register(`melamineLacquered${index}`)}
+                defaultChecked={piece?.melamineLacquered || false}
+                onChange={handleIsMelamineLacquered}
+              />
+            </div>
+            {isMelamineLacquered && (
+              <>
+                <label
+                  htmlFor={`veneerLacqueredPieceSides${index}`}
+                  className="font-semibold mb-1"
+                >
+                  Laqueado lados
+                </label>
+                <select
+                  className="border border-gray-300 rounded-md p-2"
+                  name={`melamineLacqueredPieceSides${index}`}
+                  id={`melamineLacqueredPieceSides${index}`}
+                  {...register(`melamineLacqueredPieceSides${index}`, {
+                    required: "El campo es obligatorio",
+                  })}
+                >
+                  <option value="">Elegir una opción</option>
+                  <option value="single">1 Lado</option>
+                  <option value="double">2 Lados</option>
+                </select>
+                {errors[`melamineLacqueredPieceSides${index}`] && (
+                  <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                    {errors[`melamineLacqueredPieceSides${index}`].message}
+                  </span>
+                )}
+              </>
+            )}
+          </div>
+        </>
       )}
+      {/* Enchapado artesanal veneer */}
       {finishingModule === "veneer" && (
         <div className="flex flex-col w-1/5 mt-5">
           <div>
@@ -369,6 +448,7 @@ function FormEditPieces({
               name={`veneerOption${index}`}
               value="veneerLacquered"
               defaultChecked={piece?.veneerFinishing === "veneerLacquered"}
+              onChange={handleVeneerOptionChange}
             />
             <label htmlFor={`veneerLacquered${index}`} className="ml-2">
               Laqueado
@@ -384,6 +464,7 @@ function FormEditPieces({
               name={`veneerOption${index}`}
               value="veneerPolished"
               defaultChecked={piece?.veneerFinishing === "veneerPolished"}
+              onChange={handleVeneerOptionChange}
             />
             <label htmlFor={`veneerPolished${index}`} className="ml-2">
               Lustrado
@@ -396,7 +477,119 @@ function FormEditPieces({
           )}
         </div>
       )}
-
+      {/* al elegir que el enchapado artesnal tiene laqueado */}
+      {selectedVeneerOption === "veneerLacquered" && (
+        <div className="flex flex-col  w-1/5 ">
+          <label
+            htmlFor={`veneerLacqueredPieceSides${index}`}
+            className="font-semibold mb-1"
+          >
+            Laqueado lados
+          </label>
+          <select
+            className="border border-gray-300 rounded-md p-2"
+            name={`veneerLacqueredPieceSides${index}`}
+            id={`veneerLacqueredPieceSides${index}`}
+            {...register(`veneerLacqueredPieceSides${index}`, {
+              required: "El campo es obligatorio",
+            })}
+          >
+            <option value="">Elegir una opción</option>
+            <option value="single">1 Lado</option>
+            <option value="double">2 Lados</option>
+          </select>
+          {errors[`veneerLacqueredPieceSides${index}`] && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors[`veneerLacqueredPieceSides${index}`].message}
+            </span>
+          )}
+          <div>
+            <label className="font-semibold mb-1">Laqueado poro abierto</label>
+            <input
+              className="ml-2"
+              type="checkbox"
+              {...register(`veneerLacqueredOpen${index}`)}
+            />
+          </div>
+        </div>
+      )}
+      {/* Enchapado NO artesanal veneer2 */}
+      {finishingModule === "veneer2" && (
+        <div className="flex flex-col  mt-5">
+          <div>
+            <input
+              className="border border-gray-300 rounded-md p-2"
+              {...register(`veneer2Option${index}`, {
+                required: "Este campo es requerido",
+              })}
+              type="radio"
+              id={`veneer2Lacquered${index}`}
+              name={`veneer2Option${index}`}
+              value="veneer2Lacquered"
+              onChange={handleVeneer2OptionChange}
+            />
+            <label htmlFor={`veneer2Lacquered${index}`} className="ml-2">
+              Laqueado
+            </label>
+          </div>
+          <div>
+            <input
+              {...register(`veneer2Option${index}`, {
+                required: "Este campo es requerido",
+              })}
+              type="radio"
+              id={`veneer2Polished${index}`}
+              name={`veneer2Option${index}`}
+              value="veneer2Polished"
+              onChange={handleVeneer2OptionChange}
+            />
+            <label htmlFor={`veneer2Option${index}`} className="ml-2">
+              Lustrado
+            </label>
+          </div>
+          {errors[`veneer2Option${index}`] && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors[`veneer2Option${index}`].message}
+            </span>
+          )}
+        </div>
+      )}
+      {/* al elegir que el enchapado NO artesnal tiene laqueado */}
+      {selectedVeneer2Option === "veneer2Lacquered" && (
+        <div className="flex flex-col  w-1/5 ">
+          <label
+            htmlFor={`veneer2LacqueredPieceSides${index}`}
+            className="font-semibold mb-1"
+          >
+            Laqueado lados
+          </label>
+          <select
+            className="border border-gray-300 rounded-md p-2"
+            name={`veneer2LacqueredPieceSides${index}`}
+            id={`veneer2LacqueredPieceSides${index}`}
+            {...register(`veneer2LacqueredPieceSides${index}`, {
+              required: "El campo es obligatorio",
+            })}
+          >
+            <option value="">Elegir una opción</option>
+            <option value="single">1 Lado</option>
+            <option value="double">2 Lados</option>
+          </select>
+          {errors[`veneer2LacqueredPieceSides${index}`] && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors[`veneer2LacqueredPieceSides${index}`].message}
+            </span>
+          )}
+          <div>
+            <label className="font-semibold mb-1">Laqueado poro abierto</label>
+            <input
+              className="ml-2"
+              type="checkbox"
+              {...register(`veneer2LacqueredOpen${index}`)}
+            />
+          </div>
+        </div>
+      )}
       <div className="flex flex-col w-2/12 mt-4">
         <label className="font-semibold mb-1">¿Tiene filo?</label>
         <div className="flex gap-4">
@@ -478,50 +671,51 @@ function FormEditPieces({
                 </span>
               )}
             </div>
-            {/* filo length */}
+          </div>
+          {/* filo length */}
+          <div>
             <div>
-              <div>
-                <label className="font-semibold mb-1">
-                  Filo de{" "}
-                  {lengthLabel ||
-                    (piece.orientation === "cross-vertical"
-                      ? "Alto:"
-                      : piece.orientation === "cross-horizontal"
-                      ? "Largo:"
-                      : piece.orientation === "side"
-                      ? "Alto:"
-                      : "")}
-                </label>
-                <input
-                  className="ml-2"
-                  type="checkbox"
-                  {...register(`edgeLength${index}`)}
-                />
-              </div>
-              <div className="flex flex-col">
-                <label
-                  htmlFor={`edgeLengthSides${index}`}
-                  className="font-semibold mb-1"
-                >
-                  Cantidad de lados
-                </label>
-                <select
-                  className="border border-gray-300 rounded-md p-2"
-                  name={`edgeLengthSides${index}`}
-                  id={`edgeLengthSides${index}`}
-                  {...register(`edgeLengthSides${index}`)}
-                >
-                  <option value="">Elegir una opción</option>
-                  <option value="1">1 Lado</option>
-                  <option value="2">2 Lados</option>
-                </select>
-                {errors[`edgeLengthSides${index}`] && (
-                  <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                    {errors[`edgeLengthSides${index}`].message}
-                  </span>
-                )}
-              </div>
+              <label className="font-semibold mb-1">
+                Filo de{" "}
+                {lengthLabel ||
+                  (piece.orientation === "cross-vertical"
+                    ? "Alto:"
+                    : piece.orientation === "cross-horizontal"
+                    ? "Largo:"
+                    : piece.orientation === "side"
+                    ? "Alto:"
+                    : "")}
+              </label>
+              <input
+                className="ml-2"
+                type="checkbox"
+                {...register(`edgeLength${index}`)}
+              />
             </div>
+            <div className="flex flex-col">
+              <label
+                htmlFor={`edgeLengthSides${index}`}
+                className="font-semibold mb-1"
+              >
+                Cantidad de lados
+              </label>
+              <select
+                className="border border-gray-300 rounded-md p-2"
+                name={`edgeLengthSides${index}`}
+                id={`edgeLengthSides${index}`}
+                {...register(`edgeLengthSides${index}`)}
+              >
+                <option value="">Elegir una opción</option>
+                <option value="1">1 Lado</option>
+                <option value="2">2 Lados</option>
+              </select>
+              {errors[`edgeLengthSides${index}`] && (
+                <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                  {errors[`edgeLengthSides${index}`].message}
+                </span>
+              )}
+            </div>
+
             {/* filo laqueado */}
           </div>
           <div className="flex flex-col ml-4">

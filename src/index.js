@@ -67,6 +67,7 @@ export { createBudget } from "./services/Budgets/createBudget.js";
 export { getLastBudgetNum } from "./services/Budgets/getLastBudgetNum.js";
 export { getBudgetById } from "./services/Budgets/getBudgetById.js";
 export { filterBudgetByClientName } from "./services/Budgets/filterBudgetByClientName.js";
+export { deleteBudget } from "./services/Budgets/deleteBudget.js";
 
 //Components --->
 

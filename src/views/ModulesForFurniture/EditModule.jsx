@@ -69,8 +69,24 @@ function EditModule() {
           setValue(`lacqueredPieceSides${index}`, piece.lacqueredPieceSides);
           setValue(`veneer${index}`, piece.veneer);
           setValue(`veneerOption${index}`, piece.veneerFinishing);
+          setValue(
+            `veneerLacqueredPieceSides${index}`,
+            piece.veneerLacqueredPieceSides
+          );
+          setValue(`veneerLacqueredOpen${index}`, piece.veneerLacqueredOpen);
+          setValue(`veneer2${index}`, piece.veneer2);
+          setValue(`veneer2Option${index}`, piece.veneer2Finishing);
+          setValue(
+            `veneer2LacqueredPieceSides${index}`,
+            piece.veneer2LacqueredPieceSides
+          );
+          setValue(`veneer2LacqueredOpen${index}`, piece.veneer2LacqueredOpen);
           setValue(`melamine${index}`, piece.melamine);
           setValue(`melamineLacquered${index}`, piece.melamineLacquered);
+          setValue(
+            `melamineLacqueredPieceSides${index}`,
+            piece.melamineLacqueredPieceSides
+          );
           setValue(`pantographed${index}`, piece.pantographed);
           setValue(`edgeLength${index}`, piece.edgeLength);
           setValue(`edgeLengthSides${index}`, piece.edgeLengthSides);
@@ -153,20 +169,30 @@ function EditModule() {
         piecesNumber += qty;
         let lacqueredPiece;
         let veneer;
+        let veneer2;
         let melamine;
         if (data[`finishing${index}`] === "lacqueredPiece") {
           lacqueredPiece = true;
           veneer = false;
+          veneer2 = false;
           melamine = false;
         }
         if (data[`finishing${index}`] === "veneer") {
           lacqueredPiece = false;
           veneer = true;
+          veneer2 = false;
+          melamine = false;
+        }
+        if (data[`finishing${index}`] === "veneer2") {
+          lacqueredPiece = false;
+          veneer = false;
+          veneer2 = true;
           melamine = false;
         }
         if (data[`finishing${index}`] === "melamine") {
           lacqueredPiece = false;
           veneer = false;
+          veneer2 = false;
           melamine = true;
         }
         //lo que viene de la pieza
@@ -252,8 +278,17 @@ function EditModule() {
           lacqueredPieceSides: data[`lacqueredPieceSides${index}`],
           veneer: veneer,
           veneerFinishing: data[`veneerOption${index}`],
+          veneerLacqueredPieceSides: data[`veneerLacqueredPieceSides${index}`],
+          veneerLacqueredOpen: data[`veneerLacqueredOpen${index}`],
+          veneer2: veneer2,
+          veneer2Finishing: data[`veneer2Option${index}`],
+          veneer2LacqueredPieceSides:
+            data[`veneer2LacqueredPieceSides${index}`],
+          veneer2LacqueredOpen: data[`veneer2LacqueredOpen${index}`],
           melamine: melamine,
           melamineLacquered: data[`melamineLacquered${index}`],
+          melamineLacqueredPieceSides:
+            data[`melamineLacqueredPieceSides${index}`],
           pantographed: data[`pantographed${index}`],
           edgeLength: data[`edgeLength${index}`],
           edgeLengthSides: data[`edgeLengthSides${index}`],

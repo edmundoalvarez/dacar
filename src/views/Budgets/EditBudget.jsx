@@ -111,8 +111,8 @@ function EditBudget() {
   }, [budgetId]);
 
   //Servicios: obetener valores
-  const enchapadoService = services.find(
-    (service) => service.name === "Enchapado"
+  const enchapadoArtesanalService = services.find(
+    (service) => service.name === "Enchapado Artesanal"
   );
 
   const laqueadoService = services.find(
@@ -235,18 +235,20 @@ function EditBudget() {
                 <h2 className="text-2xl font-semibold mb-2">
                   Acabados del Mueble
                 </h2>
-                {/* ENCHAPADO */}
+                {/* ENCHAPADO ARTESANAL */}
                 {totalVeneer > 0 ? (
                   <>
                     <p className="mb-1">
-                      <span className="font-bold">Enchapado en m2:</span>{" "}
+                      <span className="font-bold">
+                        Enchapado Artesanal en m2:
+                      </span>{" "}
                       {totalVeneer} m<sup>2</sup> Precio:
                       {formatCurrency(
-                        enchapadoService?.price * totalVeneer
+                        enchapadoArtesanalService?.price * totalVeneer
                       ).toLocaleString("es-ES")}
                       {setValue(
                         "veneerPrice",
-                        enchapadoService?.price * totalVeneer
+                        enchapadoArtesanalService?.price * totalVeneer
                       )}
                     </p>
                     <input
@@ -258,7 +260,7 @@ function EditBudget() {
                     <input
                       name={`veneerPrice`}
                       type="hidden"
-                      value={enchapadoService?.price * totalVeneer}
+                      value={enchapadoArtesanalService?.price * totalVeneer}
                       {...register(`veneerPrice`)}
                     />
                   </>

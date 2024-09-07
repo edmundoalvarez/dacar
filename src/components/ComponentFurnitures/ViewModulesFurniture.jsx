@@ -57,11 +57,11 @@ function ViewModulesFurniture({ sortedModules }) {
               <thead>
                 <tr>
                   <th className="px-4 py-2 border-b">Nombre</th>
-                  <th className="px-2 py-2 border-b">Cantidad</th>
+                  <th className="px-2 py-2 border-b">Cant.</th>
                   <th className="px-4 py-2 border-b">Material</th>
                   <th className="px-4 py-2 border-b">Comentario</th>
-                  <th className="px-4 py-2 border-b">Largo</th>
-                  <th className="px-4 py-2 border-b">Alto</th>
+                  <th className="px-2 py-2 border-b">Largo</th>
+                  <th className="px-2 py-2 border-b">Alto</th>
                   <th className="px-4 py-2 border-b">Orientación</th>
                   <th className="px-4 py-2 border-b">Acabado</th>
                   <th className="px-4 py-2 border-b">Filo Alto</th>
@@ -73,7 +73,7 @@ function ViewModulesFurniture({ sortedModules }) {
                 {module.pieces
                   .sort((a, b) => a.material.localeCompare(b.material))
                   .map((piece, index) => (
-                    <tr key={index} className="border-t">
+                    <tr key={piece._id} className="border-t">
                       <td className="px-4 py-2 text-center border-b">
                         {piece.name}
                       </td>
@@ -110,29 +110,84 @@ function ViewModulesFurniture({ sortedModules }) {
                         {piece.lacqueredPiece ? (
                           <>
                             Laqueado
-                            {piece.lacqueredPieceSides === "single" &&
-                              " (1 lado)"}
-                            {piece.lacqueredPieceSides === "double" &&
-                              " (2 lados)"}{" "}
+                            <br />
+                            {piece.lacqueredPieceSides === "single" && (
+                              <strong>1 lado</strong>
+                            )}
+                            {piece.lacqueredPieceSides === "double" && (
+                              <strong>2 lados</strong>
+                            )}{" "}
                             <br></br>
-                            {piece.pantographed ? "Pantografiado" : ""}
+                            {piece.pantographed ? (
+                              <strong>Pantografiado</strong>
+                            ) : (
+                              ""
+                            )}
                           </>
                         ) : piece.veneer ? (
                           <>
-                            Enchapado<br></br>
+                            Enchapado Artesanal<br></br>
                             {piece.veneerFinishing &&
-                            piece.veneerFinishing === "veneerLacquered"
-                              ? "(Laqueado)"
-                              : piece.veneerFinishing &&
-                                piece.veneerFinishing === "veneerPolished"
-                              ? "(Lustrado)"
-                              : ""}
+                            piece.veneerFinishing === "veneerLacquered" &&
+                            piece.veneerLacqueredPieceSides === "single" ? (
+                              <strong>Laqueado 1 lado</strong>
+                            ) : piece.veneerFinishing &&
+                              piece.veneerFinishing === "veneerLacquered" &&
+                              piece.veneerLacqueredPieceSides === "double" ? (
+                              <strong>Laqueado 2 lados</strong>
+                            ) : piece.veneerFinishing &&
+                              piece.veneerFinishing === "veneerPolished" ? (
+                              <strong>Lustrado</strong>
+                            ) : (
+                              ""
+                            )}
+                            <br />
+                            {piece.veneerLacqueredOpen ? (
+                              <strong>Poro abierto</strong>
+                            ) : (
+                              ""
+                            )}
+                          </>
+                        ) : piece.veneer2 ? (
+                          <>
+                            Enchapado No Artesanal<br></br>
+                            {piece.veneer2Finishing &&
+                            piece.veneer2Finishing === "veneer2Lacquered" &&
+                            piece.veneer2LacqueredPieceSides === "single" ? (
+                              <strong>Laqueado 1 lado</strong>
+                            ) : piece.veneer2Finishing &&
+                              piece.veneer2Finishing === "veneer2Lacquered" &&
+                              piece.veneer2LacqueredPieceSides === "double" ? (
+                              <strong>Laqueado 2 lados</strong>
+                            ) : piece.veneer2Finishing &&
+                              piece.veneer2Finishing === "veneer2Polished" ? (
+                              <strong>Lustrado</strong>
+                            ) : (
+                              ""
+                            )}
+                            <br />
+                            {piece.veneer2LacqueredOpen ? (
+                              <strong>Poro abierto</strong>
+                            ) : (
+                              ""
+                            )}
                           </>
                         ) : piece.melamine ? (
                           <>
                             Melamina
                             <br />
-                            {piece.melamineLacquered ? "Laqueada" : ""}
+                            {piece.melamineLacquered ? (
+                              <strong>Laqueada</strong>
+                            ) : (
+                              ""
+                            )}
+                            <br />
+                            {piece.melamineLacqueredPieceSides === "single" && (
+                              <strong> 1 lado</strong>
+                            )}
+                            {piece.melamineLacqueredPieceSides === "double" && (
+                              <strong>2 lados</strong>
+                            )}{" "}
                           </>
                         ) : (
                           "No indica"

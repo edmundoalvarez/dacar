@@ -2,10 +2,16 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import debounce from "lodash.debounce";
 import { Grid, Oval } from "react-loader-spinner";
-import { getAllBudgets, filterBudgetByClientName } from "../../index.js";
+import {
+  getAllBudgets,
+  filterBudgetByClientName,
+  deleteBudget,
+} from "../../index.js";
 
 function Budgets() {
   const [budgets, setBudgets] = useState([]);
+  const [openModalToDelete, setOpenModalToDelete] = useState(false);
+  const [budgetToDelete, setBudgetToDelete] = useState(null);
   const [loader, setLoader] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
@@ -51,6 +57,27 @@ function Budgets() {
   useEffect(() => {
     getAllBudgetsToSet();
   }, []);
+
+  //Eliminar presupuesto
+  function handleDeleteBudget(budgetId) {
+    setOpenModalToDelete(true);
+    setBudgetToDelete(budgetId);
+  }
+
+  function deleteSingleBudget(budgetId) {
+    deleteBudget(budgetId)
+      .then((res) => {
+        getAllBudgetsToSet();
+        // console.log(res.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    // Cerrar la modal después de eliminar la pieza
+    setOpenModalToDelete(false);
+    setBudgetToDelete(null);
+  }
 
   return (
     <>
@@ -145,17 +172,24 @@ function Budgets() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className=" flex justify-center gap-4">
                       <Link
-                        to={`/editar-presupuestos/${budget._id}`}
-                        className="text-white bg-orange hover:bg-amber-600 rounded-md px-2 py-2 text-center "
-                      >
-                        Editar
-                      </Link>
-                      <Link
                         to={`/ver-presupuestos/${budget._id}`}
                         className="bg-gray-500 text-white px-2 py-2 rounded hover:bg-gray-700"
                       >
                         Ver detalle
                       </Link>
+                      <Link
+                        to={`/editar-presupuestos/${budget._id}`}
+                        className="text-white bg-orange hover:bg-amber-600 rounded-md px-2 py-2 text-center "
+                      >
+                        Editar
+                      </Link>
+
+                      <button
+                        className="text-white bg-red-500 hover:bg-red-600 rounded-md px-2 py-1 text-center "
+                        onClick={() => handleDeleteBudget(budget._id)}
+                      >
+                        Eliminar
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -176,6 +210,29 @@ function Budgets() {
           </div>
         </div>
       </div>
+      {openModalToDelete && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white p-10 rounded-lg shadow-lg flex justify-center items-center flex-col">
+            <h2 className="text-xl mb-4">
+              ¿Seguro que desea eliminar el insumo?
+            </h2>
+            <div className="flex gap-4">
+              <button
+                className="bg-red-500 text-white py-2 px-4 rounded"
+                onClick={() => deleteSingleBudget(budgetToDelete)}
+              >
+                Eliminar
+              </button>
+              <button
+                className="bg-gray-300 text-black py-2 px-4 rounded"
+                onClick={() => setOpenModalToDelete(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
