@@ -136,13 +136,24 @@ function Pieces() {
         melamine = true;
       }
 
+      let lacqueredEdge = false;
+      let polishedEdge = false;
+
+      if (data[`edgeType1`] === "lacquered") {
+        lacqueredEdge = true;
+      }
+
+      if (data[`edgeType1`] === "polished") {
+        polishedEdge = true;
+      }
+
       let qty =
         data[`qty1`] !== undefined &&
         data[`qty1`] !== "" &&
         Number(data[`qty1`]) !== 0
           ? Number(data[`qty1`])
           : 1;
-      console.log("data[`qty`]", data[`qty1`], "qty", qty);
+
       const pieceData = {
         // Mapeo de los nombres de los campos del formulario a los nombres esperados en la base de datos
         name: data[`namePiece1`],
@@ -170,7 +181,8 @@ function Pieces() {
         edgeLengthSides: data[`edgeLengthSides1`],
         edgeWidth: data[`edgeWidth1`],
         edgeWidthSides: data[`edgeWidthSides1`],
-        lacqueredEdge: data[`lacqueredEdge1`],
+        lacqueredEdge: lacqueredEdge,
+        polishedEdge: polishedEdge,
         loose_piece: data[`loose_piece1`],
         moduleId, // Asigna el ID del módulo a cada pieza
       };
@@ -266,8 +278,15 @@ function Pieces() {
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Alto
+                  Material
                 </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                >
+                  Comentario
+                </th>
+
                 <th
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
@@ -279,13 +298,13 @@ function Pieces() {
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Comentario
+                  Alto
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Material
+                  Orientación
                 </th>
                 <th
                   scope="col"
@@ -297,7 +316,19 @@ function Pieces() {
                   scope="col"
                   className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                 >
-                  Filo
+                  Filo Largo
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                >
+                  Filo Alto
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                >
+                  Tipo de filo
                 </th>
                 <th
                   scope="col"

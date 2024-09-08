@@ -92,8 +92,12 @@ function EditModule() {
           setValue(`edgeLengthSides${index}`, piece.edgeLengthSides);
           setValue(`edgeWidth${index}`, piece.edgeWidth);
           setValue(`edgeWidthSides${index}`, piece.edgeWidthSides);
-          setValue(`lacqueredEdge${index}`, piece.lacqueredEdge);
-          // console.log("piece", `edgeLength${index}`, piece.edgeLength);
+          if (piece.lacqueredEdge) {
+            setValue(`edgeType${index}`, "lacquered");
+          }
+          if (piece.polishedEdge) {
+            setValue(`edgeType${index}`, "polished");
+          }
         });
       })
       .catch((error) => {
@@ -195,6 +199,18 @@ function EditModule() {
           veneer2 = false;
           melamine = true;
         }
+
+        let lacqueredEdge = false;
+        let polishedEdge = false;
+
+        if (data[`edgeType${index}`] === "lacquered") {
+          lacqueredEdge = true;
+        }
+
+        if (data[`edgeType${index}`] === "polished") {
+          polishedEdge = true;
+        }
+
         //lo que viene de la pieza
         let lengthPiece = parseFloat(data[`lengthPiece${index}`]);
         let widthPiece = parseFloat(data[`widthPiece${index}`]);
@@ -294,7 +310,8 @@ function EditModule() {
           edgeLengthSides: data[`edgeLengthSides${index}`],
           edgeWidth: data[`edgeWidth${index}`],
           edgeWidthSides: data[`edgeWidthSides${index}`],
-          lacqueredEdge: data[`lacqueredEdge${index}`],
+          lacqueredEdge: lacqueredEdge,
+          polishedEdge: polishedEdge,
           loose_piece: data[`loose_piece${index}`],
           module_id: idModule,
         };

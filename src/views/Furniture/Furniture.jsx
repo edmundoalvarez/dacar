@@ -110,23 +110,49 @@ function Furniture() {
 
   //GENERAR PDFs
 
-  const generateLoosePiecesPDF = (loosePieces, furnitureName) => {
+  const generateLoosePiecesPDF = (modulesWithLoosePieces, furnitureName) => {
     const doc = new jsPDF();
 
-    doc.text("Piezas sueltas", 14, 20);
+    doc.text(`Módulos y Piezas Sueltas: ${furnitureName}`, 14, 20);
 
-    const tableColumn = ["Nombre", "Cantidad", "Largo", "Alto", "Material"];
-    const tableRows = loosePieces.map((piece) => [
-      piece.name,
-      piece.qty,
-      piece.orientation === "cross-horizontal" ? piece.length : piece.width,
-      piece.orientation === "cross-horizontal" ? piece.width : piece.length,
-      piece.material,
-    ]);
+    // Configurar las columnas de la tabla
+    const moduleColumns = ["Nombre del Módulo", "Largo", "Ancho", "Alto"];
+    const pieceColumns = ["Nombre", "Cantidad", "Largo", "Ancho", "Material"];
 
-    doc.autoTable(tableColumn, tableRows, { startY: 30 });
+    let currentY = 30;
 
-    const fileName = `Piezas-Sueltas-${furnitureName}.pdf`;
+    // Recorrer cada módulo y sus piezas sueltas para generar las filas
+    modulesWithLoosePieces.forEach((module) => {
+      // Añadir datos del módulo
+      const moduleRow = [
+        module.moduleName,
+        module.moduleLength,
+        module.moduleWidth,
+        module.moduleHeight,
+      ];
+      doc.autoTable({
+        head: [moduleColumns],
+        body: [moduleRow],
+        startY: currentY,
+        headStyles: { fillColor: [79, 157, 98] },
+      });
+      currentY = doc.lastAutoTable.finalY + 10; // Ajustar la posición Y para la siguiente tabla
+
+      // Añadir piezas sueltas si existen
+      if (module.loosePieces.length > 0) {
+        const pieceRows = module.loosePieces.map((piece) => [
+          piece.name,
+          piece.qty,
+          piece.orientation === "cross-horizontal" ? piece.length : piece.width,
+          piece.orientation === "cross-horizontal" ? piece.width : piece.length,
+          piece.material,
+        ]);
+        doc.autoTable(pieceColumns, pieceRows, { startY: currentY });
+        currentY = doc.lastAutoTable.finalY + 10; // Ajustar la posición Y para la siguiente tabla
+      }
+    });
+
+    const fileName = `Módulos-y-Piezas-Sueltas-${furnitureName}.pdf`;
     doc.save(fileName);
   };
 
@@ -146,7 +172,7 @@ function Furniture() {
     ]);
 
     // Agregar texto al documento
-    doc.text(`Despiece del mueble ${furnitureName}`, 14, 20);
+    doc.text(`Despiece del mueble: ${furnitureName}`, 14, 20);
 
     // Agregar la tabla al documento
     doc.autoTable(tableColumn, tableRows, { startY: 30 });
@@ -284,18 +310,23 @@ function Furniture() {
                     {Array.isArray(furniture.modules_furniture) &&
                     furniture.modules_furniture.length > 0 ? (
                       <>
-                        <div className="flex flex-wrap justify-center gap-x-1">
-                          {furniture.modules_furniture.map((module, index) => (
-                            <span key={index}>
-                              {module.name}
-                              {index < furniture.modules_furniture.length - 1 &&
-                                ","}
-                            </span>
-                          ))}
+                        <div className="flex flex-wrap justify-center text-left w-full ">
+                          <p className=" max-w-[180px] flex flex-wrap ">
+                            {furniture.modules_furniture.map(
+                              (module, index) => (
+                                <span key={index} className="truncate">
+                                  {module.name}
+                                  {index <
+                                    furniture.modules_furniture.length - 1 &&
+                                    ","}
+                                </span>
+                              )
+                            )}
+                          </p>
                         </div>
                         <button
                           onClick={() => handleOpenModal(furniture)}
-                          className="ml-2 mt-4 bg-blue-500 text-white py-1 px-2 rounded"
+                          className=" mt-4 bg-blue-500 text-white py-1 px-6 rounded"
                         >
                           Ver
                         </button>
@@ -306,36 +337,32 @@ function Furniture() {
                   </td>
 
                   <td>
-                    <div className="flex flex-col gap-2 items-center py-8">
+                    <div className="flex flex-col gap-2 items-center py-8 w-8/12 m-auto">
                       <Link
-                        to={`/presupuestar-mueble/${furniture._id}
-                        `}
-                        className="text-white bg-emerald-700 hover:bg-emerald-900 rounded-md px-2 py-1 mb-2 text-center "
+                        to={`/presupuestar-mueble/${furniture._id}`}
+                        className="text-white bg-emerald-700 hover:bg-emerald-900 rounded-md px-2 py-1 mb-2 text-center w-full"
                       >
                         Presupuestar
                       </Link>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 w-full">
                         <Link
-                          to={`/editar-modulos-mueble/${furniture._id}
-                        `}
-                          className="text-white bg-orange hover:bg-amber-600 rounded-md px-2 py-1 mb-2 text-center "
+                          to={`/editar-modulos-mueble/${furniture._id}`}
+                          className="text-white bg-orange hover:bg-amber-600 rounded-md px-2 py-1 mb-2 text-center flex-1"
                         >
                           Editar
                         </Link>
-
                         <button
-                          className="text-white bg-red-700 rounded-md px-2 py-1 mb-2"
+                          className="text-white bg-red-700 rounded-md px-2 py-1 mb-2 flex-1"
                           onClick={() => handleDeleteFurniture(furniture._id)}
                         >
                           Eliminar
                         </button>
                       </div>
-
                       <button
                         onClick={() =>
                           handleDownloadPieces(furniture._id, furniture.name)
                         }
-                        className="text-white bg-sky-800 hover:bg-sky-950 rounded-md px-2 py-1 mb-2 text-center w-1/2"
+                        className="text-white bg-sky-800 hover:bg-sky-950 rounded-md px-2 py-1 mb-2 text-center w-full"
                       >
                         <FontAwesomeIcon icon={faDownload} className="mr-2" />
                         Despiece
@@ -347,7 +374,7 @@ function Furniture() {
                             furniture.name
                           )
                         }
-                        className=" text-white bg-gray-700 hover:bg-gray-800 rounded-md px-2 py-1 mb-2 text-center "
+                        className="text-white bg-gray-700 hover:bg-gray-800 rounded-md px-2 py-1 mb-2 text-center w-full"
                       >
                         <FontAwesomeIcon icon={faDownload} className="mr-2" />
                         Piezas Sueltas

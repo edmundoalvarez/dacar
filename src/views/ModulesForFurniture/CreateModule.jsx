@@ -129,6 +129,17 @@ function CreateModule() {
             ? Number(data[`qty${i}`])
             : 1;
 
+        let lacqueredEdge = false;
+        let polishedEdge = false;
+
+        if (data[`edgeType${i}`] === "lacquered") {
+          lacqueredEdge = true;
+        }
+
+        if (data[`edgeType${i}`] === "polished") {
+          polishedEdge = true;
+        }
+
         const pieceData = {
           // Mapeo de los nombres de los campos del formulario a los nombres esperados en la base de datos
           name: data[`namePiece${i}`],
@@ -156,7 +167,8 @@ function CreateModule() {
           edgeLengthSides: data[`edgeLengthSides${i}`],
           edgeWidth: data[`edgeWidth${i}`],
           edgeWidthSides: data[`edgeWidthSides${i}`],
-          lacqueredEdge: data[`lacqueredEdge${i}`],
+          lacqueredEdge: lacqueredEdge,
+          polishedEdge: polishedEdge,
           loose_piece: data[`loose_piece${i}`],
           moduleId, // Asigna el ID del módulo a cada pieza
         };

@@ -64,9 +64,9 @@ function ViewModulesFurniture({ sortedModules }) {
                   <th className="px-2 py-2 border-b">Alto</th>
                   <th className="px-4 py-2 border-b">Orientación</th>
                   <th className="px-4 py-2 border-b">Acabado</th>
-                  <th className="px-4 py-2 border-b">Filo Alto</th>
                   <th className="px-4 py-2 border-b">Filo Largo</th>
-                  <th className="px-4 py-2 border-b">Filo Laqueado</th>
+                  <th className="px-4 py-2 border-b">Filo Alto</th>
+                  <th className="px-4 py-2 border-b">Tipo de Filo</th>
                 </tr>
               </thead>
               <tbody>
@@ -193,6 +193,17 @@ function ViewModulesFurniture({ sortedModules }) {
                           "No indica"
                         )}
                       </td>
+                      <td className="px-4 py-2 text-center border-b">
+                        {piece.edgeWidth
+                          ? `Sí, ${
+                              piece.edgeWidthSides === "1"
+                                ? "un lado"
+                                : piece.edgeWidthSides === "2"
+                                ? "dos lados"
+                                : "falta cantidad lados"
+                            }`
+                          : "No"}
+                      </td>
 
                       <td className="px-4 py-2 text-center border-b">
                         {piece.edgeLength
@@ -205,19 +216,13 @@ function ViewModulesFurniture({ sortedModules }) {
                             }`
                           : "No"}
                       </td>
+
                       <td className="px-4 py-2 text-center border-b">
-                        {piece.edgeWidth
-                          ? `Sí, ${
-                              piece.edgeWidthSides === "1"
-                                ? "un lado"
-                                : piece.edgeWidthSides === "2"
-                                ? "dos lados"
-                                : "falta cantidad lados"
-                            }`
-                          : "No"}
-                      </td>
-                      <td className="px-4 py-2 text-center border-b">
-                        {piece.lacqueredEdge ? "Sí" : "No"}
+                        {piece.lacqueredEdge
+                          ? "Laqueado"
+                          : piece.polishedEdge
+                          ? "Lustrado"
+                          : ""}
                       </td>
                     </tr>
                   ))}

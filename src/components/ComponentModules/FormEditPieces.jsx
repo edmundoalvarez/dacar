@@ -81,7 +81,7 @@ function FormEditPieces({
       resetField(`edgeLengthSides${index}`);
       resetField(`edgeWidth${index}`);
       resetField(`edgeWidthSides${index}`);
-      resetField(`lacqueredEdge${index}`);
+      resetField(`edgeType${index}`);
     }
   };
 
@@ -719,8 +719,15 @@ function FormEditPieces({
             {/* filo laqueado */}
           </div>
           <div className="flex flex-col ml-4">
-            <label className="font-semibold mb-1">Filo Laqueado</label>
-            <input type="checkbox" {...register(`lacqueredEdge${index}`)} />
+            <label className="font-semibold mb-1">Tipo de Filo</label>
+            <select
+              {...register(`edgeType${index}`)}
+              className="border border-gray-300 rounded-md p-2"
+            >
+              <option value="">Seleccione una opción</option>
+              <option value="lacquered">Filo Laqueado</option>
+              <option value="polished">Filo Lustrado</option>
+            </select>
           </div>
         </div>
       )}
@@ -765,7 +772,6 @@ FormEditPieces.propTypes = {
     edgeLengthSides: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     edgeWidth: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     edgeWidthSides: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    lacqueredEdge: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   }),
 };
 
