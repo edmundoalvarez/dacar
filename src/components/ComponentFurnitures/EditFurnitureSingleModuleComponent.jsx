@@ -16,7 +16,6 @@ function EditFurnitureSingleModuleComponent({
   onModified,
   notModified,
 }) {
-  const navigate = useNavigate();
   const [piecesCount, setPiecesCount] = useState(0);
   const [suppliesCount, setSuppliesCount] = useState(0);
   const [tables, setTables] = useState([]);
@@ -30,6 +29,7 @@ function EditFurnitureSingleModuleComponent({
     handleSubmit,
     reset,
     setValue,
+    getValues,
     resetField,
     formState: { errors },
   } = useForm();
@@ -77,8 +77,8 @@ function EditFurnitureSingleModuleComponent({
         module.pieces.forEach((piece, index) => {
           setValue(`namePiece${index}`, piece.name);
           setValue(`qty${index}`, piece.qty);
-          setValue(`lengthPiece${index}`, piece.length.toString());
-          setValue(`widthPiece${index}`, piece.width.toString());
+          setValue(`lengthPiece${index}`, piece.length);
+          setValue(`widthPiece${index}`, piece.width);
           setValue(`orientation${index}`, piece.orientation);
           setValue(`commentPiece${index}`, piece.comment);
           setValue(`materialPiece${index}`, piece.material);
@@ -155,16 +155,7 @@ function EditFurnitureSingleModuleComponent({
     event.preventDefault();
 
     try {
-      const {
-        name,
-        height,
-        heightHidden,
-        length,
-        lengthHidden,
-        width,
-        widthHidden,
-        material,
-      } = data;
+      const { name, height, length, width, material } = data;
 
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
         const supplyIdName = data[`supplie_id_name${index}`];
@@ -229,81 +220,11 @@ function EditFurnitureSingleModuleComponent({
           polishedEdge = true;
         }
 
-        //lo que viene de la pieza
-        let lengthPiece = parseFloat(data[`lengthPiece${index}`]);
-        let widthPiece = parseFloat(data[`widthPiece${index}`]);
-        //variables para cargar el dato
-        let pieceLength;
-        let pieceWidth;
-        if (data[`orientation${index}`] === "cross-vertical") {
-          if (height >= heightHidden) {
-            pieceLength =
-              lengthPiece +
-              (height - heightHidden) * (lengthPiece / heightHidden);
-          }
-          if (height < heightHidden) {
-            pieceLength =
-              lengthPiece -
-              (heightHidden - height) * (lengthPiece / heightHidden);
-          }
-
-          if (length >= lengthHidden) {
-            pieceWidth =
-              widthPiece +
-              (length - lengthHidden) * (widthPiece / lengthHidden);
-          }
-          if (length < lengthHidden) {
-            pieceWidth =
-              widthPiece -
-              (lengthHidden - length) * (widthPiece / lengthHidden);
-          }
-        }
-        if (data[`orientation${index}`] === "cross-horizontal") {
-          if (length >= lengthHidden) {
-            pieceLength =
-              lengthPiece +
-              (length - lengthHidden) * (lengthPiece / lengthHidden);
-          }
-          if (length < lengthHidden) {
-            pieceLength =
-              lengthPiece -
-              (lengthHidden - length) * (lengthPiece / lengthHidden);
-          }
-          if (width >= widthHidden) {
-            pieceWidth =
-              widthPiece + (width - widthHidden) * (widthPiece / widthHidden);
-          }
-          if (width < widthHidden) {
-            pieceWidth =
-              widthPiece - (widthHidden - width) * (widthPiece / widthHidden);
-          }
-        }
-        if (data[`orientation${index}`] === "side") {
-          if (height >= heightHidden) {
-            pieceLength =
-              lengthPiece +
-              (height - heightHidden) * (lengthPiece / heightHidden);
-          }
-          if (height < heightHidden) {
-            pieceLength =
-              lengthPiece -
-              (heightHidden - height) * (lengthPiece / heightHidden);
-          }
-          if (width >= widthHidden) {
-            pieceWidth =
-              widthPiece + (width - widthHidden) * (widthPiece / widthHidden);
-          }
-          if (width < widthHidden) {
-            pieceWidth =
-              widthPiece - (widthHidden - width) * (widthPiece / widthHidden);
-          }
-        }
-        //  parseFloat(pieceLength.toFixed(2));
         return {
           name: data[`namePiece${index}`],
           qty: qty,
-          length: parseFloat(pieceLength.toFixed(2)),
-          width: parseFloat(pieceWidth.toFixed(2)),
+          length: parseFloat(data[`lengthPiece${index}`]),
+          width: parseFloat(data[`widthPiece${index}`]),
           orientation: data[`orientation${index}`],
           comment: data[`commentPiece${index}`],
           material: data[`materialPiece${index}`],
@@ -361,6 +282,145 @@ function EditFurnitureSingleModuleComponent({
     console.log(idModule);
   }, [idModule]);
 
+  //Funcion para actualizar las dimensiones de las piezas al cambiar la medida del modulo
+  const handleModuleChange = (e) => {
+    const { name, value } = e.target;
+
+    let moduleNewHeight;
+    let moduleNewLength;
+    let moduleNewWidth;
+    switch (name) {
+      case "height":
+        moduleNewHeight = Number(getValues("height"));
+        break;
+      case "length":
+        moduleNewLength = Number(getValues("length"));
+        break;
+      case "width":
+        moduleNewWidth = Number(getValues("width"));
+        break;
+
+      default:
+        break;
+    }
+
+    currentModule.pieces.map((piece, index) => {
+      const orientation = getValues(`orientation${index}`);
+
+      const formattedModuleNewHeight = moduleNewHeight ?? moduleOriginalHeight;
+      const formattedModuleNewLength = moduleNewLength ?? moduleOriginalLength;
+      const formattedModuleNewWidth = moduleNewWidth ?? moduleOriginalWidth;
+
+      setModuleOriginalHeight(formattedModuleNewHeight);
+      setModuleOriginalLength(formattedModuleNewLength);
+      setModuleOriginalWidth(formattedModuleNewWidth);
+      let pieceLength = getValues(`lengthPiece${index}`);
+      let pieceWidth = getValues(`widthPiece${index}`);
+      pieceLength = Number(pieceLength);
+      pieceWidth = Number(pieceWidth);
+
+      /* transversal vertical */
+      if (orientation === "cross-vertical") {
+        if (formattedModuleNewHeight >= moduleOriginalHeight) {
+          pieceLength =
+            pieceLength +
+            (formattedModuleNewHeight - moduleOriginalHeight) *
+              (pieceLength / moduleOriginalHeight);
+        }
+        if (formattedModuleNewHeight < moduleOriginalHeight) {
+          pieceLength =
+            pieceLength -
+            (moduleOriginalHeight - formattedModuleNewHeight) *
+              (pieceLength / moduleOriginalHeight);
+        }
+
+        if (formattedModuleNewLength >= moduleOriginalLength) {
+          pieceWidth =
+            pieceWidth +
+            (formattedModuleNewLength - moduleOriginalLength) *
+              (pieceWidth / moduleOriginalLength);
+        }
+        if (formattedModuleNewLength < moduleOriginalLength) {
+          pieceWidth =
+            pieceWidth -
+            (moduleOriginalLength - formattedModuleNewLength) *
+              (pieceWidth / moduleOriginalLength);
+        }
+      }
+      /* tranversal horizontal */
+      if (orientation === "cross-horizontal") {
+        if (formattedModuleNewLength >= moduleOriginalLength) {
+          pieceLength =
+            pieceLength +
+            (formattedModuleNewLength - moduleOriginalLength) *
+              (pieceLength / moduleOriginalLength);
+        }
+        if (formattedModuleNewLength < moduleOriginalLength) {
+          pieceLength =
+            pieceLength -
+            (moduleOriginalLength - formattedModuleNewLength) *
+              (pieceLength / moduleOriginalLength);
+        }
+        if (formattedModuleNewWidth >= moduleOriginalWidth) {
+          pieceWidth =
+            pieceWidth +
+            (formattedModuleNewWidth - moduleOriginalWidth) *
+              (pieceWidth / moduleOriginalWidth);
+        }
+        if (formattedModuleNewWidth < moduleOriginalWidth) {
+          pieceWidth =
+            pieceWidth -
+            (moduleOriginalWidth - formattedModuleNewWidth) *
+              (pieceWidth / moduleOriginalWidth);
+        }
+      }
+
+      /* lateral */
+      if (orientation === "side") {
+        if (formattedModuleNewHeight >= moduleOriginalHeight) {
+          pieceLength =
+            pieceLength +
+            (formattedModuleNewHeight - moduleOriginalHeight) *
+              (pieceLength / moduleOriginalHeight);
+        }
+        if (formattedModuleNewHeight < moduleOriginalHeight) {
+          pieceLength =
+            pieceLength -
+            (moduleOriginalHeight - formattedModuleNewHeight) *
+              (pieceLength / moduleOriginalHeight);
+        }
+        if (formattedModuleNewWidth >= moduleOriginalWidth) {
+          pieceWidth =
+            pieceWidth +
+            (formattedModuleNewWidth - moduleOriginalWidth) *
+              (pieceWidth / moduleOriginalWidth);
+        }
+        if (width < moduleOriginalWidth) {
+          pieceWidth =
+            pieceWidth -
+            (moduleOriginalWidth - formattedModuleNewWidth) *
+              (pieceWidth / moduleOriginalWidth);
+        }
+      }
+      const formatNumber = (num) => {
+        // Redondear a 2 decimales
+        const rounded = num.toFixed(2);
+
+        // Convertir de vuelta a número
+        const number = Number(rounded);
+
+        // Verificar si el número redondeado es igual al número original
+        if (number === num) {
+          return number; // Si es redondo, devolver sin decimales extra
+        }
+
+        return rounded; // Si no es redondo, devolver con 2 decimales
+      };
+      setValue(`lengthPiece${index}`, formatNumber(pieceLength));
+      setValue(`widthPiece${index}`, formatNumber(pieceWidth));
+    });
+  };
+
   return (
     <div className="m-8">
       <div className="flex gap-4">
@@ -408,23 +468,13 @@ function EditFurnitureSingleModuleComponent({
             {...register("length", {
               required: "El campo es obligatorio",
             })}
+            onBlur={handleModuleChange}
           />
           {errors.length && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
               {errors.length.message}
             </span>
           )}
-          {/* input hidden */}
-          <input
-            className="border border-gray-300 rounded-md p-2 w-11/12"
-            type="hidden"
-            name="lengthHidden"
-            id="lengthHidden"
-            defaultValue={moduleOriginalLength}
-            {...register("lengthHidden", {
-              required: "El campo es obligatorio",
-            })}
-          />
         </div>
         <div className="flex flex-col w-3/12 my-2 ">
           <label className="font-semibold mb-1" htmlFor="height">
@@ -438,23 +488,13 @@ function EditFurnitureSingleModuleComponent({
             {...register("height", {
               required: "El campo es obligatorio",
             })}
+            onBlur={handleModuleChange}
           />
           {errors.height && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
               {errors.height.message}
             </span>
           )}
-          {/* input hidden */}
-          <input
-            className="border border-gray-300 rounded-md p-2 w-11/12"
-            type="hidden"
-            name="heightHidden"
-            id="heightHidden"
-            defaultValue={moduleOriginalHeight}
-            {...register("heightHidden", {
-              required: "El campo es obligatorio",
-            })}
-          />
         </div>
 
         <div className="flex flex-col w-3/12 my-2">
@@ -469,23 +509,13 @@ function EditFurnitureSingleModuleComponent({
             {...register("width", {
               required: "El campo es obligatorio",
             })}
+            onBlur={handleModuleChange}
           />
           {errors.width && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
               {errors.width.message}
             </span>
           )}
-          {/* input hidden */}
-          <input
-            className="border border-gray-300 rounded-md p-2 w-11/12"
-            type="hidden"
-            name="widthHidden"
-            id="widthHidden"
-            defaultValue={moduleOriginalWidth}
-            {...register("widthHidden", {
-              required: "El campo es obligatorio",
-            })}
-          />
         </div>
         <div className="flex flex-col w-3/12 my-2">
           <label className="font-semibold mb-1" htmlFor="material">
