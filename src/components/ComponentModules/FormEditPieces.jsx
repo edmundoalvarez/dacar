@@ -242,12 +242,24 @@ function FormEditPieces({
             required: "El campo es obligatorio",
           })}
           defaultValue={piece?.width.toString() || ""}
+          onChange={(e) => {
+            const value = Number(e.target.value);
+            setValue(`widthPieceHidden${index}`, value);
+          }}
         />
         {errors[`widthPiece${index}`] && (
           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
             {errors[`widthPiece${index}`].message}
           </span>
         )}
+        <input
+          className="border border-gray-300 rounded-md p-2"
+          type="hidden"
+          name={`widthPieceHidden${index}`}
+          id={`widthPieceHidden${index}`}
+          {...register(`widthPieceHidden${index}`)}
+          defaultValue={piece?.width.toString() || ""}
+        />
       </div>
 
       {/* length */}
@@ -272,12 +284,24 @@ function FormEditPieces({
             required: "El campo es obligatorio",
           })}
           defaultValue={piece?.length.toString() || ""}
+          onChange={(e) => {
+            const value = Number(e.target.value);
+            setValue(`lengthPieceHidden${index}`, value);
+          }}
         />
         {errors[`lengthPiece${index}`] && (
           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
             {errors[`lengthPiece${index}`].message}
           </span>
         )}
+        <input
+          className="border border-gray-300 rounded-md p-2"
+          type="hidden"
+          name={`lengthPieceHidden${index}`}
+          id={`lengthPieceHidden${index}`}
+          {...register(`lengthPieceHidden${index}`)}
+          defaultValue={piece?.length.toString() || ""}
+        />
       </div>
 
       <div className="flex flex-col w-1/5">

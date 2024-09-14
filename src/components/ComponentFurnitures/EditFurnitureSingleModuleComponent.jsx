@@ -311,11 +311,11 @@ function EditFurnitureSingleModuleComponent({
       const formattedModuleNewLength = moduleNewLength ?? moduleOriginalLength;
       const formattedModuleNewWidth = moduleNewWidth ?? moduleOriginalWidth;
 
-      setModuleOriginalHeight(formattedModuleNewHeight);
-      setModuleOriginalLength(formattedModuleNewLength);
-      setModuleOriginalWidth(formattedModuleNewWidth);
-      let pieceLength = getValues(`lengthPiece${index}`);
-      let pieceWidth = getValues(`widthPiece${index}`);
+      // setModuleOriginalHeight(formattedModuleNewHeight);
+      // setModuleOriginalLength(formattedModuleNewLength);
+      // setModuleOriginalWidth(formattedModuleNewWidth);
+      let pieceLength = getValues(`lengthPieceHidden${index}`);
+      let pieceWidth = getValues(`widthPieceHidden${index}`);
       pieceLength = Number(pieceLength);
       pieceWidth = Number(pieceWidth);
 
