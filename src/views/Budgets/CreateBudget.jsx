@@ -197,15 +197,22 @@ function CreateBudget() {
 
   //CALCULAR TOTAL DEL PRECIO DE LOS INSUSMOS
   const calculateTotalSuppliePrice = () => {
-    const allValues = getValues();
-    const suppliePriceValues = Object.keys(allValues).filter((key) =>
-      key.startsWith("suppliePrice")
-    );
+    if (!singleFurniture?.modules_furniture) return;
 
-    const total = suppliePriceValues.reduce((total, key) => {
-      const value = Number(allValues[key]) || 0;
-      return total + value;
-    }, 0);
+    let total = 0;
+
+    singleFurniture.modules_furniture.forEach((module) => {
+      module.supplies_module.forEach((supply) => {
+        // Encuentra el suministro en el array de suministros
+        const supplyDetails = supplies.find((s) => s._id === supply.supplie_id);
+
+        if (supplyDetails) {
+          // Calcula el precio total del suministro (precio * cantidad)
+          const price = supplyDetails.price * supply.supplie_qty;
+          total += price;
+        }
+      });
+    });
 
     setTotalSuppliePrice(total);
   };
@@ -583,15 +590,15 @@ function CreateBudget() {
   //FORMULARIO GENERAR PRESUPUESTO
   const onSubmit = async (data, event) => {
     event.preventDefault();
-    setSubmitLoader(true);
+    // setSubmitLoader(true);
     //Budget Number
 
     // Creación del objeto supplies agrupado por módulos
     const supplies = {};
     let totalSuppliesPrice = 0; // Inicializa la variable totalSuppliesPrice
-
+    console.log(data);
     Object.keys(data).forEach((key) => {
-      const match = key.match(/(supplie\w+)(\d+)-(\d+)/);
+      const match = key.match(/(supplie\w+)(\d+)/);
       if (match) {
         const [_, prefix, moduleIndex, supplyIndex] = match;
         const moduleKey = `moduleName${moduleIndex}`;
@@ -602,9 +609,7 @@ function CreateBudget() {
             supplies: [],
           };
         }
-
         const supply = supplies[moduleKey].supplies[supplyIndex] || {};
-
         if (prefix === "supplieName") supply.name = data[key];
         if (prefix === "suppliePrice") {
           const price = Number(data[key]); // Convierte a número
@@ -866,9 +871,9 @@ function CreateBudget() {
     // console.log(budgetData);
 
     try {
-      await createBudget(budgetData);
+      // await createBudget(budgetData);
       console.log("Presupuesto creado", budgetData);
-      navigate("/ver-presupuestos");
+      // navigate("/ver-presupuestos");
     } catch (error) {
       console.error("Error creando presupuesto:", error);
     }
@@ -1330,98 +1335,96 @@ function CreateBudget() {
               {showSupplies ? (
                 <div className="w-2/3">
                   <h2 className="text-2xl font-semibold mb-2">
-                    Insumos totales del mueble
+                    Insumos totales del mueble{" "}
+                    {formatCurrency(totalSuppliePrice)}
                   </h2>
                   <div className="flex flex-wrap -mx-2">
-                    {sortedModules &&
-                      sortedModules.map((module, moduleIndex) =>
-                        module.supplies_module.length > 0 ? (
-                          <div
-                            key={moduleIndex}
-                            className="w-full sm:w-1/2 lg:w-1/3 px-2 mb-4"
-                          >
-                            <div className=" p-4 rounded shadow">
-                              <h4>{module.name}</h4>
+                    {sortedModules && sortedModules.length > 0 && (
+                      <div className="w-full">
+                        <div className="p-4 rounded shadow">
+                          {Object.values(
+                            sortedModules.reduce((acc, module) => {
+                              module.supplies_module.forEach((supply, idx) => {
+                                const key = idx;
+
+                                if (!acc[key]) {
+                                  acc[key] = {
+                                    name: supply.supplie_name,
+                                    qty: 0,
+                                    length: supply.supplie_length,
+                                    price: 0,
+                                  };
+                                }
+
+                                acc[key].qty += supply.supplie_qty;
+                                acc[key].price += getSupplyPrice(
+                                  supply.supplie_id,
+                                  supply.supplie_qty,
+                                  supply.supplie_name,
+                                  supply.supplie_length,
+                                  `suppliePrice${key}`
+                                );
+                              });
+
+                              return acc;
+                            }, {}) // Grouping insumos
+                          ).map((supply, index) => (
+                            <div key={index} className="mb-2">
+                              <p>
+                                <span className="font-bold">Nombre:</span>{" "}
+                                {supply.name}
+                              </p>
                               <input
-                                name={`moduleName${moduleIndex}`}
+                                name={`supplieName${index}`}
                                 type="hidden"
-                                value={module.name}
-                                {...register(`moduleName${moduleIndex}`)}
+                                value={supply.name}
+                                {...register(`supplieName${index}`)}
                               />
-                              {module.supplies_module.map(
-                                (supply, supplyIndex) => (
-                                  <div
-                                    key={`sup${supplyIndex}`}
-                                    className="mb-2"
-                                  >
-                                    <p>
-                                      <span className="font-bold">Nombre:</span>{" "}
-                                      {supply.supplie_name}
-                                    </p>
-                                    <input
-                                      name={`supplieName${moduleIndex}-${supplyIndex}`}
-                                      type="hidden"
-                                      value={supply.supplie_name}
-                                      {...register(
-                                        `supplieName${moduleIndex}-${supplyIndex}`
-                                      )}
-                                    />
-                                    <p>
-                                      <span className="font-bold">
-                                        Cantidad:
-                                      </span>{" "}
-                                      {supply.supplie_qty}
-                                    </p>
-                                    <input
-                                      name={`supplieQty${moduleIndex}-${supplyIndex}`}
-                                      type="hidden"
-                                      value={supply.supplie_qty}
-                                      {...register(
-                                        `supplieQty${moduleIndex}-${supplyIndex}`
-                                      )}
-                                    />
-                                    <p>
-                                      <span className="font-bold">Largo:</span>{" "}
-                                      {supply.supplie_length}
-                                    </p>
-                                    <input
-                                      name={`supplieLength${moduleIndex}-${supplyIndex}`}
-                                      type="hidden"
-                                      value={supply.supplie_length}
-                                      {...register(
-                                        `supplieLength${moduleIndex}-${supplyIndex}`
-                                      )}
-                                    />
-                                    <p>
-                                      <span className="font-bold">
-                                        Precio total:
-                                      </span>{" "}
-                                      {formatCurrency(
-                                        getSupplyPrice(
-                                          supply.supplie_id,
-                                          supply.supplie_qty,
-                                          supply.supplie_name,
-                                          supply.supplie_length,
-                                          `suppliePrice${moduleIndex}-${supplyIndex}`
-                                        )
-                                      )}
-                                    </p>
-                                    <input
-                                      name={`suppliePrice${moduleIndex}-${supplyIndex}`}
-                                      type="hidden"
-                                      {...register(
-                                        `suppliePrice${moduleIndex}-${supplyIndex}`
-                                      )}
-                                    />
-                                  </div>
-                                )
-                              )}
+                              <p>
+                                <span className="font-bold">Cantidad:</span>{" "}
+                                {supply.qty}
+                              </p>
+                              <input
+                                name={`supplieQty${index}`}
+                                type="hidden"
+                                value={supply.qty}
+                                {...register(`supplieQty${index}`)}
+                              />
+                              <p>
+                                <span className="font-bold">Largo:</span>{" "}
+                                {supply.length}
+                              </p>
+                              <input
+                                name={`supplieLength${index}`}
+                                type="hidden"
+                                value={supply.length}
+                                {...register(`supplieLength${index}`)}
+                              />
+                              <p>
+                                <span className="font-bold">Precio total:</span>{" "}
+                                {formatCurrency(supply.price)}
+                              </p>
+                              <input
+                                name={`suppliePrice${index}`}
+                                type="hidden"
+                                value={supply.price}
+                                {...register(`suppliePrice${index}`)}
+                              />
                             </div>
-                          </div>
-                        ) : (
-                          ""
-                        )
-                      )}
+                          ))}
+                          {/* Agregar campos ocultos para los nombres de los módulos */}
+                          {sortedModules.map((module, moduleIndex) => (
+                            <input
+                              key={moduleIndex}
+                              name={`moduleName${moduleIndex}`}
+                              type="hidden"
+                              value={module.name}
+                              {...register(`moduleName${moduleIndex}`)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (

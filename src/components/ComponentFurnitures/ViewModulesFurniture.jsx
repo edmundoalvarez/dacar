@@ -31,7 +31,7 @@ function ViewModulesFurniture({ sortedModules }) {
             </div>
             <div className="">
               <h4 className="text-xl font-semibold">Insumos módulo:</h4>
-              <div className="flex flex-wrap">
+              <div className="flex flex-wrap gap-4">
                 {module.supplies_module.map((supply, index) => (
                   <div key={index} className="mb-2">
                     <p>
