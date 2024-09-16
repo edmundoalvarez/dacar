@@ -182,10 +182,10 @@ function ViewModulesFurniture({ sortedModules }) {
                               ""
                             )}
                             <br />
-                            {piece.melamineLacqueredPieceSides === "single" && (
+                            {piece.melamineLacqueredPieceSides === 1 && (
                               <strong> 1 lado</strong>
                             )}
-                            {piece.melamineLacqueredPieceSides === "double" && (
+                            {piece.melamineLacqueredPieceSides === 2 && (
                               <strong>2 lados</strong>
                             )}{" "}
                           </>

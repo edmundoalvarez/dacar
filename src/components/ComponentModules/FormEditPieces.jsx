@@ -445,8 +445,8 @@ function FormEditPieces({
                   })}
                 >
                   <option value="">Elegir una opción</option>
-                  <option value="single">1 Lado</option>
-                  <option value="double">2 Lados</option>
+                  <option value="1">1 Lado</option>
+                  <option value="2">2 Lados</option>
                 </select>
                 {errors[`melamineLacqueredPieceSides${index}`] && (
                   <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">

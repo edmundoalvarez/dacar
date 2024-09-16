@@ -175,7 +175,9 @@ function Pieces() {
         veneer2LacqueredOpen: data[`veneer2LacqueredOpen1`],
         melamine: melamine,
         melamineLacquered: data[`melamineLacquered1`],
-        melamineLacqueredPieceSides: data[`melamineLacqueredPieceSides1`],
+        melamineLacqueredPieceSides: Number(
+          data[`melamineLacqueredPieceSides1`]
+        ),
         pantographed: data[`pantographed1`],
         edgeLength: data[`edgeLength1`],
         edgeLengthSides: data[`edgeLengthSides1`],
@@ -449,10 +451,10 @@ function Pieces() {
                           ""
                         )}
                         <br />
-                        {piece.melamineLacqueredPieceSides === "single" && (
+                        {piece.melamineLacqueredPieceSides === 1 && (
                           <strong> 1 lado</strong>
                         )}
-                        {piece.melamineLacqueredPieceSides === "double" && (
+                        {piece.melamineLacqueredPieceSides === 2 && (
                           <strong>2 lados</strong>
                         )}{" "}
                       </>

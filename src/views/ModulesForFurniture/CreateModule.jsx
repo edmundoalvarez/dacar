@@ -161,7 +161,9 @@ function CreateModule() {
           veneer2LacqueredOpen: data[`veneer2LacqueredOpen${i}`],
           melamine: melamine,
           melamineLacquered: data[`melamineLacquered${i}`],
-          melamineLacqueredPieceSides: data[`melamineLacqueredPieceSides${i}`],
+          melamineLacqueredPieceSides: Number(
+            data[`melamineLacqueredPieceSides${i}`]
+          ),
           pantographed: data[`pantographed${i}`],
           edgeLength: data[`edgeLength${i}`],
           edgeLengthSides: data[`edgeLengthSides${i}`],

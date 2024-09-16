@@ -226,8 +226,9 @@ function EditModule() {
           veneer2LacqueredOpen: data[`veneer2LacqueredOpen${index}`],
           melamine: melamine,
           melamineLacquered: data[`melamineLacquered${index}`],
-          melamineLacqueredPieceSides:
-            data[`melamineLacqueredPieceSides${index}`],
+          melamineLacqueredPieceSides: Number(
+            data[`melamineLacqueredPieceSides${index}`]
+          ),
           pantographed: data[`pantographed${index}`],
           edgeLength: data[`edgeLength${index}`],
           edgeLengthSides: data[`edgeLengthSides${index}`],
