@@ -44,7 +44,7 @@ function CreateBudget() {
   const [showSupplies, setShowSupplies] = useState(true);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalSuppliePrice, setTotalSuppliePrice] = useState(0);
-  const [totalSupplieFlag, setTotalSupplieFlag] = useState(false);
+
   const [subtotalMaterialPrice, setSubtotalMaterialPrice] = useState(0);
   const [subTotalItemExtraPrice, setSubTotalItemExtraPrice] = useState(0);
   const [subtotalAdjustmentPrice, setSubtotalAdjustmentPrice] = useState(0);
@@ -68,7 +68,7 @@ function CreateBudget() {
       .then((furnituresData) => {
         // Establecer los datos de muebles
         setSingleFurniture(furnituresData?.data);
-        console.log(furnituresData.data);
+        // console.log(furnituresData.data);
         const modules = furnituresData.data.modules_furniture;
         // Verifica si todos los módulos tienen supplies_module vacío
         const allModulesEmpty = modules.every(
@@ -196,178 +196,6 @@ function CreateBudget() {
       setFilteredClients(results);
     }
   }, [searchTerm, allClients]);
-
-  //CALCULAR TOTAL DEL PRECIO DE LOS INSUSMOS
-  const calculateTotalSuppliePrice = () => {
-    if (!singleFurniture?.modules_furniture) return;
-
-    let total = 0;
-
-    singleFurniture?.modules_furniture?.forEach((module) => {
-      module.supplies_module.forEach((supply) => {
-        // Encuentra el suministro en el array de suministros
-        const supplyDetails = supplies.find((s) => s._id === supply.supplie_id);
-
-        if (supplyDetails) {
-          // Calcula el precio total del suministro (precio * cantidad)
-          const price = supplyDetails.price * supply.supplie_qty;
-          total += price;
-        }
-      });
-    });
-
-    setTotalSuppliePrice(total);
-    setTotalSupplieFlag(true);
-  };
-
-  if (!totalSupplieFlag && totalSuppliePrice === 0) {
-    console.log("llamado");
-    calculateTotalSuppliePrice();
-  }
-
-  //CALCULAR TOTAL DE LOS MATERIALES
-  const calculateTotalMaterialPrice = (materialPrices, materialQtys) => {
-    let total = 0;
-
-    for (let index = 0; index < countMaterial; index++) {
-      const price = Number(materialPrices[index]) || 0;
-      const qty = Number(materialQtys[index]) || 0;
-      total += price * qty;
-    }
-
-    setSubtotalMaterialPrice(total);
-  };
-
-  const materialPrices = watch(
-    Array.from({ length: countMaterial }, (_, index) => `materialPrice${index}`)
-  );
-  const materialQtys = watch(
-    Array.from({ length: countMaterial }, (_, index) => `materialQty${index}`)
-  );
-
-  // Ejecutar cálculo automáticamente cuando cambien los precios o cantidades
-  useEffect(() => {
-    calculateTotalMaterialPrice(materialPrices, materialQtys);
-  }, [materialPrices, materialQtys, countMaterial]);
-
-  // Manejar la selección del material
-  const handleMaterialOption = (index) => (event) => {
-    let option = event.target.value;
-    if (option) {
-      const selectedTable = tables.find((table) => table.name === option);
-      setValue(`materialPrice${index}`, selectedTable.price, {
-        shouldValidate: true,
-      });
-    } else {
-      setValue(`materialPrice${index}`, 0, { shouldValidate: true });
-    }
-  };
-
-  //CALCULAR TOTAL DE ITEMS EXTRA
-  const itemExtraPriceValues = watch(
-    Object.keys(getValues()).filter((key) => key.startsWith("itemExtraPrice"))
-  );
-
-  // Función para calcular el total de los precios de itemExtraPrice
-  const calculateSubTotalItemExtraPrice = () => {
-    const total = itemExtraPriceValues.reduce(
-      (acc, price) => acc + Number(price || 0),
-      0
-    );
-    return total;
-  };
-
-  useEffect(() => {
-    const total = calculateSubTotalItemExtraPrice();
-    setSubTotalItemExtraPrice(total); // Actualiza el subtotal
-  }, [itemExtraPriceValues]);
-
-  //CALCULAR AJUSTE
-  const adjustmentPriceValue = Number(watch("adjustment_price"));
-
-  useEffect(() => {
-    setSubtotalAdjustmentPrice(adjustmentPriceValue);
-    console.log(adjustmentPriceValue);
-  }, [adjustmentPriceValue]);
-
-  //CALCULAR ENVÍO
-  const shipmentPriceValue = Number(watch("shipmentPrice"));
-
-  useEffect(() => {
-    setSubtotalShipmentPrice(shipmentPriceValue);
-    console.log(shipmentPriceValue);
-  }, [shipmentPriceValue]);
-
-  //CALCULAR COLOCACIÓN
-  const placementDays = watch("placementDays", 0);
-  const placementPrice = watch("placementPrice", 0);
-
-  useEffect(() => {
-    const total = placementDays * placementPrice;
-    console.log("Total colocación:", total);
-    setSubtotalPlacement(total);
-    // Aquí puedes usar setState para guardar el valor si es necesario
-  }, [placementDays, placementPrice]);
-
-  //CALCULAR TOTAL COMPLETO
-  const calculateTotalPrice = () => {
-    let enchapado_artesanal_subtotal = Number(getValues("veneerPrice")) || 0;
-    let enchapado_no_artesanal_subtotal =
-      Number(getValues("veneer2Price")) || 0;
-    let lustrado_subtotal = Number(getValues("veneerPolishedPrice")) || 0;
-    let laqueado_subtotal = Number(getValues("lacqueredPrice")) || 0;
-    let laqueado_poro_subtotal = Number(getValues("lacqueredOpenPrice")) || 0;
-    let pantografiado_subtotal = Number(getValues("pantographedPrice")) || 0;
-    let chapa_price_subtotal = Number(getValues("chapa_price")) || 0;
-    let filo_laqueado_subtotal = Number(getValues("edgeLaqueredPrice")) || 0;
-    let filo_subtotal = Number(getValues("edgePrice")) || 0;
-
-    //suma del total
-    let totalPrice =
-      chapa_price_subtotal +
-      enchapado_artesanal_subtotal +
-      enchapado_no_artesanal_subtotal +
-      lustrado_subtotal +
-      laqueado_subtotal +
-      laqueado_poro_subtotal +
-      pantografiado_subtotal +
-      filo_laqueado_subtotal +
-      filo_subtotal +
-      totalSuppliePrice +
-      subtotalMaterialPrice +
-      subTotalItemExtraPrice +
-      subtotalAdjustmentPrice +
-      subtotalPlacement +
-      subtotalShipmentPrice;
-
-    setTotalPrice(totalPrice);
-  };
-  const veneerPriceValue = getValues("veneerPrice");
-  const chapaPriceValue = getValues("chapa_price");
-  const veneer2PriceValue = getValues("veneer2Price");
-  const edgeLaqueredPriceValue = getValues("edgeLaqueredPrice");
-  const edgePriceValue = getValues("edgePrice");
-  useEffect(() => {
-    calculateTotalPrice();
-    calculateTotalSuppliePrice();
-  }, [
-    veneerPriceValue,
-    veneer2PriceValue,
-    chapaPriceValue,
-    edgeLaqueredPriceValue,
-    edgePriceValue,
-    totalSuppliePrice,
-    subtotalMaterialPrice,
-    subTotalItemExtraPrice,
-    subtotalAdjustmentPrice,
-    subtotalPlacement,
-    subtotalShipmentPrice,
-  ]);
-
-  //CÁLCULO TOTAL DE FILO
-  const { totalEdgeLength, totalLacqueredEdgeLength } = calculateTotalEdges(
-    singleFurniture?.modules_furniture
-  );
 
   //CÁLCULO DE TOTAL PIEZAS ENCHAPADAS EN METROS CUADRADOS
   const {
@@ -564,28 +392,6 @@ function CreateBudget() {
     }
   };
 
-  //OBTENER EL PRECIO DE LOS INSUMOS
-  const getSupplyPrice = (
-    supplyId,
-    supplyQty,
-    supplyName,
-    supplyLength,
-    suppliePrice
-  ) => {
-    const supply = supplies.find((s) => s._id === supplyId);
-    setValue(
-      suppliePrice,
-      supply
-        ? supply.price *
-            supplyQty *
-            (supplyName === "Barral" ? supplyLength : 1)
-        : 0
-    );
-    return supply
-      ? supply.price * supplyQty * (supplyName === "Barral" ? supplyLength : 1)
-      : 0;
-  };
-
   // obtener el valor de corte de placa
   function getServicePriceById(id, servicesArray) {
     const service = servicesArray.find((service) => service._id === id);
@@ -594,6 +400,189 @@ function CreateBudget() {
 
   const cortePlacaId = "66a5baf9218ee6221506c11c";
   const cortePlacaPrice = getServicePriceById(cortePlacaId, services);
+
+  //CALCULAR TOTAL DEL PRECIO DE LOS INSUSMOS
+  const calculateTotalSuppliePrice = () => {
+    if (!singleFurniture?.modules_furniture) return 0; // Aseguramos que no sea undefined
+
+    let total = 0;
+
+    // Recorremos los módulos y suministros para calcular el total
+    singleFurniture.modules_furniture.forEach((module) => {
+      module.supplies_module.forEach((supply) => {
+        const supplyDetails = supplies.find((s) => s._id === supply.supplie_id);
+
+        if (supplyDetails) {
+          // Calculamos el precio (precio por cantidad)
+          const price = supplyDetails.price * supply.supplie_qty;
+          total += price;
+        }
+      });
+    });
+
+    return total;
+  };
+
+  useEffect(() => {
+    // Calculamos el total de los insumos
+    const total = calculateTotalSuppliePrice();
+    setTotalSuppliePrice(total); // Actualizamos el estado con el total calculado
+  }, [singleFurniture, supplies]); // Dependencias necesarias para recalcular cuando cambian los módulos o insumos
+
+  //CALCULAR TOTAL DE LOS MATERIALES
+  const calculateTotalMaterialPrice = (materialPrices, materialQtys) => {
+    let total = 0;
+
+    for (let index = 0; index < countMaterial; index++) {
+      const price = Number(materialPrices[index]) || 0;
+      const qty = Number(materialQtys[index]) || 0;
+      total += price * qty;
+    }
+
+    setSubtotalMaterialPrice(total);
+  };
+
+  const materialPrices = watch(
+    Array.from({ length: countMaterial }, (_, index) => `materialPrice${index}`)
+  );
+  const materialQtys = watch(
+    Array.from({ length: countMaterial }, (_, index) => `materialQty${index}`)
+  );
+
+  // Ejecutar cálculo automáticamente cuando cambien los precios o cantidades
+  useEffect(() => {
+    calculateTotalMaterialPrice(materialPrices, materialQtys);
+  }, [materialPrices, materialQtys, countMaterial]);
+
+  // Manejar la selección del material
+  const handleMaterialOption = (index) => (event) => {
+    let option = event.target.value;
+    if (option) {
+      const selectedTable = tables.find((table) => table.name === option);
+      setValue(`materialPrice${index}`, selectedTable.price, {
+        shouldValidate: true,
+      });
+    } else {
+      setValue(`materialPrice${index}`, 0, { shouldValidate: true });
+    }
+  };
+
+  //CALCULAR TOTAL DE ITEMS EXTRA
+  const itemExtraPriceValues = watch(
+    Object.keys(getValues()).filter((key) => key.startsWith("itemExtraPrice"))
+  );
+
+  // Función para calcular el total de los precios de itemExtraPrice
+  const calculateSubTotalItemExtraPrice = () => {
+    const total = itemExtraPriceValues.reduce(
+      (acc, price) => acc + Number(price || 0),
+      0
+    );
+    return total;
+  };
+
+  useEffect(() => {
+    const total = calculateSubTotalItemExtraPrice();
+    setSubTotalItemExtraPrice(total); // Actualiza el subtotal
+  }, [itemExtraPriceValues]);
+
+  //CALCULAR AJUSTE
+  const adjustmentPriceValue = Number(watch("adjustment_price"));
+
+  useEffect(() => {
+    setSubtotalAdjustmentPrice(adjustmentPriceValue);
+    console.log(adjustmentPriceValue);
+  }, [adjustmentPriceValue]);
+
+  //CALCULAR ENVÍO
+  const shipmentPriceValue = Number(watch("shipmentPrice"));
+
+  useEffect(() => {
+    setSubtotalShipmentPrice(shipmentPriceValue);
+    console.log(shipmentPriceValue);
+  }, [shipmentPriceValue]);
+
+  //CALCULAR COLOCACIÓN
+  const placementDays = watch("placementDays", 0);
+  const placementPrice = watch("placementPrice", 0);
+
+  useEffect(() => {
+    const total = placementDays * placementPrice;
+    console.log("Total colocación:", total);
+    setSubtotalPlacement(total);
+    // Aquí puedes usar setState para guardar el valor si es necesario
+  }, [placementDays, placementPrice]);
+
+  //CÁLCULO TOTAL DE FILO
+  const { totalEdgeLength, totalLacqueredEdgeLength } = calculateTotalEdges(
+    singleFurniture?.modules_furniture
+  );
+
+  //CALCULAR TOTAL COMPLETO
+  const calculateTotalPrice = () => {
+    let enchapado_artesanal_subtotal = Number(getValues("veneerPrice")) || 0;
+    let enchapado_no_artesanal_subtotal =
+      Number(getValues("veneer2Price")) || 0;
+    let lustrado_subtotal = Number(getValues("veneerPolishedPrice")) || 0;
+    let laqueado_subtotal = Number(getValues("lacqueredPrice")) || 0;
+    let laqueado_poro_subtotal = Number(getValues("lacqueredOpenPrice")) || 0;
+    let pantografiado_subtotal = Number(getValues("pantographedPrice")) || 0;
+    let chapa_price_subtotal = Number(getValues("chapa_price")) || 0;
+    let filo_laqueado_subtotal = Number(getValues("edgeLaqueredPrice")) || 0;
+    let filo_subtotal = Number(getValues("edgePrice")) || 0;
+
+    //suma del total
+    let totalPrice =
+      (chapa_price_subtotal || 0) +
+      (enchapado_artesanal_subtotal || 0) +
+      (enchapado_no_artesanal_subtotal || 0) +
+      (lustrado_subtotal || 0) +
+      (laqueado_subtotal || 0) +
+      (laqueado_poro_subtotal || 0) +
+      (pantografiado_subtotal || 0) +
+      (filo_laqueado_subtotal || 0) +
+      (filo_subtotal || 0) +
+      (totalSuppliePrice || 0) +
+      (subtotalMaterialPrice || 0) +
+      (subTotalItemExtraPrice || 0) +
+      (subtotalAdjustmentPrice || 0) +
+      (subtotalPlacement || 0) +
+      (subtotalShipmentPrice || 0);
+
+    setTotalPrice(totalPrice);
+    console.log("chapa_price_subtotal:", chapa_price_subtotal || 0);
+    console.log(
+      "enchapado_artesanal_subtotal:",
+      enchapado_artesanal_subtotal || 0
+    );
+    console.log(
+      "enchapado_no_artesanal_subtotal:",
+      enchapado_no_artesanal_subtotal || 0
+    );
+  };
+  const veneerPriceValue = getValues("veneerPrice");
+  const chapaPriceValue = getValues("chapa_price");
+  const veneer2PriceValue = getValues("veneer2Price");
+  const edgeLaqueredPriceValue = getValues("edgeLaqueredPrice");
+  const edgePriceValue = getValues("edgePrice");
+  useEffect(() => {
+    calculateTotalPrice();
+    calculateTotalSuppliePrice();
+  }, [
+    singleFurniture,
+    supplies,
+    veneerPriceValue,
+    veneer2PriceValue,
+    chapaPriceValue,
+    edgeLaqueredPriceValue,
+    edgePriceValue,
+    totalSuppliePrice,
+    subtotalMaterialPrice,
+    subTotalItemExtraPrice,
+    subtotalAdjustmentPrice,
+    subtotalPlacement,
+    subtotalShipmentPrice,
+  ]);
 
   //FORMULARIO GENERAR PRESUPUESTO
   const onSubmit = async (data, event) => {
@@ -916,7 +905,7 @@ function CreateBudget() {
       <div className="p-4">
         <div className="flex gap-8 px-4 pb-4">
           <h1 className="text-2xl font-bold">
-            Presupuestar el mueble: {singleFurniture.name}
+            Presupuestar el mueble: {singleFurniture?.name}
           </h1>
           <Link
             to="/"
@@ -935,7 +924,7 @@ function CreateBudget() {
           <input
             name={`furniture_name`}
             type="hidden"
-            value={singleFurniture.name}
+            value={singleFurniture?.name}
             {...register(`furniture_name`)}
           />
           <div className="p-4 bg-gray-100 rounded-md shadow-md">
@@ -943,42 +932,42 @@ function CreateBudget() {
             <div className="flex gap-4">
               <p className="mb-1">
                 <span className="font-bold">Alto:</span>{" "}
-                {singleFurniture.height}
+                {singleFurniture?.height}
               </p>
               <input
                 name={`height`}
                 type="hidden"
-                value={singleFurniture.height}
+                value={singleFurniture?.height}
                 {...register(`height`)}
               />
               <p className="mb-1">
                 <span className="font-bold">Largo:</span>{" "}
-                {singleFurniture.length}
+                {singleFurniture?.length}
               </p>
               <input
                 name={`length`}
                 type="hidden"
-                value={singleFurniture.length}
+                value={singleFurniture?.length}
                 {...register(`length`)}
               />
               <p className="mb-1">
                 <span className="font-bold">Profundidad:</span>{" "}
-                {singleFurniture.width}
+                {singleFurniture?.width}
               </p>
               <input
                 name={`width`}
                 type="hidden"
-                value={singleFurniture.width}
+                value={singleFurniture?.width}
                 {...register(`width`)}
               />
               <p className="mb-1">
                 <span className="font-bold">Categoría:</span>{" "}
-                {singleFurniture.category}
+                {singleFurniture?.category}
               </p>{" "}
               <input
                 name={`category`}
                 type="hidden"
-                value={singleFurniture.category}
+                value={singleFurniture?.category}
                 {...register(`category`)}
               />
             </div>
