@@ -44,6 +44,7 @@ function CreateBudget() {
   const [showSupplies, setShowSupplies] = useState(true);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalSuppliePrice, setTotalSuppliePrice] = useState(0);
+  const [totalSupplieFlag, setTotalSupplieFlag] = useState(false);
   const [subtotalMaterialPrice, setSubtotalMaterialPrice] = useState(0);
   const [subTotalItemExtraPrice, setSubTotalItemExtraPrice] = useState(0);
   const [subtotalAdjustmentPrice, setSubtotalAdjustmentPrice] = useState(0);
@@ -66,7 +67,8 @@ function CreateBudget() {
     getFurnitureById(idFurniture)
       .then((furnituresData) => {
         // Establecer los datos de muebles
-        setSingleFurniture(furnituresData.data);
+        setSingleFurniture(furnituresData?.data);
+        console.log(furnituresData.data);
         const modules = furnituresData.data.modules_furniture;
         // Verifica si todos los módulos tienen supplies_module vacío
         const allModulesEmpty = modules.every(
@@ -174,10 +176,10 @@ function CreateBudget() {
   );
   useEffect(() => {
     getFurnituresToSet();
+    getAllSuppliesToSet();
     getAllTablesToSet();
     getAllEdgesToSet();
     getAllVeneerToSet();
-    getAllSuppliesToSet();
     getAllServicesToSet();
   }, [idFurniture]);
 
@@ -201,7 +203,7 @@ function CreateBudget() {
 
     let total = 0;
 
-    singleFurniture.modules_furniture.forEach((module) => {
+    singleFurniture?.modules_furniture?.forEach((module) => {
       module.supplies_module.forEach((supply) => {
         // Encuentra el suministro en el array de suministros
         const supplyDetails = supplies.find((s) => s._id === supply.supplie_id);
@@ -215,7 +217,13 @@ function CreateBudget() {
     });
 
     setTotalSuppliePrice(total);
+    setTotalSupplieFlag(true);
   };
+
+  if (!totalSupplieFlag && totalSuppliePrice === 0) {
+    console.log("llamado");
+    calculateTotalSuppliePrice();
+  }
 
   //CALCULAR TOTAL DE LOS MATERIALES
   const calculateTotalMaterialPrice = (materialPrices, materialQtys) => {
@@ -1339,81 +1347,104 @@ function CreateBudget() {
                     {formatCurrency(totalSuppliePrice)}
                   </h2>
                   <div className="flex flex-wrap -mx-2">
-                    {sortedModules && sortedModules.length > 0 && (
+                    {sortedModules && sortedModules?.length > 0 && (
                       <div className="w-full">
                         <div className="p-4 rounded shadow">
-                          {Object.values(
-                            sortedModules.reduce((acc, module) => {
-                              module.supplies_module.forEach((supply, idx) => {
-                                const key = idx;
+                          {(() => {
+                            let totalSupplieCost = 0; // Inicializar variable para el total
 
-                                if (!acc[key]) {
-                                  acc[key] = {
-                                    name: supply.supplie_name,
-                                    qty: 0,
-                                    length: supply.supplie_length,
-                                    price: 0,
-                                  };
-                                }
+                            const consolidatedSupplies = sortedModules?.reduce(
+                              (acc, module) => {
+                                module?.supplies_module?.forEach((supply) => {
+                                  const key = supply?.supplie_name;
 
-                                acc[key].qty += supply.supplie_qty;
-                                acc[key].price += getSupplyPrice(
-                                  supply.supplie_id,
-                                  supply.supplie_qty,
-                                  supply.supplie_name,
-                                  supply.supplie_length,
-                                  `suppliePrice${key}`
-                                );
-                              });
+                                  if (!acc[key]) {
+                                    acc[key] = {
+                                      name: supply?.supplie_name,
+                                      qty: 0,
+                                      length: supply?.supplie_length,
+                                      price: 0,
+                                    };
+                                  }
 
-                              return acc;
-                            }, {}) // Grouping insumos
-                          ).map((supply, index) => (
-                            <div key={index} className="mb-2">
-                              <p>
-                                <span className="font-bold">Nombre:</span>{" "}
-                                {supply.name}
-                              </p>
-                              <input
-                                name={`supplieName${index}`}
-                                type="hidden"
-                                value={supply.name}
-                                {...register(`supplieName${index}`)}
-                              />
-                              <p>
-                                <span className="font-bold">Cantidad:</span>{" "}
-                                {supply.qty}
-                              </p>
-                              <input
-                                name={`supplieQty${index}`}
-                                type="hidden"
-                                value={supply.qty}
-                                {...register(`supplieQty${index}`)}
-                              />
-                              <p>
-                                <span className="font-bold">Largo:</span>{" "}
-                                {supply.length}
-                              </p>
-                              <input
-                                name={`supplieLength${index}`}
-                                type="hidden"
-                                value={supply.length}
-                                {...register(`supplieLength${index}`)}
-                              />
-                              <p>
-                                <span className="font-bold">Precio total:</span>{" "}
-                                {formatCurrency(supply.price)}
-                              </p>
-                              <input
-                                name={`suppliePrice${index}`}
-                                type="hidden"
-                                value={supply.price}
-                                {...register(`suppliePrice${index}`)}
-                              />
-                            </div>
-                          ))}
+                                  // Sumar la cantidad de insumos
+                                  acc[key].qty += supply?.supplie_qty;
+
+                                  // Obtener detalles del suministro
+                                  const supplyDetails = supplies?.find(
+                                    (s) => s._id === supply?.supplie_id
+                                  );
+                                  if (supplyDetails) {
+                                    const calculatedPrice =
+                                      supplyDetails?.price *
+                                      supply?.supplie_qty *
+                                      (supply?.supplie_name === "Barral"
+                                        ? supply?.supplie_length
+                                        : 1);
+                                    acc[key].price += calculatedPrice;
+
+                                    // Sumar al total general
+                                    totalSupplieCost += calculatedPrice;
+                                  }
+                                });
+                                return acc;
+                              },
+                              {}
+                            );
+
+                            return Object.values(consolidatedSupplies).map(
+                              (supply, index) => (
+                                <div key={index} className="mb-2">
+                                  {/* Detalles de cada insumo */}
+                                  <p>
+                                    <span className="font-bold">Nombre:</span>{" "}
+                                    {supply.name}
+                                  </p>
+                                  <input
+                                    name={`supplieName${index}`}
+                                    type="hidden"
+                                    value={supply.name}
+                                    {...register(`supplieName${index}`)}
+                                  />
+                                  <p>
+                                    <span className="font-bold">Cantidad:</span>{" "}
+                                    {supply.qty}
+                                  </p>
+                                  <input
+                                    name={`supplieQty${index}`}
+                                    type="hidden"
+                                    value={supply.qty}
+                                    {...register(`supplieQty${index}`)}
+                                  />
+                                  <p>
+                                    <span className="font-bold">Largo:</span>{" "}
+                                    {supply.length}
+                                  </p>
+                                  <input
+                                    name={`supplieLength${index}`}
+                                    type="hidden"
+                                    value={supply.length}
+                                    {...register(`supplieLength${index}`)}
+                                  />
+                                  <p>
+                                    <span className="font-bold">
+                                      Precio total:
+                                    </span>{" "}
+                                    {formatCurrency(supply.price)}
+                                  </p>
+                                  <input
+                                    name={`suppliePrice${index}`}
+                                    type="hidden"
+                                    value={supply.price}
+                                    {...register(`suppliePrice${index}`)}
+                                  />
+                                </div>
+                              )
+                            );
+                          })()}
+
                           {/* Agregar campos ocultos para los nombres de los módulos */}
-                          {sortedModules.map((module, moduleIndex) => (
+                          {sortedModules?.map((module, moduleIndex) => (
                             <input
                               key={moduleIndex}
                               name={`moduleName${moduleIndex}`}
@@ -1436,7 +1467,8 @@ function CreateBudget() {
           {/* cargar cantidad de placas a usar */}
           <div className="p-4 bg-gray-300 rounded-md shadow-md">
             <div className="flex items-center gap-2">
-              <p className="text-md font-semibold">Cantidad de placas</p>{" "}
+              <p className="text-md font-semibold">Cantidad de placas</p>
+              {""}
               <div className="flex gap-4">
                 <button
                   type="button"
@@ -1453,6 +1485,7 @@ function CreateBudget() {
                   -
                 </button>
                 <p>Count: {countMaterial}</p>
+                <p>{formatCurrency(subtotalMaterialPrice)}</p>
               </div>
             </div>
 
@@ -1526,6 +1559,7 @@ function CreateBudget() {
                     -
                   </button>
                   <p>Count: {countItemExtra}</p>
+                  <p>{formatCurrency(subTotalItemExtraPrice)}</p>
                 </div>
               </div>
               {[...Array(countItemExtra)].map((_, index) => (
@@ -1807,6 +1841,7 @@ function CreateBudget() {
                     min="0"
                   />
                 </div>
+                <p>{formatCurrency(subtotalPlacement)}</p>
               </div>
               <div className="flex  w-1/2 my-4 gap-4">
                 <label htmlFor="shipment">Envío</label>
