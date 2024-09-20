@@ -571,6 +571,7 @@ function CreateBudget() {
   }, [
     singleFurniture,
     supplies,
+    services,
     veneerPriceValue,
     veneer2PriceValue,
     chapaPriceValue,
