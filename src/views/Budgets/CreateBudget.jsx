@@ -40,12 +40,13 @@ function CreateBudget() {
   const [services, setServices] = useState([]);
   const [materialEdge, setMaterialEdge] = useState(1);
   const [materialEdgeLaquered, setMaterialEdgeLaquered] = useState(0);
+  const [materialEdgePolished, setMaterialEdgePolished] = useState(0);
   const [chapa, setChapa] = useState(0);
   const [showSupplies, setShowSupplies] = useState(true);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalSuppliePrice, setTotalSuppliePrice] = useState(0);
-
   const [subtotalMaterialPrice, setSubtotalMaterialPrice] = useState(0);
+  const [totalMaterialPrice, setTotalMaterialPrice] = useState(0);
   const [subTotalItemExtraPrice, setSubTotalItemExtraPrice] = useState(0);
   const [subtotalAdjustmentPrice, setSubtotalAdjustmentPrice] = useState(0);
   const [subtotalPlacement, setSubtotalPlacement] = useState(0);
@@ -154,26 +155,33 @@ function CreateBudget() {
   };
   //Servicios: obetener valores
   const enchapadoArtesanalService = services.find(
-    (service) => service.name === "Enchapado Artesanal"
+    (service) => service._id === "66a5bbab218ee6221506c133"
   );
 
   const laqueadoService = services.find(
-    (service) => service.name === "Laqueado"
+    (service) => service._id === "66a5bb29218ee6221506c125"
   );
 
   const laqueadoOpenService = services.find(
-    (service) => service.name === "Laqueado Brillante"
+    (service) => service._id === "66eb0ec94bc129b0fcfb3dea"
   );
 
-  const lustreService = services.find((service) => service.name === "Lustre");
+  const lustreService = services.find(
+    (service) => service._id === "66a5bb50218ee6221506c12b"
+  );
 
   const pantografiadoService = services.find(
-    (service) => service.name === "Pantografiado"
+    (service) => service._id === "66a5bb88218ee6221506c130"
   );
 
   const filoService = services.find(
-    (service) => service.name === "Pegado de filo"
+    (service) => service._id === "66a5baea218ee6221506c119"
   );
+
+  const cortePlacaService = services.find(
+    (service) => service._id === "66a5baf9218ee6221506c11c"
+  );
+
   useEffect(() => {
     getFurnituresToSet();
     getAllSuppliesToSet();
@@ -200,15 +208,9 @@ function CreateBudget() {
   //CÁLCULO DE TOTAL PIEZAS ENCHAPADAS EN METROS CUADRADOS
   const {
     totalVeneer,
-    totalVeneerPolished,
-    totalVeneerLacquered,
-    totalVeneerLacqueredOpen,
     totalVeneer2,
-    totalVeneer2Polished,
-    totalVeneer2Lacquered,
-    totalVeneer2LacqueredOpen,
-    totalVeneerLacqueredOpenTotal,
-    totalVeneerPolishedTotal,
+    totalVeneerPolished,
+    totalVeneerLacqueredOpen,
   } = calculateTotalVeneer(singleFurniture?.modules_furniture);
 
   //CÁLCULO DE TOTAL PIEZAS LAQUEADAS EN METROS CUADRADOS
@@ -263,11 +265,7 @@ function CreateBudget() {
   );
 
   //sumar total de laqueado
-  let totalLacqueredAll =
-    totalLacquered +
-    totalMelamineLacquered +
-    totalVeneerLacquered +
-    totalVeneer2Lacquered;
+  let totalLacqueredAll = totalLacquered + totalMelamineLacquered;
 
   //ORDENAR POR NOMBRE LOS MÓDULOS
   const sortedModules = singleFurniture?.modules_furniture?.sort((a, b) =>
@@ -377,14 +375,33 @@ function CreateBudget() {
     calculateTotalPrice();
   };
 
+  //filo lustrado
+  const handleMaterialEdgePolishedOption = (event) => {
+    let thickness = event.target.value;
+    // console.log(option);
+    if (thickness > 0) {
+      setMaterialEdgePolished(thickness);
+
+      setValue(
+        "edgePolishedPrice",
+        lustreService?.price *
+          ((totalPolishedEdgeLength * thickness) / 10000).toFixed(2)
+      );
+    } else {
+      setMaterialEdgePolished(0);
+      setValue("edgePolishedPrice", 0);
+    }
+    calculateTotalPrice();
+  };
+
   //AL SELECCIONAR LA CHAPA OBTENER EL VALOR
   const handleChapaOption = (event) => {
     let option = event.target.value;
     // console.log(option);
     if (option) {
       const selectedVeneer = veneer.find((veneer) => veneer._id === option);
-      let veneerPrice = selectedVeneer.price * (totalVeneer / 10000);
-      setValue("chapa_price", veneerPrice);
+      let veneerPrice = selectedVeneer.price * ((totalVeneer / 10000) * 1.2);
+      setValue("chapa_price", veneerPrice.toFixed(2));
       setChapa(veneerPrice);
     } else {
       setValue("chapa_price", 0);
@@ -430,24 +447,29 @@ function CreateBudget() {
   }, [singleFurniture, supplies]); // Dependencias necesarias para recalcular cuando cambian los módulos o insumos
 
   //CALCULAR TOTAL DE LOS MATERIALES
-  const calculateTotalMaterialPrice = (materialPrices, materialQtys) => {
-    let total = 0;
-
-    for (let index = 0; index < countMaterial; index++) {
-      const price = Number(materialPrices[index]) || 0;
-      const qty = Number(materialQtys[index]) || 0;
-      total += price * qty;
-    }
-
-    setSubtotalMaterialPrice(total);
-  };
-
   const materialPrices = watch(
     Array.from({ length: countMaterial }, (_, index) => `materialPrice${index}`)
   );
   const materialQtys = watch(
     Array.from({ length: countMaterial }, (_, index) => `materialQty${index}`)
   );
+
+  const calculateTotalMaterialPrice = (materialPrices, materialQtys) => {
+    let subTotal = 0;
+    let total = 0;
+    let totalQty = 0;
+    for (let index = 0; index < countMaterial; index++) {
+      const price = Number(materialPrices[index]) || 0;
+      const qty = Number(materialQtys[index]) || 0;
+      subTotal += price * qty;
+      total += price * qty;
+      totalQty += qty;
+    }
+    subTotal = subTotal * 3.8 + totalQty * cortePlacaService?.price;
+    total = total + totalQty * cortePlacaService?.price;
+    setSubtotalMaterialPrice(subTotal);
+    setTotalMaterialPrice(total);
+  };
 
   // Ejecutar cálculo automáticamente cuando cambien los precios o cantidades
   useEffect(() => {
@@ -514,35 +536,33 @@ function CreateBudget() {
   }, [placementDays, placementPrice]);
 
   //CÁLCULO TOTAL DE FILO
-  const { totalEdgeLength, totalLacqueredEdgeLength } = calculateTotalEdges(
-    singleFurniture?.modules_furniture
-  );
+  const { totalEdgeLength, totalLacqueredEdgeLength, totalPolishedEdgeLength } =
+    calculateTotalEdges(singleFurniture?.modules_furniture);
 
   //CALCULAR TOTAL COMPLETO
   const calculateTotalPrice = () => {
     let enchapado_artesanal_subtotal = Number(getValues("veneerPrice")) || 0;
-    let enchapado_no_artesanal_subtotal =
-      Number(getValues("veneer2Price")) || 0;
     let lustrado_subtotal = Number(getValues("veneerPolishedPrice")) || 0;
     let laqueado_subtotal = Number(getValues("lacqueredPrice")) || 0;
     let laqueado_poro_subtotal = Number(getValues("lacqueredOpenPrice")) || 0;
     let pantografiado_subtotal = Number(getValues("pantographedPrice")) || 0;
     let chapa_price_subtotal = Number(getValues("chapa_price")) || 0;
     let filo_laqueado_subtotal = Number(getValues("edgeLaqueredPrice")) || 0;
+    let filo_lustrado_subtotal = Number(getValues("edgePolishedPrice")) || 0;
     let filo_subtotal = Number(getValues("edgePrice")) || 0;
 
     //suma del total
     let totalPrice =
-      (chapa_price_subtotal || 0) +
-      (enchapado_artesanal_subtotal || 0) +
-      (enchapado_no_artesanal_subtotal || 0) +
+      (chapa_price_subtotal * 3.8 || 0) +
+      (enchapado_artesanal_subtotal * 3.8 || 0) +
       (lustrado_subtotal || 0) +
       (laqueado_subtotal || 0) +
       (laqueado_poro_subtotal || 0) +
       (pantografiado_subtotal || 0) +
       (filo_laqueado_subtotal || 0) +
+      (filo_lustrado_subtotal || 0) +
       (filo_subtotal || 0) +
-      (totalSuppliePrice || 0) +
+      (totalSuppliePrice * 3.8 || 0) +
       (subtotalMaterialPrice || 0) +
       (subTotalItemExtraPrice || 0) +
       (subtotalAdjustmentPrice || 0) +
@@ -550,19 +570,14 @@ function CreateBudget() {
       (subtotalShipmentPrice || 0);
 
     setTotalPrice(totalPrice);
-    console.log("chapa_price_subtotal:", chapa_price_subtotal || 0);
-    console.log(
-      "enchapado_artesanal_subtotal:",
-      enchapado_artesanal_subtotal || 0
-    );
-    console.log(
-      "enchapado_no_artesanal_subtotal:",
-      enchapado_no_artesanal_subtotal || 0
-    );
+    // console.log("chapa_price_subtotal:", chapa_price_subtotal || 0);
+    // console.log(
+    //   "enchapado_artesanal_subtotal:",
+    //   enchapado_artesanal_subtotal || 0
+    // );
   };
   const veneerPriceValue = getValues("veneerPrice");
   const chapaPriceValue = getValues("chapa_price");
-  const veneer2PriceValue = getValues("veneer2Price");
   const edgeLaqueredPriceValue = getValues("edgeLaqueredPrice");
   const edgePriceValue = getValues("edgePrice");
   useEffect(() => {
@@ -573,12 +588,12 @@ function CreateBudget() {
     supplies,
     services,
     veneerPriceValue,
-    veneer2PriceValue,
     chapaPriceValue,
     edgeLaqueredPriceValue,
     edgePriceValue,
     totalSuppliePrice,
     subtotalMaterialPrice,
+    totalMaterialPrice,
     subTotalItemExtraPrice,
     subtotalAdjustmentPrice,
     subtotalPlacement,
@@ -588,73 +603,49 @@ function CreateBudget() {
   //FORMULARIO GENERAR PRESUPUESTO
   const onSubmit = async (data, event) => {
     event.preventDefault();
-    // setSubmitLoader(true);
+    console.log(data);
+    setSubmitLoader(true);
     //Budget Number
 
     // Creación del objeto supplies agrupado por módulos
     const supplies = {};
-    let totalSuppliesPrice = 0; // Inicializa la variable totalSuppliesPrice
-    console.log(data);
+
+    // Recorremos el objeto `data`
     Object.keys(data).forEach((key) => {
-      const match = key.match(/(supplie\w+)(\d+)/);
+      // Extraemos el índice del nombre del insumo (asumiendo que siempre es suplieNameX, supliePriceX, etc.)
+      const match = key.match(/supplie(Name|Price|Qty|Length)(\d+)/);
       if (match) {
-        const [_, prefix, moduleIndex, supplyIndex] = match;
-        const moduleKey = `moduleName${moduleIndex}`;
+        const [_, field, index] = match; // Capturamos el campo (Name, Price, Qty, Length) y el índice
 
-        if (!supplies[moduleKey]) {
-          supplies[moduleKey] = {
-            moduleName: data[moduleKey],
-            supplies: [],
-          };
-        }
-        const supply = supplies[moduleKey].supplies[supplyIndex] || {};
-        if (prefix === "supplieName") supply.name = data[key];
-        if (prefix === "suppliePrice") {
-          const price = Number(data[key]); // Convierte a número
-          supply.price = price;
-
-          // Si ya existen qty y length (si es "Barral"), calcula el precio total
-          if (supply.qty !== undefined) {
-            if (supply.name === "Barral" && supply.length !== undefined) {
-              totalSuppliesPrice += price * supply.qty * Number(supply.length);
-            } else {
-              totalSuppliesPrice += price * supply.qty;
-            }
-          }
-        }
-        if (prefix === "supplieLength") {
-          const length = Number(data[key]); // Convierte a número
-          supply.length = length;
-
-          // Si ya existen price y qty, calcula el precio total para "Barral"
-          if (
-            supply.name === "Barral" &&
-            supply.price !== undefined &&
-            supply.qty !== undefined
-          ) {
-            totalSuppliesPrice += supply.price * supply.qty * length;
-          }
-        }
-        if (prefix === "supplieQty") {
-          const qty = Number(data[key]); // Convierte a número
-          supply.qty = qty;
-
-          // Si ya existen price y length (si es "Barral"), calcula el precio total
-          if (supply.price !== undefined) {
-            if (supply.name === "Barral" && supply.length !== undefined) {
-              totalSuppliesPrice += supply.price * qty * Number(supply.length);
-            } else {
-              totalSuppliesPrice += supply.price * qty;
-            }
-          }
+        // Si no existe un objeto para este índice, lo creamos
+        if (!supplies[index]) {
+          supplies[index] = {};
         }
 
-        supplies[moduleKey].supplies[supplyIndex] = supply;
+        // Asignamos los valores correspondientes según el campo
+        switch (field) {
+          case "Name":
+            supplies[index].name = data[key];
+            break;
+          case "Price":
+            supplies[index].price = Number(data[key]); // Convertimos a número
+            break;
+          case "Qty":
+            supplies[index].qty = Number(data[key]); // Convertimos a número
+            break;
+          case "Length":
+            supplies[index].length = Number(data[key]); // Convertimos a número
+            break;
+          default:
+            break;
+        }
       }
     });
 
-    // Transformar el objeto supplies en una lista
+    // Convertimos el objeto `supplies` en una lista de objetos
     const suppliesList = Object.values(supplies);
+
+    console.log(suppliesList);
 
     // Carga cliente
     let clientData;
@@ -763,52 +754,6 @@ function CreateBudget() {
       console.error("Error ", error);
     }
 
-    //sumar precio final
-    let chapa_price = data.chapa_price ?? 0;
-    let edgeLaqueredPrice = data.edgeLaqueredPrice ?? 0;
-    let edgePrice = data.edgePrice ?? 0;
-    let lacqueredPrice = data.lacqueredPrice ?? 0;
-    let placementDays = data.placementDays ?? 0;
-    let pantographedPrice = data.pantographedPrice ?? 0;
-    let veneerPolishedPrice = data.veneerPolishedPrice ?? 0;
-    let veneerPrice = data.veneerPrice ?? 0;
-    let placementPrice = data.placementPrice ?? 0;
-    let shipmentPrice = data.shipmentPrice ?? 0;
-    let adjustment_price = data.adjustment_price ?? 0;
-
-    let total_price =
-      Number(chapa_price) * 3.8 +
-      Number(edgeLaqueredPrice) +
-      Number(edgePrice) +
-      Number(lacqueredPrice) +
-      Number(totalMaterialPrice) * 3.8 +
-      Number(totalSuppliesPrice) * 3.8 +
-      Number(pantographedPrice) +
-      Number(veneerPolishedPrice) +
-      Number(veneerPrice) * 3.8 +
-      Number(cortePlacaPrice) * Number(totalMaterialQty) +
-      Number(placementPrice) * Number(placementDays) +
-      Number(shipmentPrice) +
-      Number(extraItemPrice) -
-      Number(adjustment_price);
-
-    // console.log("chapa_price:", chapa_price);
-    // console.log("edgeLaqueredPrice:", Number(edgeLaqueredPrice));
-    // console.log("edgePrice:", edgePrice);
-    // console.log("data.lacqueredPrice:", Number(lacqueredPrice));
-    // console.log("totalMaterialPrice:", totalMaterialPrice);
-    // console.log("totalSuppliesPrice:", totalSuppliesPrice);
-    // console.log("data.pantographedPrice2:", pantographedPrice);
-    // console.log("data.veneerPolishedPrice:", data.veneerPolishedPrice);
-    // console.log("data.veneerPrice:", data.veneerPrice);
-    // console.log("cortePlacaPrice:", Number(cortePlacaPrice));
-    // console.log("totalMaterialQty:", totalMaterialQty);
-    // console.log("data.placementPrice:", data.placementPrice);
-    // console.log("placementDays:", placementDays);
-    // console.log("data.shipmentPrice:", Number(data.shipmentPrice));
-    // console.log("extraItemPrice:", Number(extraItemPrice));
-    // console.log("data.adjustment_price:", Number(data.adjustment_price));
-
     // Objeto final para crear el presupuesto
     const budgetData = {
       budget_number: lastnumber + 1,
@@ -828,7 +773,7 @@ function CreateBudget() {
       },
       chapa: {
         veneerSelect: data.veneerSelect,
-        chapa_price: data.chapa_price,
+        chapa_price: Number(data.chapa_price),
       },
       lacquered: {
         lacqueredM2: data.lacqueredM2,
@@ -839,9 +784,14 @@ function CreateBudget() {
         pantographedPrice: data.pantographedPrice,
       },
       edge_lacquered: {
-        edgeLaqueredSelect: data.edgeLaqueredSelect,
-        edgeLaqueredM2: data.edgeLaqueredM2,
+        edgeLaqueredThickness: data.edgeThickness,
+        edgeLaqueredM2: Number(data.edgeLaqueredM2),
         edgeLaqueredPrice: data.edgeLaqueredPrice,
+      },
+      edge_polished: {
+        edgeLaqueredThickness: data.edgePolishedThickness,
+        edgePolishedM2: Number(data.edgePolishedM2),
+        edgePolishedPrice: data.edgePolishedPrice,
       },
       edge_no_lacquered: {
         edgeSelect: data.edgeSelect,
@@ -853,7 +803,7 @@ function CreateBudget() {
       extra_items: extraItemsList,
       adjustment_reason: data.adjustment_reason,
       adjustment_price: data.adjustment_price,
-      total_price: total_price,
+      total_price: totalPrice,
       deliver_date: data.deliver_date,
       comments: data.comments,
       client: clientData,
@@ -869,9 +819,9 @@ function CreateBudget() {
     // console.log(budgetData);
 
     try {
-      // await createBudget(budgetData);
+      await createBudget(budgetData);
       console.log("Presupuesto creado", budgetData);
-      // navigate("/ver-presupuestos");
+      navigate("/ver-presupuestos");
     } catch (error) {
       console.error("Error creando presupuesto:", error);
     }
@@ -1012,22 +962,13 @@ function CreateBudget() {
                   ""
                 )}
                 {/* ENCHAPADO NO ARTESANAL */}
-                {totalVeneer2 > 0 ? (
+                {/* {totalVeneer2 > 0 ? (
                   <>
                     <p className="mb-1">
                       <span className="font-bold">
                         Enchapado No Artesanal en m2:
                       </span>{" "}
-                      {totalVeneer2 / 10000} m<sup>2</sup> Precio:
-                      {formatCurrency(
-                        enchapadoArtesanalService?.price *
-                          (totalVeneer2 / 10000)
-                      ).toLocaleString("es-ES")}
-                      {setValue(
-                        "veneer2Price",
-                        enchapadoArtesanalService?.price *
-                          (totalVeneer2 / 10000)
-                      )}
+                      {totalVeneer2 / 10000} m<sup>2</sup>
                     </p>
                     <input
                       name={`veneer2M2`}
@@ -1035,47 +976,35 @@ function CreateBudget() {
                       value={totalVeneer2 / 10000}
                       {...register(`veneerM2`)}
                     />
-                    <input
-                      name={`veneer2Price`}
-                      type="hidden"
-                      value={
-                        enchapadoArtesanalService?.price *
-                        (totalVeneer2 / 10000)
-                      }
-                      {...register(`veneer2Price`)}
-                    />
                   </>
                 ) : (
                   ""
-                )}
+                )} */}
                 {/* LUSTRADO */}
-                {totalVeneerPolishedTotal > 0 ? (
+                {totalVeneerPolished > 0 ? (
                   <>
                     <p className="mb-1">
                       <span className="font-bold">Lustrado en m2:</span>{" "}
-                      {totalVeneerPolishedTotal / 10000} m<sup>2</sup> Precio:
+                      {totalVeneerPolished / 10000} m<sup>2</sup> Precio:
                       {formatCurrency(
-                        lustreService?.price *
-                          (totalVeneerPolishedTotal / 10000)
+                        lustreService?.price * (totalVeneerPolished / 10000)
                       )}
                       {setValue(
                         "veneerPolishedPrice",
-                        lustreService?.price *
-                          (totalVeneerPolishedTotal / 10000)
+                        lustreService?.price * (totalVeneerPolished / 10000)
                       )}
                     </p>
                     <input
                       name={`veneerPolishedM2`}
                       type="hidden"
-                      value={totalVeneerPolishedTotal / 10000}
+                      value={totalVeneerPolished / 10000}
                       {...register(`veneerPolishedM2`)}
                     />
                     <input
                       name={`veneerPolishedPrice`}
                       type="hidden"
                       value={
-                        lustreService?.price *
-                        (totalVeneerPolishedTotal / 10000)
+                        lustreService?.price * (totalVeneerPolished / 10000)
                       }
                       {...register(`veneerPolishedPrice`)}
                     />
@@ -1116,28 +1045,27 @@ function CreateBudget() {
                   ""
                 )}
                 {/* LAQUEADO PORO ABIERTO */}
-                {totalVeneerLacqueredOpenTotal > 0 ? (
+                {totalVeneerLacqueredOpen > 0 ? (
                   <>
                     <p className="mb-1">
                       <span className="font-bold">
                         Laqueado Poro Abierto en m2:
                       </span>{" "}
-                      {totalVeneerLacqueredOpenTotal / 10000} m<sup>2</sup>{" "}
-                      Precio:
+                      {totalVeneerLacqueredOpen / 10000} m<sup>2</sup> Precio:
                       {formatCurrency(
                         laqueadoOpenService?.price *
-                          (totalVeneerLacqueredOpenTotal / 10000)
+                          (totalVeneerLacqueredOpen / 10000)
                       )}
                       {setValue(
                         "lacqueredOpenPrice",
                         laqueadoOpenService?.price *
-                          (totalVeneerLacqueredOpenTotal / 10000)
+                          (totalVeneerLacqueredOpen / 10000)
                       )}
                     </p>
                     <input
                       name={`lacqueredOpenM2`}
                       type="hidden"
-                      value={totalVeneerLacqueredOpenTotal / 10000}
+                      value={totalVeneerLacqueredOpen / 10000}
                       {...register(`lacqueredOpenM2`)}
                     />
                     <input
@@ -1146,7 +1074,7 @@ function CreateBudget() {
                       {...register(`lacqueredOpenPrice`)}
                       value={
                         laqueadoOpenService?.price *
-                        (totalVeneerLacqueredOpenTotal / 10000)
+                        (totalVeneerLacqueredOpen / 10000)
                       }
                     />
                   </>
@@ -1188,12 +1116,12 @@ function CreateBudget() {
                 ) : (
                   ""
                 )}
-                {/* FILO */}
+                {/* FILO  laqueado*/}
                 {totalLacqueredEdgeLength > 0 ? (
                   <>
                     <div className="flex gap-y-4">
                       <div>
-                        <p className="font-bold">Filo total (laqueado):</p>
+                        <p className="font-bold">Filo Laqueado:</p>
                         <div className="flex flex-col w-2/3  ">
                           {materialEdgeLaquered > 0 ? (
                             <>
@@ -1270,6 +1198,91 @@ function CreateBudget() {
                 ) : (
                   ""
                 )}
+                {/* FILO  lustrado*/}
+                {totalPolishedEdgeLength > 0 ? (
+                  <>
+                    <div className="flex gap-y-4">
+                      <div>
+                        <p className="font-bold">Filo Lustrado:</p>
+                        <div className="flex flex-col w-2/3  ">
+                          {materialEdgePolished > 0 ? (
+                            <>
+                              <p className="mb-1">
+                                {(
+                                  (totalPolishedEdgeLength *
+                                    materialEdgePolished) /
+                                  10000
+                                ).toFixed(2)}{" "}
+                                m<sup>2</sup> Precio:
+                                {formatCurrency(
+                                  lustreService?.price *
+                                    (
+                                      (totalPolishedEdgeLength *
+                                        materialEdgePolished) /
+                                      10000
+                                    ).toFixed(2)
+                                )}
+                              </p>
+                              <input
+                                name={`edgePolishedM2`}
+                                type="hidden"
+                                value={(
+                                  (totalPolishedEdgeLength *
+                                    materialEdgePolished) /
+                                  10000
+                                ).toFixed(2)}
+                                {...register(`edgePolishedM2`)}
+                              />
+                              <input
+                                name={`edgePolishedPrice`}
+                                type="hidden"
+                                value={
+                                  lustreService?.price *
+                                  (
+                                    (totalPolishedEdgeLength *
+                                      materialEdgePolished) /
+                                    10000
+                                  ).toFixed(2)
+                                }
+                                {...register(`edgePolishedPrice`)}
+                              />
+                            </>
+                          ) : (
+                            <p className="text-red-500">Indicar grosor</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-col w-2/4 ml-2">
+                        <label htmlFor="edgePolishedThickness" className="mb-2">
+                          Grosor de la placa (cm)
+                        </label>
+                        <input
+                          type="text"
+                          name="edgePolishedThickness"
+                          id="edgePolishedThickness"
+                          className="border-solid border-2 border-opacity mb-2 rounded-md"
+                          {...register("edgePolishedThickness")}
+                          onBlur={() => {
+                            handleMaterialEdgePolishedOption({
+                              target: {
+                                value: getValues("edgePolishedThickness"),
+                              },
+                            });
+                            calculateTotalPrice();
+                          }}
+                        />
+                        {errors.edgeThickness && (
+                          <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                            {errors.edgeThickness.message}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  ""
+                )}
+                {/* FILO  sin nada*/}
                 {totalEdgeLength > 0 ? (
                   <>
                     <div className="flex gap-4">
@@ -1280,7 +1293,7 @@ function CreateBudget() {
                         <span>
                           {(totalEdgeLength / 100).toFixed(2)} m Precio:
                           {formatCurrency(
-                            (totalEdgeLength / 100) * materialEdge * 3.8 +
+                            (totalEdgeLength / 100) * materialEdge +
                               filoService?.price * (totalEdgeLength / 100)
                           )}
                           {setValue(
@@ -1301,6 +1314,7 @@ function CreateBudget() {
                         type="hidden"
                         {...register(`edgePrice`)}
                       />
+
                       <div className="flex flex-col w-1/2 ">
                         <select
                           name={`edgeSelect`}
@@ -1420,12 +1434,17 @@ function CreateBudget() {
                                     <span className="font-bold">
                                       Precio total:
                                     </span>{" "}
-                                    {formatCurrency(supply.price)}
+                                    {
+                                      (formatCurrency(supply.price),
+                                      setValue(
+                                        `suppliePrice${index}`,
+                                        supply.price
+                                      ))
+                                    }
                                   </p>
                                   <input
                                     name={`suppliePrice${index}`}
                                     type="hidden"
-                                    value={supply.price}
                                     {...register(`suppliePrice${index}`)}
                                   />
                                 </div>
@@ -1475,7 +1494,7 @@ function CreateBudget() {
                   -
                 </button>
                 <p>Count: {countMaterial}</p>
-                <p>{formatCurrency(subtotalMaterialPrice)}</p>
+                <p>{formatCurrency(totalMaterialPrice)}</p>
               </div>
             </div>
 

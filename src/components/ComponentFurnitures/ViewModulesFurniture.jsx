@@ -111,10 +111,10 @@ function ViewModulesFurniture({ sortedModules }) {
                           <>
                             Laqueado
                             <br />
-                            {piece.lacqueredPieceSides === "single" && (
+                            {piece.lacqueredPieceSides === 1 && (
                               <strong>1 lado</strong>
                             )}
-                            {piece.lacqueredPieceSides === "double" && (
+                            {piece.lacqueredPieceSides === 2 && (
                               <strong>2 lados</strong>
                             )}{" "}
                             <br></br>
@@ -129,21 +129,19 @@ function ViewModulesFurniture({ sortedModules }) {
                             Enchapado Artesanal<br></br>
                             {piece.veneerFinishing &&
                             piece.veneerFinishing === "veneerLacquered" &&
-                            piece.veneerLacqueredPieceSides === "single" ? (
-                              <strong>Laqueado 1 lado</strong>
+                            piece.veneerLacqueredPieceSides === 1 ? (
+                              <strong>
+                                Laqueado Poro abierto <br></br> 1 lado
+                              </strong>
                             ) : piece.veneerFinishing &&
                               piece.veneerFinishing === "veneerLacquered" &&
-                              piece.veneerLacqueredPieceSides === "double" ? (
-                              <strong>Laqueado 2 lados</strong>
+                              piece.veneerLacqueredPieceSides === 2 ? (
+                              <strong>
+                                Laqueado Poro abierto <br></br> 2 lados
+                              </strong>
                             ) : piece.veneerFinishing &&
                               piece.veneerFinishing === "veneerPolished" ? (
                               <strong>Lustrado</strong>
-                            ) : (
-                              ""
-                            )}
-                            <br />
-                            {piece.veneerLacqueredOpen ? (
-                              <strong>Poro abierto</strong>
                             ) : (
                               ""
                             )}
@@ -153,21 +151,19 @@ function ViewModulesFurniture({ sortedModules }) {
                             Enchapado No Artesanal<br></br>
                             {piece.veneer2Finishing &&
                             piece.veneer2Finishing === "veneer2Lacquered" &&
-                            piece.veneer2LacqueredPieceSides === "single" ? (
-                              <strong>Laqueado 1 lado</strong>
+                            piece.veneer2LacqueredPieceSides === 1 ? (
+                              <strong>
+                                Laqueado Poro abierto<br></br>1 lado
+                              </strong>
                             ) : piece.veneer2Finishing &&
                               piece.veneer2Finishing === "veneer2Lacquered" &&
-                              piece.veneer2LacqueredPieceSides === "double" ? (
-                              <strong>Laqueado 2 lados</strong>
+                              piece.veneer2LacqueredPieceSides === 2 ? (
+                              <strong>
+                                Laqueado Poro abierto<br></br> 2 lados
+                              </strong>
                             ) : piece.veneer2Finishing &&
                               piece.veneer2Finishing === "veneer2Polished" ? (
                               <strong>Lustrado</strong>
-                            ) : (
-                              ""
-                            )}
-                            <br />
-                            {piece.veneer2LacqueredOpen ? (
-                              <strong>Poro abierto</strong>
                             ) : (
                               ""
                             )}
@@ -208,9 +204,9 @@ function ViewModulesFurniture({ sortedModules }) {
                       <td className="px-4 py-2 text-center border-b">
                         {piece.edgeLength
                           ? `Sí, ${
-                              piece.edgeLengthSides === "1"
+                              piece.edgeLengthSides === 1
                                 ? "un lado"
-                                : piece.edgeLengthSides === "2"
+                                : piece.edgeLengthSides === 2
                                 ? "dos lados"
                                 : "falta cantidad lados"
                             }`

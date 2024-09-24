@@ -2,7 +2,7 @@
 export const calculateTotalEdges = (modules) => {
   let totalEdgeLength = 0;
   let totalLacqueredEdgeLength = 0;
-  let totalpolishedEdgeLength = 0;
+  let totalPolishedEdgeLength = 0;
 
   modules?.forEach((module) => {
     module.pieces.forEach((piece) => {
@@ -14,6 +14,11 @@ export const calculateTotalEdges = (modules) => {
           totalLacqueredEdgeLength +=
             piece.edgeLengthSides * piece.length * piece.qty;
         }
+        if (piece.polishedEdge) {
+          totalPolishedEdgeLength +=
+            piece.edgeLengthSides * piece.length * piece.qty;
+          totalEdgeLength += piece.edgeLengthSides * piece.length * piece.qty;
+        }
       }
       if (piece.edgeWidth) {
         if (!piece.lacqueredEdge && !piece.polishedEdge) {
@@ -24,6 +29,11 @@ export const calculateTotalEdges = (modules) => {
           totalLacqueredEdgeLength +=
             piece.edgeWidthSides * piece.width * piece.qty;
         }
+        if (piece.polishedEdge) {
+          totalPolishedEdgeLength +=
+            piece.edgeWidthSides * piece.width * piece.qty;
+          totalEdgeLength += piece.edgeWidthSides * piece.width * piece.qty;
+        }
       }
     });
   });
@@ -31,5 +41,6 @@ export const calculateTotalEdges = (modules) => {
   return {
     totalEdgeLength,
     totalLacqueredEdgeLength,
+    totalPolishedEdgeLength,
   };
 };

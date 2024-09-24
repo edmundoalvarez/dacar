@@ -73,7 +73,6 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
     setSelectedVeneerOption(e.target.value);
     if (e.target.value !== `veneerLacquered${index}`) {
       resetField(`veneerLacqueredPieceSides${index}`);
-      resetField(`veneerLacqueredOpen${index}`);
     }
   };
 
@@ -81,7 +80,6 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
     setSelectedVeneer2Option(e.target.value);
     if (e.target.value !== `veneer2Lacquered${index}`) {
       resetField(`veneer2LacqueredPieceSides${index}`);
-      resetField(`veneer2LacqueredOpen${index}`);
     }
   };
 
@@ -294,8 +292,8 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
             })}
           >
             <option value="">Elegir una opción</option>
-            <option value="single">1 Lado</option>
-            <option value="double">2 Lados</option>
+            <option value="1">1 Lado</option>
+            <option value="2">2 Lados</option>
           </select>
           {errors[`lacqueredPieceSides${index}`] && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -413,22 +411,14 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
             })}
           >
             <option value="">Elegir una opción</option>
-            <option value="single">1 Lado</option>
-            <option value="double">2 Lados</option>
+            <option value="1">1 Lado</option>
+            <option value="2">2 Lados</option>
           </select>
           {errors[`veneerLacqueredPieceSides${index}`] && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
               {errors[`veneerLacqueredPieceSides${index}`].message}
             </span>
           )}
-          <div>
-            <label className="font-semibold mb-1">Laqueado poro abierto</label>
-            <input
-              className="ml-2"
-              type="checkbox"
-              {...register(`veneerLacqueredOpen${index}`)}
-            />
-          </div>
         </div>
       )}
       {/* Enchapado NO artesanal veneer2 */}
@@ -490,22 +480,14 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
             })}
           >
             <option value="">Elegir una opción</option>
-            <option value="single">1 Lado</option>
-            <option value="double">2 Lados</option>
+            <option value="1">1 Lado</option>
+            <option value="2">2 Lados</option>
           </select>
           {errors[`veneer2LacqueredPieceSides${index}`] && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
               {errors[`veneer2LacqueredPieceSides${index}`].message}
             </span>
           )}
-          <div>
-            <label className="font-semibold mb-1">Laqueado poro abierto</label>
-            <input
-              className="ml-2"
-              type="checkbox"
-              {...register(`veneer2LacqueredOpen${index}`)}
-            />
-          </div>
         </div>
       )}
 

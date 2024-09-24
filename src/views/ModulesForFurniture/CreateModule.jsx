@@ -150,25 +150,33 @@ function CreateModule() {
           comment: data[`commentPiece${i}`],
           material: data[`materialPiece${i}`],
           lacqueredPiece: lacqueredPiece,
-          lacqueredPieceSides: data[`lacqueredPieceSides${i}`],
+          lacqueredPieceSides: data[`lacqueredPieceSides${i}`]
+            ? Number(data[`lacqueredPieceSides${i}`])
+            : undefined,
           veneer: veneer,
           veneerFinishing: data[`veneerOption${i}`],
-          veneerLacqueredPieceSides: data[`veneerLacqueredPieceSides${i}`],
-          veneerLacqueredOpen: data[`veneerLacqueredOpen${i}`],
+          veneerLacqueredPieceSides: data[`veneerLacqueredPieceSides${i}`]
+            ? Number(data[`veneerLacqueredPieceSides${i}`])
+            : undefined,
           veneer2: veneer2,
           veneer2Finishing: data[`veneer2Option${i}`],
-          veneer2LacqueredPieceSides: data[`veneer2LacqueredPieceSides${i}`],
-          veneer2LacqueredOpen: data[`veneer2LacqueredOpen${i}`],
+          veneer2LacqueredPieceSides: data[`veneer2LacqueredPieceSides${i}`]
+            ? Number(data[`veneer2LacqueredPieceSides${i}`])
+            : undefined,
           melamine: melamine,
           melamineLacquered: data[`melamineLacquered${i}`],
-          melamineLacqueredPieceSides: Number(
-            data[`melamineLacqueredPieceSides${i}`]
-          ),
+          melamineLacqueredPieceSides: data[`melamineLacqueredPieceSides${i}`]
+            ? Number(data[`melamineLacqueredPieceSides${i}`])
+            : undefined,
           pantographed: data[`pantographed${i}`],
           edgeLength: data[`edgeLength${i}`],
-          edgeLengthSides: data[`edgeLengthSides${i}`],
+          edgeLengthSides: data[`edgeLengthSides${i}`]
+            ? Number(data[`edgeLengthSides${i}`])
+            : undefined,
           edgeWidth: data[`edgeWidth${i}`],
-          edgeWidthSides: data[`edgeWidthSides${i}`],
+          edgeWidthSides: data[`edgeWidthSides${i}`]
+            ? Number(data[`edgeWidthSides${i}`])
+            : undefined,
           lacqueredEdge: lacqueredEdge,
           polishedEdge: polishedEdge,
           loose_piece: data[`loose_piece${i}`],

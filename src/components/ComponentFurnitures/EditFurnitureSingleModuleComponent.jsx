@@ -90,14 +90,12 @@ function EditFurnitureSingleModuleComponent({
             `veneerLacqueredPieceSides${index}`,
             piece.veneerLacqueredPieceSides
           );
-          setValue(`veneerLacqueredOpen${index}`, piece.veneerLacqueredOpen);
           setValue(`veneer2${index}`, piece.veneer2);
           setValue(`veneer2Option${index}`, piece.veneer2Finishing);
           setValue(
             `veneer2LacqueredPieceSides${index}`,
             piece.veneer2LacqueredPieceSides
           );
-          setValue(`veneer2LacqueredOpen${index}`, piece.veneer2LacqueredOpen);
           setValue(`melamine${index}`, piece.melamine);
           setValue(`melamineLacquered${index}`, piece.melamineLacquered);
           setValue(
@@ -233,12 +231,10 @@ function EditFurnitureSingleModuleComponent({
           veneer: veneer,
           veneerFinishing: data[`veneerOption${index}`],
           veneerLacqueredPieceSides: data[`veneerLacqueredPieceSides${index}`],
-          veneerLacqueredOpen: data[`veneerLacqueredOpen${index}`],
           veneer2: veneer2,
           veneer2Finishing: data[`veneer2Option${index}`],
           veneer2LacqueredPieceSides:
             data[`veneer2LacqueredPieceSides${index}`],
-          veneer2LacqueredOpen: data[`veneer2LacqueredOpen${index}`],
           melamine: melamine,
           melamineLacquered: data[`melamineLacquered${index}`],
           melamineLacqueredPieceSides:

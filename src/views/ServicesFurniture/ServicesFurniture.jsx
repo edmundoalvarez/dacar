@@ -206,8 +206,9 @@ function ServicesFurniture() {
       {openModalToDelete && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white p-10 rounded-lg shadow-lg flex justify-center items-center flex-col">
-            <h2 className="text-xl mb-4">
-              ¿Seguro que desea eliminar el servicio?
+            <h2 className="text-xl text-center mb-4">
+              ¿Seguro que desea eliminar el servicio? <br></br> Esto puede
+              generar que errores al presupuestar.
             </h2>
             <div className="flex gap-4">
               <button

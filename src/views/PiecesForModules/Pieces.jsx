@@ -168,11 +168,9 @@ function Pieces() {
         veneer: veneer,
         veneerFinishing: data[`veneerOption1`],
         veneerLacqueredPieceSides: data[`veneerLacqueredPieceSides1`],
-        veneerLacqueredOpen: data[`veneerLacqueredOpen1`],
         veneer2: veneer2,
         veneer2Finishing: data[`veneer2Option1`],
         veneer2LacqueredPieceSides: data[`veneer2LacqueredPieceSides1`],
-        veneer2LacqueredOpen: data[`veneer2LacqueredOpen1`],
         melamine: melamine,
         melamineLacquered: data[`melamineLacquered1`],
         melamineLacqueredPieceSides: Number(
@@ -380,10 +378,10 @@ function Pieces() {
                       <>
                         Laqueado
                         <br />
-                        {piece.lacqueredPieceSides === "single" && (
+                        {piece.lacqueredPieceSides === 1 && (
                           <strong>1 lado</strong>
                         )}
-                        {piece.lacqueredPieceSides === "double" && (
+                        {piece.lacqueredPieceSides === 2 && (
                           <strong>2 lados</strong>
                         )}{" "}
                         <br></br>
@@ -398,21 +396,19 @@ function Pieces() {
                         Enchapado Artesanal<br></br>
                         {piece.veneerFinishing &&
                         piece.veneerFinishing === "veneerLacquered" &&
-                        piece.veneerLacqueredPieceSides === "single" ? (
-                          <strong>Laqueado 1 lado</strong>
+                        piece.veneerLacqueredPieceSides === 1 ? (
+                          <strong>
+                            Laqueado Poro abierto<br></br>1 lado
+                          </strong>
                         ) : piece.veneerFinishing &&
                           piece.veneerFinishing === "veneerLacquered" &&
-                          piece.veneerLacqueredPieceSides === "double" ? (
-                          <strong>Laqueado 2 lados</strong>
+                          piece.veneerLacqueredPieceSides === 2 ? (
+                          <strong>
+                            Laqueado Poro abierto<br></br>2 lados
+                          </strong>
                         ) : piece.veneerFinishing &&
                           piece.veneerFinishing === "veneerPolished" ? (
                           <strong>Lustrado</strong>
-                        ) : (
-                          ""
-                        )}
-                        <br />
-                        {piece.veneerLacqueredOpen ? (
-                          <strong>Poro abierto</strong>
                         ) : (
                           ""
                         )}
@@ -422,21 +418,19 @@ function Pieces() {
                         Enchapado No Artesanal<br></br>
                         {piece.veneer2Finishing &&
                         piece.veneer2Finishing === "veneer2Lacquered" &&
-                        piece.veneer2LacqueredPieceSides === "single" ? (
-                          <strong>Laqueado 1 lado</strong>
+                        piece.veneer2LacqueredPieceSides === 1 ? (
+                          <strong>
+                            Laqueado Poro abierto<br></br>1 lado
+                          </strong>
                         ) : piece.veneer2Finishing &&
                           piece.veneer2Finishing === "veneer2Lacquered" &&
-                          piece.veneer2LacqueredPieceSides === "double" ? (
-                          <strong>Laqueado 2 lados</strong>
+                          piece.veneer2LacqueredPieceSides === 2 ? (
+                          <strong>
+                            Laqueado Poro abierto<br></br>2 lados
+                          </strong>
                         ) : piece.veneer2Finishing &&
                           piece.veneer2Finishing === "veneer2Polished" ? (
                           <strong>Lustrado</strong>
-                        ) : (
-                          ""
-                        )}
-                        <br />
-                        {piece.veneer2LacqueredOpen ? (
-                          <strong>Poro abierto</strong>
                         ) : (
                           ""
                         )}

@@ -74,14 +74,12 @@ function EditModule() {
             `veneerLacqueredPieceSides${index}`,
             piece.veneerLacqueredPieceSides
           );
-          setValue(`veneerLacqueredOpen${index}`, piece.veneerLacqueredOpen);
           setValue(`veneer2${index}`, piece.veneer2);
           setValue(`veneer2Option${index}`, piece.veneer2Finishing);
           setValue(
             `veneer2LacqueredPieceSides${index}`,
             piece.veneer2LacqueredPieceSides
           );
-          setValue(`veneer2LacqueredOpen${index}`, piece.veneer2LacqueredOpen);
           setValue(`melamine${index}`, piece.melamine);
           setValue(`melamineLacquered${index}`, piece.melamineLacquered);
           setValue(
@@ -214,29 +212,40 @@ function EditModule() {
           comment: data[`commentPiece${index}`],
           material: data[`materialPiece${index}`],
           lacqueredPiece: lacqueredPiece,
-          lacqueredPieceSides: data[`lacqueredPieceSides${index}`],
+          lacqueredPieceSides: data[`lacqueredPieceSides${index}`]
+            ? Number(data[`lacqueredPieceSides${index}`])
+            : undefined,
           veneer: veneer,
           veneerFinishing: data[`veneerOption${index}`],
-          veneerLacqueredPieceSides: data[`veneerLacqueredPieceSides${index}`],
-          veneerLacqueredOpen: data[`veneerLacqueredOpen${index}`],
+          veneerLacqueredPieceSides: data[`veneerLacqueredPieceSides${index}`]
+            ? Number(data[`veneerLacqueredPieceSides${index}`])
+            : undefined,
           veneer2: veneer2,
           veneer2Finishing: data[`veneer2Option${index}`],
-          veneer2LacqueredPieceSides:
-            data[`veneer2LacqueredPieceSides${index}`],
-          veneer2LacqueredOpen: data[`veneer2LacqueredOpen${index}`],
+          veneer2LacqueredPieceSides: data[`veneer2LacqueredPieceSides${index}`]
+            ? Number(data[`veneer2LacqueredPieceSides${index}`])
+            : undefined,
           melamine: melamine,
           melamineLacquered: data[`melamineLacquered${index}`],
           melamineLacqueredPieceSides: Number(
             data[`melamineLacqueredPieceSides${index}`]
-          ),
+          )
+            ? Number(data[`melamineLacqueredPieceSides${index}`])
+            : undefined,
           pantographed: data[`pantographed${index}`],
           edgeLength: data[`edgeLength${index}`],
-          edgeLengthSides: data[`edgeLengthSides${index}`],
+          edgeLengthSides: data[`edgeLengthSides${index}`]
+            ? Number(data[`edgeLengthSides${index}`])
+            : undefined,
           edgeWidth: data[`edgeWidth${index}`],
-          edgeWidthSides: data[`edgeWidthSides${index}`],
+          edgeWidthSides: data[`edgeWidthSides${index}`]
+            ? Number(data[`edgeWidthSides${index}`])
+            : undefined,
           lacqueredEdge: lacqueredEdge,
           polishedEdge: polishedEdge,
-          loose_piece: data[`loose_piece${index}`],
+          loose_piece: data[`loose_piece${index}`]
+            ? Number(data[`loose_piece${index}`])
+            : undefined,
           module_id: idModule,
         };
       });
