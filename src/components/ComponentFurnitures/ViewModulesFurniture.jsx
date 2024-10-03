@@ -116,7 +116,8 @@ function ViewModulesFurniture({ sortedModules }) {
                             )}
                             {piece.lacqueredPieceSides === 2 && (
                               <strong>2 lados</strong>
-                            )}{" "}
+                            )}
+                            {""}
                             <br></br>
                             {piece.pantographed ? (
                               <strong>Pantografiado</strong>
@@ -179,7 +180,7 @@ function ViewModulesFurniture({ sortedModules }) {
                             )}
                             <br />
                             {piece.melamineLacqueredPieceSides === 1 && (
-                              <strong> 1 lado</strong>
+                              <strong>1 lado</strong>
                             )}
                             {piece.melamineLacqueredPieceSides === 2 && (
                               <strong>2 lados</strong>
@@ -192,9 +193,9 @@ function ViewModulesFurniture({ sortedModules }) {
                       <td className="px-4 py-2 text-center border-b">
                         {piece.edgeWidth
                           ? `Sí, ${
-                              piece.edgeWidthSides === "1"
+                              piece.edgeWidthSides === 1
                                 ? "un lado"
-                                : piece.edgeWidthSides === "2"
+                                : piece.edgeWidthSides === 2
                                 ? "dos lados"
                                 : "falta cantidad lados"
                             }`

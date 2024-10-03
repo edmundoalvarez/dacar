@@ -9,7 +9,7 @@ export const calculateTotalVeneer = (modules) => {
     module.pieces.forEach((piece) => {
       //ENCHAPADO ARTESANAL
       if (piece.veneer) {
-        totalVeneer += piece.length * piece.width * piece.qty; //se suma el enchapado artesanal total
+        totalVeneer += piece.length * piece.width * piece.qty * 2; //se suma el enchapado artesanal total
         if (piece.veneerFinishing === "veneerLacquered") {
           totalVeneerLacqueredOpen +=
             piece.length *
@@ -22,15 +22,14 @@ export const calculateTotalVeneer = (modules) => {
         }
       }
       //ENCHAPADO NO ARTESANAL
-
       if (piece.veneer2) {
         totalVeneer2 += piece.length * piece.width * 1.2 * piece.qty; //se suma el enchapado artesanal total
-        if (piece.veneer2Finishing === "veneerLacquered") {
+        if (piece.veneer2Finishing === "veneer2Lacquered") {
           totalVeneerLacqueredOpen +=
             piece.length *
             piece.width *
             piece.qty *
-            piece.veneerLacqueredPieceSides;
+            piece.veneer2LacqueredPieceSides;
         }
         if (piece.veneer2Finishing === "veneer2Polished") {
           totalVeneerPolished += piece.length * piece.width * piece.qty * 2;
@@ -41,7 +40,6 @@ export const calculateTotalVeneer = (modules) => {
 
   return {
     totalVeneer,
-    totalVeneer2,
     totalVeneerPolished,
     totalVeneerLacqueredOpen,
   };

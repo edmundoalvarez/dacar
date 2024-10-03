@@ -6,33 +6,35 @@ export const calculateTotalEdges = (modules) => {
 
   modules?.forEach((module) => {
     module.pieces.forEach((piece) => {
+      let pieceLength;
+      let pieceWidth;
+      if (piece.orientation === "cross-horizontal") {
+        pieceLength = piece.width;
+        pieceWidth = piece.length;
+      } else {
+        pieceLength = piece.length;
+        pieceWidth = piece.width;
+      }
       if (piece.edgeLength) {
-        if (!piece.lacqueredEdge && !piece.polishedEdge) {
-          totalEdgeLength += piece.edgeLengthSides * piece.length * piece.qty;
-        }
+        totalEdgeLength += piece.edgeLengthSides * pieceLength * piece.qty;
         if (piece.lacqueredEdge) {
           totalLacqueredEdgeLength +=
-            piece.edgeLengthSides * piece.length * piece.qty;
+            piece.edgeLengthSides * pieceLength * piece.qty;
         }
-        if (piece.polishedEdge) {
+        if (piece.polishedEdge && !piece.lacqueredEdge) {
           totalPolishedEdgeLength +=
-            piece.edgeLengthSides * piece.length * piece.qty;
-          totalEdgeLength += piece.edgeLengthSides * piece.length * piece.qty;
+            piece.edgeLengthSides * pieceLength * piece.qty;
         }
       }
       if (piece.edgeWidth) {
-        if (!piece.lacqueredEdge && !piece.polishedEdge) {
-          totalEdgeLength += piece.edgeWidthSides * piece.width * piece.qty;
-        }
-
+        totalEdgeLength += piece.edgeWidthSides * pieceWidth * piece.qty;
         if (piece.lacqueredEdge) {
           totalLacqueredEdgeLength +=
-            piece.edgeWidthSides * piece.width * piece.qty;
+            piece.edgeWidthSides * pieceWidth * piece.qty;
         }
-        if (piece.polishedEdge) {
+        if (piece.polishedEdge && !piece.lacqueredEdge) {
           totalPolishedEdgeLength +=
-            piece.edgeWidthSides * piece.width * piece.qty;
-          totalEdgeLength += piece.edgeWidthSides * piece.width * piece.qty;
+            piece.edgeWidthSides * pieceWidth * piece.qty;
         }
       }
     });

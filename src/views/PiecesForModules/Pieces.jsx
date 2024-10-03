@@ -460,9 +460,9 @@ function Pieces() {
                   <td className="px-4 py-2 text-center border-b">
                     {piece.edgeLength
                       ? `Sí, ${
-                          piece.edgeLengthSides === "1"
+                          piece.edgeLengthSides === 1
                             ? "un lado"
-                            : piece.edgeLengthSides === "2"
+                            : piece.edgeLengthSides === 2
                             ? "dos lados"
                             : "falta cantidad lados"
                         }`
@@ -471,9 +471,9 @@ function Pieces() {
                   <td className="px-4 py-2 text-center border-b">
                     {piece.edgeWidth
                       ? `Sí, ${
-                          piece.edgeWidthSides === "1"
+                          piece.edgeWidthSides === 1
                             ? "un lado"
-                            : piece.edgeWidthSides === "2"
+                            : piece.edgeWidthSides === 2
                             ? "dos lados"
                             : "falta cantidad lados"
                         }`

@@ -221,16 +221,16 @@ function CreateBudget() {
       module.pieces.forEach((piece) => {
         if (piece.lacqueredPiece) {
           // console.log("piezas", piece.name, "piezas", piece.lacqueredPiece);
-          if (piece.lacqueredPieceSides === "single") {
+          if (piece.lacqueredPieceSides === 1) {
             totalLacquered += piece.length * piece.width * piece.qty;
           }
-          if (piece.lacqueredPieceSides === "double") {
+          if (piece.lacqueredPieceSides === 2) {
             totalLacquered += piece.length * piece.width * 2 * piece.qty;
           }
         }
       });
     });
-
+    console.log("totalLacquered", totalLacquered);
     return {
       totalLacquered,
     };
@@ -366,7 +366,7 @@ function CreateBudget() {
       setValue(
         "edgeLaqueredPrice",
         laqueadoService?.price *
-          ((totalLacqueredEdgeLength * thickness) / 10000).toFixed(2)
+          ((totalLacqueredEdgeLength * thickness) / 1000).toFixed(2)
       );
     } else {
       setMaterialEdgeLaquered(0);
@@ -385,7 +385,7 @@ function CreateBudget() {
       setValue(
         "edgePolishedPrice",
         lustreService?.price *
-          ((totalPolishedEdgeLength * thickness) / 10000).toFixed(2)
+          ((totalPolishedEdgeLength * thickness) / 1000).toFixed(2)
       );
     } else {
       setMaterialEdgePolished(0);
@@ -961,7 +961,7 @@ function CreateBudget() {
                 ) : (
                   ""
                 )}
-                {/* ENCHAPADO NO ARTESANAL */}
+                {/* ENCHAPADO NO ARTESANAL (no va porque es como melamina)*/}
                 {/* {totalVeneer2 > 0 ? (
                   <>
                     <p className="mb-1">
@@ -979,7 +979,7 @@ function CreateBudget() {
                   </>
                 ) : (
                   ""
-                )} */}
+                )} 
                 {/* LUSTRADO */}
                 {totalVeneerPolished > 0 ? (
                   <>
@@ -1129,7 +1129,7 @@ function CreateBudget() {
                                 {(
                                   (totalLacqueredEdgeLength *
                                     materialEdgeLaquered) /
-                                  10000
+                                  1000
                                 ).toFixed(2)}{" "}
                                 m<sup>2</sup> Precio:
                                 {formatCurrency(
@@ -1137,7 +1137,7 @@ function CreateBudget() {
                                     (
                                       (totalLacqueredEdgeLength *
                                         materialEdgeLaquered) /
-                                      10000
+                                      1000
                                     ).toFixed(2)
                                 )}
                               </p>
@@ -1211,7 +1211,7 @@ function CreateBudget() {
                                 {(
                                   (totalPolishedEdgeLength *
                                     materialEdgePolished) /
-                                  10000
+                                  1000
                                 ).toFixed(2)}{" "}
                                 m<sup>2</sup> Precio:
                                 {formatCurrency(
@@ -1219,7 +1219,7 @@ function CreateBudget() {
                                     (
                                       (totalPolishedEdgeLength *
                                         materialEdgePolished) /
-                                      10000
+                                      1000
                                     ).toFixed(2)
                                 )}
                               </p>
