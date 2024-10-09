@@ -15,9 +15,10 @@ export const calculateTotalEdges = (modules) => {
         pieceLength = piece.length;
         pieceWidth = piece.width;
       }
+
       if (piece.edgeLength) {
         if (!piece.lacqueredEdge) {
-          totalEdgeLength += piece.edgeLengthSides * pieceLength * piece.qty;
+          totalEdgeLength += piece.edgeLengthSides * piece.length * piece.qty;
         }
         if (piece.lacqueredEdge) {
           totalLacqueredEdgeLength +=
@@ -30,7 +31,7 @@ export const calculateTotalEdges = (modules) => {
       }
       if (piece.edgeWidth) {
         if (!piece.lacqueredEdge) {
-          totalEdgeLength += piece.edgeWidthSides * pieceWidth * piece.qty;
+          totalEdgeLength += piece.edgeWidthSides * piece.width * piece.qty;
         }
         if (piece.lacqueredEdge) {
           totalLacqueredEdgeLength +=
