@@ -341,7 +341,7 @@ function CreateBudget() {
       setMaterialEdge(selectedEdge.price);
       setValue(
         "edgePrice",
-        (totalEdgeLength / 100) * selectedEdge.price * 3.8 +
+        Math.round((totalEdgeLength / 100) * selectedEdge.price * 3.8) +
           filoService?.price * (totalEdgeLength / 100)
       );
       calculateTotalPrice();
@@ -349,7 +349,7 @@ function CreateBudget() {
       setMaterialEdge(1);
       setValue(
         "edgePrice",
-        (totalEdgeLength / 100) * 1 * 3.8 +
+        Math.round((totalEdgeLength / 100) * 1 * 3.8) +
           filoService?.price * (totalEdgeLength / 100)
       );
       calculateTotalPrice();
@@ -466,7 +466,7 @@ function CreateBudget() {
       totalQty += qty;
     }
     subTotal = subTotal * 3.8 + totalQty * cortePlacaService?.price;
-    total = total + totalQty * cortePlacaService?.price;
+    total = total;
     setSubtotalMaterialPrice(subTotal);
     setTotalMaterialPrice(total);
   };
@@ -570,11 +570,24 @@ function CreateBudget() {
       (subtotalShipmentPrice || 0);
 
     setTotalPrice(totalPrice);
-    // console.log("chapa_price_subtotal:", chapa_price_subtotal || 0);
+    // console.log("chapa_price_subtotal * 3.8:", chapa_price_subtotal * 3.8 || 0);
     // console.log(
-    //   "enchapado_artesanal_subtotal:",
-    //   enchapado_artesanal_subtotal || 0
+    //   "enchapado_artesanal_subtotal * 3.8:",
+    //   enchapado_artesanal_subtotal * 3.8 || 0
     // );
+    // console.log("lustrado_subtotal:", lustrado_subtotal || 0);
+    // console.log("laqueado_subtotal:", laqueado_subtotal || 0);
+    // console.log("laqueado_poro_subtotal:", laqueado_poro_subtotal || 0);
+    // console.log("pantografiado_subtotal:", pantografiado_subtotal || 0);
+    // console.log("filo_laqueado_subtotal:", filo_laqueado_subtotal || 0);
+    // console.log("filo_lustrado_subtotal:", filo_lustrado_subtotal || 0);
+    // console.log("filo_subtotal:", filo_subtotal || 0);
+    // console.log("totalSuppliePrice * 3.8:", totalSuppliePrice * 3.8 || 0);
+    // console.log("subtotalMaterialPrice:", subtotalMaterialPrice || 0);
+    // console.log("subTotalItemExtraPrice:", subTotalItemExtraPrice || 0);
+    // console.log("subtotalAdjustmentPrice:", subtotalAdjustmentPrice || 0);
+    // console.log("subtotalPlacement:", subtotalPlacement || 0);
+    // console.log("subtotalShipmentPrice:", subtotalShipmentPrice || 0);
   };
   const veneerPriceValue = getValues("veneerPrice");
   const chapaPriceValue = getValues("chapa_price");
