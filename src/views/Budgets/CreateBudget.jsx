@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Await, Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Grid, Oval } from "react-loader-spinner";
 import {
@@ -230,7 +230,7 @@ function CreateBudget() {
         }
       });
     });
-    console.log("totalLacquered", totalLacquered);
+    // console.log("totalLacquered", totalLacquered);
     return {
       totalLacquered,
     };
@@ -331,30 +331,6 @@ function CreateBudget() {
   };
 
   //AL SELECCIONAR EL FILO OBTENER EL VALOR
-  //filo común
-  const handleMaterialEdgeOption = (event) => {
-    let option = event.target.value;
-    // console.log(option);
-    const selectedEdge = edges.find((edge) => edge._id === option);
-
-    if (selectedEdge) {
-      setMaterialEdge(selectedEdge.price);
-      setValue(
-        "edgePrice",
-        Math.round((totalEdgeLength / 100) * selectedEdge.price * 3.8) +
-          filoService?.price * (totalEdgeLength / 100)
-      );
-      calculateTotalPrice();
-    } else {
-      setMaterialEdge(1);
-      setValue(
-        "edgePrice",
-        Math.round((totalEdgeLength / 100) * 1 * 3.8) +
-          filoService?.price * (totalEdgeLength / 100)
-      );
-      calculateTotalPrice();
-    }
-  };
 
   //filo laqueado
   const handleMaterialEdgeLaqueredOption = (event) => {
@@ -381,7 +357,7 @@ function CreateBudget() {
     // console.log(option);
     if (thickness > 0) {
       setMaterialEdgePolished(thickness);
-
+      // console.log(totalPolishedEdgeLength);
       setValue(
         "edgePolishedPrice",
         lustreService?.price *
@@ -392,6 +368,31 @@ function CreateBudget() {
       setValue("edgePolishedPrice", 0);
     }
     calculateTotalPrice();
+  };
+
+  //filo común
+  const handleMaterialEdgeOption = (event) => {
+    let option = event.target.value;
+    // console.log(option);
+    const selectedEdge = edges.find((edge) => edge._id === option);
+
+    if (selectedEdge) {
+      setMaterialEdge(selectedEdge.price);
+      setValue(
+        "edgePrice",
+        Math.round((totalEdgeLength / 100) * selectedEdge.price * 3.8) +
+          filoService?.price * (totalEdgeLength / 100)
+      );
+      calculateTotalPrice();
+    } else {
+      setMaterialEdge(1);
+      setValue(
+        "edgePrice",
+        Math.round((totalEdgeLength / 100) * 1 * 3.8) +
+          filoService?.price * (totalEdgeLength / 100)
+      );
+      calculateTotalPrice();
+    }
   };
 
   //AL SELECCIONAR LA CHAPA OBTENER EL VALOR
@@ -513,7 +514,7 @@ function CreateBudget() {
 
   useEffect(() => {
     setSubtotalAdjustmentPrice(adjustmentPriceValue);
-    console.log(adjustmentPriceValue);
+    // console.log(adjustmentPriceValue);
   }, [adjustmentPriceValue]);
 
   //CALCULAR ENVÍO
@@ -521,7 +522,7 @@ function CreateBudget() {
 
   useEffect(() => {
     setSubtotalShipmentPrice(shipmentPriceValue);
-    console.log(shipmentPriceValue);
+    // console.log(shipmentPriceValue);
   }, [shipmentPriceValue]);
 
   //CALCULAR COLOCACIÓN
@@ -530,7 +531,7 @@ function CreateBudget() {
 
   useEffect(() => {
     const total = placementDays * placementPrice;
-    console.log("Total colocación:", total);
+    // console.log("Total colocación:", total);
     setSubtotalPlacement(total);
     // Aquí puedes usar setState para guardar el valor si es necesario
   }, [placementDays, placementPrice]);
@@ -570,6 +571,7 @@ function CreateBudget() {
       (subtotalShipmentPrice || 0);
 
     setTotalPrice(totalPrice);
+
     // console.log("chapa_price_subtotal * 3.8:", chapa_price_subtotal * 3.8 || 0);
     // console.log(
     //   "enchapado_artesanal_subtotal * 3.8:",
@@ -617,8 +619,8 @@ function CreateBudget() {
   const onSubmit = async (data, event) => {
     event.preventDefault();
     console.log(data);
+    //SET LOADER
     setSubmitLoader(true);
-    //Budget Number
 
     // Creación del objeto supplies agrupado por módulos
     const supplies = {};
@@ -788,6 +790,10 @@ function CreateBudget() {
         veneerSelect: data.veneerSelect,
         chapa_price: Number(data.chapa_price),
       },
+      lacqueredOpen: {
+        lacqueredOpenM2: data.lacqueredOpenM2,
+        lacqueredOpenPrice: data.lacqueredOpenPrice,
+      },
       lacquered: {
         lacqueredM2: data.lacqueredM2,
         lacqueredPrice: data.lacqueredPrice,
@@ -797,39 +803,41 @@ function CreateBudget() {
         pantographedPrice: data.pantographedPrice,
       },
       edge_lacquered: {
-        edgeLaqueredThickness: data.edgeThickness,
+        edgeLaqueredThickness: Number(data.edgeThickness),
         edgeLaqueredM2: Number(data.edgeLaqueredM2),
         edgeLaqueredPrice: data.edgeLaqueredPrice,
+        totalLacqueredEdgeLength: totalLacqueredEdgeLength,
       },
       edge_polished: {
-        edgeLaqueredThickness: data.edgePolishedThickness,
+        edgePolishedThickness: Number(data.edgePolishedThickness),
         edgePolishedM2: Number(data.edgePolishedM2),
         edgePolishedPrice: data.edgePolishedPrice,
+        totalPolishedEdgeLength: totalPolishedEdgeLength,
       },
       edge_no_lacquered: {
         edgeSelect: data.edgeSelect,
-        edgeM2: data.edgeM2,
+        edgeM2: Number(data.edgeM2),
         edgePrice: data.edgePrice,
       },
       supplies: suppliesList,
       materials: materialsList,
       extra_items: extraItemsList,
       adjustment_reason: data.adjustment_reason,
-      adjustment_price: data.adjustment_price,
+      adjustment_price: Number(data.adjustment_price),
       total_price: totalPrice,
       deliver_date: data.deliver_date,
       comments: data.comments,
       client: clientData,
       placement: data.placement,
       placement_days: data.placementDays,
-      placement_price: data.placementPrice,
+      placement_price: Number(data.placementPrice),
       shipment: data.shipment,
-      shipmentt_price: data.shipmentPrice,
+      shipmentt_price: Number(data.shipmentPrice),
       show_modules: data.showModules,
     };
 
     // //TODO AGREGAR USERNAME
-    // console.log(budgetData);
+    console.log(budgetData);
 
     try {
       await createBudget(budgetData);
@@ -1155,15 +1163,16 @@ function CreateBudget() {
                                 )}
                               </p>
                               <input
-                                name={`edgeLaqueredM2`}
+                                name={"edgeLaqueredM2"}
                                 type="hidden"
                                 value={(
                                   (totalLacqueredEdgeLength *
                                     materialEdgeLaquered) /
-                                  10000
+                                  1000
                                 ).toFixed(2)}
-                                {...register(`edgeLaqueredM2`)}
+                                {...register("edgeLaqueredM2")}
                               />
+
                               <input
                                 name={`edgeLaqueredPrice`}
                                 type="hidden"
@@ -1172,7 +1181,7 @@ function CreateBudget() {
                                   (
                                     (totalLacqueredEdgeLength *
                                       materialEdgeLaquered) /
-                                    10000
+                                    1000
                                   ).toFixed(2)
                                 }
                                 {...register(`edgeLaqueredPrice`)}
@@ -1242,7 +1251,7 @@ function CreateBudget() {
                                 value={(
                                   (totalPolishedEdgeLength *
                                     materialEdgePolished) /
-                                  10000
+                                  1000
                                 ).toFixed(2)}
                                 {...register(`edgePolishedM2`)}
                               />
@@ -1254,7 +1263,7 @@ function CreateBudget() {
                                   (
                                     (totalPolishedEdgeLength *
                                       materialEdgePolished) /
-                                    10000
+                                    1000
                                   ).toFixed(2)
                                 }
                                 {...register(`edgePolishedPrice`)}
@@ -1311,8 +1320,10 @@ function CreateBudget() {
                           )}
                           {setValue(
                             "edgePrice",
-                            (totalEdgeLength / 100) * materialEdge * 3.8 +
-                              filoService?.price * (totalEdgeLength / 100)
+                            Math.round(
+                              (totalEdgeLength / 100) * materialEdge * 3.8 +
+                                filoService?.price * (totalEdgeLength / 100)
+                            )
                           )}
                         </span>
                       </p>
@@ -1433,10 +1444,10 @@ function CreateBudget() {
                                     value={supply.qty}
                                     {...register(`supplieQty${index}`)}
                                   />
-                                  <p>
+                                  {/* <p>
                                     <span className="font-bold">Largo:</span>{" "}
                                     {supply.length}
-                                  </p>
+                                  </p> */}
                                   <input
                                     name={`supplieLength${index}`}
                                     type="hidden"
@@ -1447,17 +1458,12 @@ function CreateBudget() {
                                     <span className="font-bold">
                                       Precio total:
                                     </span>{" "}
-                                    {
-                                      (formatCurrency(supply.price),
-                                      setValue(
-                                        `suppliePrice${index}`,
-                                        supply.price
-                                      ))
-                                    }
+                                    {formatCurrency(supply.price)}
                                   </p>
                                   <input
                                     name={`suppliePrice${index}`}
                                     type="hidden"
+                                    value={supply.price}
                                     {...register(`suppliePrice${index}`)}
                                   />
                                 </div>
