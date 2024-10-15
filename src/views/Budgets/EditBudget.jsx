@@ -25,6 +25,7 @@ function EditBudget() {
   const [totalLacqueredEdgeLength, setTotalLacqueredEdgeLength] = useState(0);
   const [totalPolishedEdgeLength, setTotalPolishedEdgeLength] = useState(0);
   const [totalEdgeLength, setTotalEdgeLength] = useState(0);
+  const [edgeSelect, setEdgeSelect] = useState("");
   //Grosores y material filos
   const [materialEdgeLaquered, setMaterialEdgeLaquered] = useState(0);
   const [materialEdgePolished, setMaterialEdgePolished] = useState(0);
@@ -69,7 +70,10 @@ function EditBudget() {
           "edgeLaqueredM2",
           budgetData.data.edge_lacquered[0].edgeLaqueredM2
         );
-
+        console.log(
+          " budgetData.data.edge_lacquered[0].edgeLaqueredPrice",
+          budgetData.data.edge_lacquered[0].edgeLaqueredPrice
+        );
         setValue(
           "edgeLaqueredPrice",
           budgetData.data.edge_lacquered[0].edgeLaqueredPrice
@@ -85,11 +89,7 @@ function EditBudget() {
         setMaterialEdgeLaquered(
           budgetData.data.edge_lacquered[0].edgeLaqueredThickness
         );
-        handleMaterialEdgeLaqueredOption({
-          target: {
-            value: budgetData.data.edge_lacquered[0].edgeLaqueredThickness,
-          },
-        });
+
         //FILO LUSTRADO
         setValue(
           "edgePolishedM2",
@@ -112,14 +112,12 @@ function EditBudget() {
         setMaterialEdgePolished(
           budgetData.data.edge_polished[0].edgePolishedThickness
         );
-        handleMaterialEdgeLaqueredOption({
-          target: {
-            value: budgetData.data.edge_polished[0].edgePolishedThickness,
-          },
-        });
+
         //FILO SIN NADA
         setTotalEdgeLength(Number(budgetData.data.edge_no_lacquered[0].edgeM2));
         setValue("edgeSelect", budgetData.data.edge_no_lacquered[0].edgeSelect);
+        setEdgeSelect(budgetData.data.edge_no_lacquered[0].edgeSelect);
+
         //INSUMOS
         if (budgetData.data.supplies) {
           if (budgetData.data.supplies.length > 0) {
@@ -136,6 +134,7 @@ function EditBudget() {
             setTotalSuppliePrice(totalPrice);
           }
         }
+
         //PLACAS
         if (budgetData.data.materials) {
           if (budgetData.data.materials.length > 0) {
@@ -212,7 +211,7 @@ function EditBudget() {
     getAllServicesToSet();
     getAllTablesToSet();
     getAllEdgesToSet();
-  }, [budgetId]);
+  }, [budgetId, edgeSelect]);
 
   //Servicios: obetener valores
   const enchapadoArtesanalService = services.find(
@@ -248,7 +247,7 @@ function EditBudget() {
   //filo laqueado
   const handleMaterialEdgeLaqueredOption = (event) => {
     let thickness = Number(event.target.value);
-
+    console.log("handleMaterialEdgeLaqueredOption");
     // console.log(option);
     if (thickness > 0) {
       console.log(laqueadoService?.price, totalLacqueredEdgeLength, thickness);
@@ -272,8 +271,14 @@ function EditBudget() {
   //filo lustrado
   const handleMaterialEdgePolishedOption = (event) => {
     let thickness = Number(event.target.value);
-    console.log("thickness", totalPolishedEdgeLength);
+    console.log("handleMaterialEdgePolishedOption");
     if (thickness > 0) {
+      console.log(
+        "handleMaterialEdgePolishedOption",
+        lustreService?.price,
+        totalPolishedEdgeLength,
+        thickness
+      );
       setMaterialEdgePolished(thickness);
       // console.log(totalPolishedEdgeLength);
       setValue(
@@ -294,7 +299,7 @@ function EditBudget() {
   //filo común
   const handleMaterialEdgeOption = (event) => {
     let option = event.target.value;
-    // console.log(option);
+    console.log("handleMaterialEdgeOption");
 
     let selectedEdge = edges.find((edge) => edge._id === option);
 
@@ -316,6 +321,14 @@ function EditBudget() {
       // calculateTotalPrice();
     }
   };
+
+  useEffect(() => {
+    handleMaterialEdgeOption({
+      target: {
+        value: edgeSelect,
+      },
+    });
+  }, [services, edgeSelect]);
 
   //CANTIDAD DE PLACAS
   function counterMaterial(e) {
