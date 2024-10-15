@@ -832,7 +832,7 @@ function CreateBudget() {
       placement_days: data.placementDays,
       placement_price: Number(data.placementPrice),
       shipment: data.shipment,
-      shipmentt_price: Number(data.shipmentPrice),
+      shipment_price: Number(data.shipmentPrice),
       show_modules: data.showModules,
     };
 
@@ -1794,6 +1794,7 @@ function CreateBudget() {
               ) : (
                 ""
               )}
+              {/* fin carga cliente */}
               <div className="flex gap-4">
                 <div className="flex flex-col w-2/4  ">
                   {" "}

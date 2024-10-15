@@ -7,11 +7,15 @@ import {
   getAllServices,
   getAllTables,
   getAllEdgesSupplies,
+  getAllVeneerSupplies,
+  FormCreateClient,
+  getAllClients,
 } from "../../index.js";
 
 function EditBudget() {
   const { budgetId } = useParams();
   const [budget, setBudget] = useState({});
+  const [submitLoader, setSubmitLoader] = useState(false);
   const [loader, setLoader] = useState(true);
   const [singleFurniture, setSingleFurniture] = useState(null);
   const [totalVeneer, setTotalVeneer] = useState(0);
@@ -38,13 +42,32 @@ function EditBudget() {
   const [tables, setTables] = useState([]);
   const [countMaterial, setCountMaterial] = useState(0);
   const [totalMaterialPrice, setTotalMaterialPrice] = useState(0);
+  //Items extra
+  const [countItemExtra, setCountItemExtra] = useState(0);
+  const [subTotalItemExtraPrice, setSubTotalItemExtraPrice] = useState(0);
+  //Chapa
+  const [chapa, setChapa] = useState(0);
+  const [veneer, setVeneer] = useState([]);
+  //Cliente
+  const [clientOption, setClientOption] = useState("");
+  const [allClients, setAllClients] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredClients, setFilteredClients] = useState([]);
+  //Colocación
+  const [subtotalPlacement, setSubtotalPlacement] = useState(0);
+  //Envío
+  const [subtotalShipmentPrice, setSubtotalShipmentPrice] = useState(0);
+  //Total Price
+  const [totalPrice, setTotalPrice] = useState(0);
   const navigate = useNavigate();
 
   const {
     register,
+    unregister,
     handleSubmit,
     setValue,
     getValues,
+    watch,
     formState: { errors },
   } = useForm();
 
@@ -145,6 +168,9 @@ function EditBudget() {
 
               // Asignar el valor de materialQty
               setValue(`materialQty${index}`, material.qty || 0);
+
+              // Asignar el valor de materiaPrice
+              setValue(`materialPrice${index}`, material.price || 0);
             });
 
             // Calcular el total de los precios multiplicando el precio por la cantidad
@@ -163,9 +189,85 @@ function EditBudget() {
           }
         }
 
+        //ITEMS EXTRA
+        if (budgetData.data.extra_items) {
+          if (budgetData.data.extra_items.length > 0) {
+            budgetData.data.extra_items.forEach((extraItem, index) => {
+              // Asignar el valor de materialTable
+              setValue(`itemExtra${index}`, extraItem.name || "");
+
+              // Asignar el valor de extraItemQty
+              setValue(`itemExtraPrice${index}`, extraItem.price || 0);
+
+              setCountItemExtra(budgetData.data.extra_items.length);
+            });
+          }
+        }
+        //CHAPA
+        if (budgetData.data?.chapa) {
+          if (budgetData.data.extra_items.length > 0) {
+            budgetData.data.chapa.forEach((chapaItem, index) => {
+              // Asignar el valor de chapa_price
+              setValue("veneerSelect", chapaItem.veneerSelect || "");
+              setValue("chapa_price", chapaItem.chapa_price || "");
+              setChapa(chapaItem.chapa_price);
+            });
+          }
+        }
+        //ÍTEM DE AJUSTE
+        setValue("adjustment_reason", budgetData.data.adjustment_reason || "");
+        setValue("adjustment_price", budgetData.data.adjustment_price || "");
+
+        //CLIENTE
+        setClientOption("existing");
+        setValue("clientOption", "existing");
+        if (budgetData.data?.client) {
+          if (budgetData.data.client.length > 0) {
+            budgetData.data.client.forEach((clientEach, index) => {
+              // Asignar el valor de chapa_price
+              setValue(
+                "clientNameInput",
+                clientEach.lastname + " " + clientEach.name || ""
+              );
+              setValue("clientId", clientEach._id || "");
+            });
+          }
+        }
+        //COMENTARIOS
+        setValue("comments", budgetData.data.comments || "");
+        //FECHA DE ENTREGA
+        setValue("deliver_date", budgetData.data.deliver_date || "");
+        //COLOCACIÓN
+        if (budgetData.data.placement) {
+          setValue("placement", "true" || "");
+          setValue("placementDays", budgetData.data.placement_days || "");
+          setValue("placementPrice", budgetData.data.placement_price || "");
+          setSubtotalPlacement(
+            budgetData.data.placement_price * budgetData.data.placement_days
+          );
+        } else {
+          setValue("placement", "false" || "");
+        }
+
+        //ENVÍO
+        if (budgetData.data.shipment) {
+          setValue("shipment", "true" || "");
+          setValue("shipmentPrice", budgetData.data.placement_price || "");
+          setSubtotalPlacement(
+            budgetData.data.placement_price * budgetData.data.placement_days
+          );
+        } else {
+          setValue("placement", "false" || "");
+        }
+        //MOSTRAR MÓDULOS
+        setValue("showModules", budgetData.data.show_modules || "");
+
+        //PRECIO TOTAL
+        setTotalPrice(budgetData.data.total_price);
         //SER LOADER
         setLoader(false);
       })
+
       .catch((error) => {
         console.error("Este es el error:", error);
       });
@@ -211,6 +313,8 @@ function EditBudget() {
     getAllServicesToSet();
     getAllTablesToSet();
     getAllEdgesToSet();
+    getAllVeneerToSet();
+    getAllClientsToSet();
   }, [budgetId, edgeSelect]);
 
   //Servicios: obetener valores
@@ -299,7 +403,7 @@ function EditBudget() {
   //filo común
   const handleMaterialEdgeOption = (event) => {
     let option = event.target.value;
-    console.log("handleMaterialEdgeOption");
+    // console.log("handleMaterialEdgeOption");
 
     let selectedEdge = edges.find((edge) => edge._id === option);
 
@@ -346,6 +450,7 @@ function EditBudget() {
   // Manejar la selección del material
   const handleMaterialOption = (index) => (event) => {
     let option = event.target.value;
+
     if (option) {
       const selectedTable = tables.find((table) => table.name === option);
       setValue(`materialPrice${index}`, selectedTable.price, {
@@ -355,6 +460,172 @@ function EditBudget() {
       setValue(`materialPrice${index}`, 0, { shouldValidate: true });
     }
   };
+  //CALCULAR TOTAL DE LOS MATERIALES
+  const materialPrices = watch(
+    Array.from({ length: countMaterial }, (_, index) => `materialPrice${index}`)
+  );
+  const materialQtys = watch(
+    Array.from({ length: countMaterial }, (_, index) => `materialQty${index}`)
+  );
+
+  const calculateTotalMaterialPrice = (materialPrices, materialQtys) => {
+    let subTotal = 0;
+    let total = 0;
+    let totalQty = 0;
+    for (let index = 0; index < countMaterial; index++) {
+      const price = Number(materialPrices[index]) || 0;
+      const qty = Number(materialQtys[index]) || 0;
+      subTotal += price * qty;
+      total += price * qty;
+      totalQty += qty;
+    }
+    subTotal = subTotal * 3.8 + totalQty * cortePlacaService?.price;
+    total = total;
+    // setSubtotalMaterialPrice(subTotal);
+    setTotalMaterialPrice(total);
+  };
+
+  // Ejecutar cálculo automáticamente cuando cambien los precios o cantidades
+  useEffect(() => {
+    calculateTotalMaterialPrice(materialPrices, materialQtys);
+  }, [materialPrices, materialQtys, countMaterial]);
+
+  //CALCULAR TOTAL DE ITEMS EXTRA
+
+  //CANTIDAD ITEMS EXTRA
+  function counterItemExtra(e) {
+    const action = e.target.innerText;
+    let count;
+
+    if (action === "+") {
+      count = countItemExtra + 1;
+    } else if (action === "-" && countItemExtra > 0) {
+      count = countItemExtra - 1;
+
+      // Remover los valores del último item extra cuando se reste
+      unregister(`itemExtra${countItemExtra - 1}`);
+      unregister(`itemExtraPrice${countItemExtra - 1}`);
+    } else {
+      count = 0;
+    }
+
+    setCountItemExtra(count);
+  }
+
+  const itemExtraPriceValues = watch(
+    Object.keys(getValues()).filter((key) => key.startsWith("itemExtraPrice"))
+  );
+
+  // Función para calcular el total de los precios de itemExtraPrice
+  const calculateSubTotalItemExtraPrice = () => {
+    const total = itemExtraPriceValues.reduce(
+      (acc, price) => acc + Number(price || 0),
+      0
+    );
+    return total;
+  };
+
+  useEffect(() => {
+    const total = calculateSubTotalItemExtraPrice();
+    setSubTotalItemExtraPrice(total); // Actualiza el subtotal
+  }, [itemExtraPriceValues]);
+
+  //AL SELECCIONAR LA CHAPA OBTENER EL VALOR
+  const handleChapaOption = (event) => {
+    let option = event.target.value;
+    // console.log(option);
+    if (option) {
+      const selectedVeneer = veneer.find((veneer) => veneer._id === option);
+      let veneerPrice = selectedVeneer.price * (totalVeneer * 1.2);
+      setValue("chapa_price", veneerPrice.toFixed(2));
+      setChapa(veneerPrice);
+    } else {
+      setValue("chapa_price", 0);
+      setChapa(0);
+    }
+  };
+
+  // TRAER CHAPAS: para select de chapas
+  const getAllVeneerToSet = () => {
+    getAllVeneerSupplies()
+      .then((veneerData) => {
+        setVeneer(veneerData.data);
+        // console.log(tablesData.data);
+      })
+      .catch((error) => {
+        console.error("Este es el error:", error);
+      });
+  };
+
+  // TRAER CLIENTES: para select de clientes
+  const getAllClientsToSet = () => {
+    getAllClients()
+      .then((clientsData) => {
+        setAllClients(clientsData.data);
+        // console.log(tablesData.data);
+      })
+      .catch((error) => {
+        console.error("Este es el error:", error);
+      });
+  };
+
+  //OPCION SELECCIONAR O CARGAR CLIENTE
+  const handleClientOption = (event) => {
+    setClientOption(event.target.value);
+    if (event.target.value === "existing") {
+      getAllClientsToSet();
+    }
+  };
+  const handleSearchTermChange = (event) => {
+    setSearchTerm(event.target.value);
+    // Aquí puedes filtrar los clientes basados en `event.target.value`
+    const filtered = allClients.filter((client) =>
+      `${client.lastname} ${client.name}`
+        .toLowerCase()
+        .includes(event.target.value.toLowerCase())
+    );
+    setFilteredClients(filtered);
+  };
+
+  const handleClientSelect = (client) => {
+    setValue("clientNameInput", `${client.lastname} ${client.name}`);
+    setValue("clientId", client._id);
+    setFilteredClients([]);
+  };
+  //filtro de clientes
+  useEffect(() => {
+    if (searchTerm === "") {
+      console.log("if");
+      setFilteredClients([]);
+    } else {
+      const results = allClients.filter((client) =>
+        `${client.lastname} ${client.name}`
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      );
+      setFilteredClients(results);
+    }
+  }, [searchTerm, allClients]);
+
+  //CALCULAR COLOCACIÓN
+  const placementDays = watch("placementDays", 0);
+  const placementPrice = watch("placementPrice", 0);
+
+  useEffect(() => {
+    const total = placementDays * placementPrice;
+    // console.log("Total colocación:", total);
+    setSubtotalPlacement(total);
+    // Aquí puedes usar setState para guardar el valor si es necesario
+  }, [placementDays, placementPrice]);
+
+  //CALCULAR ENVÍO
+  const shipmentPriceValue = Number(watch("shipmentPrice"));
+
+  useEffect(() => {
+    setSubtotalShipmentPrice(shipmentPriceValue);
+    // console.log(shipmentPriceValue);
+  }, [shipmentPriceValue]);
+
   //FORMULARIO EDITAR PRESUPUESTO
   const onSubmit = async (data, event) => {};
 
@@ -947,6 +1218,376 @@ function EditBudget() {
                   </div>
                 </div>
               ))}
+              {/* item extra inicio */}
+              <div className="flex items-center gap-2 pt-4">
+                <p className="text-md font-semibold">Items extra</p>{" "}
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    className="text-xl font-semibold bg-slate-100 rounded-md p-1 w-6 h-6 flex items-center justify-center"
+                    onClick={counterItemExtra}
+                  >
+                    +
+                  </button>
+                  <button
+                    type="button"
+                    className="text-xl font-semibold bg-slate-100 rounded-md p-1 w-6 h-6 flex items-center justify-center"
+                    onClick={counterItemExtra}
+                  >
+                    -
+                  </button>
+                  <p>Count: {countItemExtra}</p>
+                  <p>{formatCurrency(subTotalItemExtraPrice)}</p>
+                </div>
+              </div>
+              {[...Array(countItemExtra)].map((_, index) => (
+                <div
+                  key={`containerItemExtra${index}`}
+                  className="flex w-1/2 gap-4"
+                >
+                  <div className="flex flex-col">
+                    <label htmlFor={`itemExtra${index}`}>Nombre</label>
+                    <input
+                      name={`itemExtra${index}`}
+                      type="text"
+                      className="border-solid border-2 border-opacity mb-2 rounded-md "
+                      {...register(`itemExtra${index}`)}
+                    />
+                    {errors[`itemExtra${index}`] && (
+                      <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                        {errors[`itemExtra${index}`].message}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-col">
+                    <label htmlFor={`itemExtraPrice${index}`}>Precio</label>
+                    <input
+                      name={`itemExtraPrice${index}`}
+                      type="text"
+                      className="border-solid border-2 border-opacity mb-2 rounded-md "
+                      {...register(`itemExtraPrice${index}`)}
+                    />
+                    {errors[`itemExtraPrice${index}`] && (
+                      <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                        {errors[`itemExtraPrice${index}`].message}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {/* item extra fin */}
+              {/* chapa enchapado artesanal*/}
+              {totalVeneer > 0 ? (
+                <>
+                  <h3 className="pt-4 font-semibold">Chapa</h3>
+                  <div className="flex gap-4">
+                    <div className="flex flex-col w-1/4  ">
+                      {" "}
+                      <label htmlFor={`veneerSelect`}>Elegir chapa</label>
+                      <select
+                        name={`veneerSelect`}
+                        id={`veneerSelect`}
+                        className="border-solid border-2 border-opacity mb-2 rounded-md"
+                        {...register(`veneerSelect`)}
+                        onChange={(e) => {
+                          handleChapaOption(e);
+                          calculateTotalPrice();
+                        }}
+                      >
+                        <option value="">Elegir una opción</option>
+                        {veneer.map((veneer) => (
+                          <option key={veneer._id} value={veneer._id}>
+                            {veneer.name}
+                          </option>
+                        ))}
+                      </select>
+                      {errors[`veneerSelect`] && (
+                        <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                          {errors[`veneerSelect`].message}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex gap-x-6 w-1/4  ">
+                      {" "}
+                      <div>
+                        <label htmlFor={`chapa_price`}>
+                          M<sup>2</sup>
+                        </label>
+                        <p> {totalVeneer}</p>
+                      </div>
+                      <div>
+                        <label htmlFor={`chapa_price`}>Precio chapa</label>
+                        <p> {formatCurrency(chapa)}</p>
+                      </div>
+                      <input
+                        name={`chapa_price`}
+                        type="hidden"
+                        {...register(`chapa_price`)}
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                ""
+              )}
+              {/* chapa enchapado artesanal fin*/}
+              {/* chapa enchapado artesanal fin*/}
+              {/* item ajuste */}
+              <h3 className="pt-4 font-semibold">Ítem de ajuste</h3>
+              <div className="flex gap-4">
+                <div className="flex flex-col w-1/4  ">
+                  {" "}
+                  <label htmlFor={`adjustment_reason`}>Razón de ajuste</label>
+                  <input
+                    name={`adjustment_reason`}
+                    type="text"
+                    className="border-solid border-2 border-opacity mb-2 rounded-md "
+                    {...register(`adjustment_reason`)}
+                  />
+                  {errors[`adjustment_reason`] && (
+                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                      {errors[`adjustment_reason`].message}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-col w-1/4  ">
+                  {" "}
+                  <label htmlFor={`adjustment_price`}>Valor del ajuste</label>
+                  <input
+                    name={`adjustment_price`}
+                    type="number"
+                    className="border-solid border-2 border-opacity mb-2 rounded-md "
+                    {...register(`adjustment_price`)}
+                    min="0"
+                  />
+                  {errors[`adjustment_price`] && (
+                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                      {errors[`adjustment_price`].message}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {/* item ajuste fin*/}
+              {/* item ajuste fin*/}
+              {/* carga cliente*/}
+              <div className="flex flex-col w-1/4 my-2">
+                <label>¿Cargar cliente o elegir uno existente?</label>
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    id="newClient"
+                    value="new"
+                    {...register(`clientOption`, {
+                      required: "El campo es obligatorio",
+                    })}
+                    onChange={handleClientOption}
+                  />
+                  <label htmlFor="newClient" className="ml-2">
+                    Cargar cliente
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    id="existingClient"
+                    value="existing"
+                    {...register(`clientOption`, {
+                      required: "El campo es obligatorio",
+                    })}
+                    onChange={handleClientOption}
+                  />
+                  <label htmlFor="existingClient" className="ml-2">
+                    Elegir uno existente
+                  </label>
+                </div>
+                {errors.clientOption && (
+                  <span className="text-xs xl:text-base text-red-700 mt-2 block text-left">
+                    {errors.clientOption.message}
+                  </span>
+                )}
+              </div>
+              {clientOption === "new" ? (
+                <FormCreateClient
+                  register={register}
+                  errors={errors}
+                ></FormCreateClient>
+              ) : clientOption === "existing" ? (
+                <>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Buscar cliente por nombre"
+                      {...register("clientNameInput")}
+                      onChange={handleSearchTermChange}
+                      className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+                    />
+                    {filteredClients.length > 0 && (
+                      <ul className="absolute border bg-white w-full max-h-40 overflow-y-auto">
+                        {filteredClients.map((client) => (
+                          <li
+                            key={client._id}
+                            onClick={() => handleClientSelect(client)}
+                            className="cursor-pointer p-2 hover:bg-gray-200"
+                          >
+                            {client.lastname} {client.name} - DNI: {client.dni}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {errors.clientId && (
+                      <span className="text-xs xl:text-base text-red-700 mt-2 block text-left">
+                        {errors.clientId.message}
+                      </span>
+                    )}
+                    <input type="hidden" {...register("clientId")} />
+                  </div>
+                </>
+              ) : (
+                ""
+              )}
+              {/* fin carga cliente */}
+              <div className="flex gap-4">
+                <div className="flex flex-col w-2/4  ">
+                  {" "}
+                  <label htmlFor={`comments`}>Comentarios</label>
+                  <textarea
+                    name={`comments`}
+                    type="text"
+                    className="border-solid border-2 border-opacity mb-2 rounded-md "
+                    {...register(`comments`)}
+                  />
+                  {errors[`comments`] && (
+                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                      {errors[`comments`].message}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-col w-1/4  ">
+                  {" "}
+                  <label htmlFor={`deliver_date`}>Fecha de entrega</label>
+                  <input
+                    name={`deliver_date`}
+                    type="text"
+                    className="border-solid border-2 border-opacity mb-2 rounded-md "
+                    {...register(`deliver_date`)}
+                  />
+                  {errors[`deliver_date`] && (
+                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                      {errors[`deliver_date`].message}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex   my-4 gap-4">
+                <label htmlFor="placement">Colocación</label>
+                <select
+                  name="placement"
+                  id="placement"
+                  className="border-solid border-2 border-opacity mb-2 rounded-md"
+                  {...register("placement", {
+                    required: "El campo es obligatorio",
+                  })}
+                >
+                  <option value="">Elegir una opción</option>
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+                {errors.placement && (
+                  <span className="text-xs xl:text-base text-red-700 mt-2 block text-left">
+                    {errors.placement.message}
+                  </span>
+                )}
+                <div>
+                  <label htmlFor="placementDays" className="mr-4">
+                    Cant. Días
+                  </label>
+                  <input
+                    name={`placementDays`}
+                    type="number"
+                    className="border-solid border-2 border-opacity mb-2 rounded-md "
+                    {...register(`placementDays`)}
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="placementPrice" className="mr-4">
+                    Precio
+                  </label>
+                  <input
+                    name={`placementPrice`}
+                    type="number"
+                    className="border-solid border-2 border-opacity mb-2 rounded-md "
+                    {...register(`placementPrice`)}
+                    min="0"
+                  />
+                </div>
+                <p>{formatCurrency(subtotalPlacement)}</p>
+              </div>
+              <div className="flex  w-1/2 my-4 gap-4">
+                <label htmlFor="shipment">Envío</label>
+                <select
+                  name="shipment"
+                  id="shipment"
+                  className="border-solid border-2 border-opacity mb-2 rounded-md"
+                  {...register("shipment", {
+                    required: "El campo es obligatorio",
+                  })}
+                >
+                  <option value="">Elegir opción</option>
+                  <option value="true">Sí</option>
+                  <option value="false">No</option>
+                </select>
+                {errors.shipment && (
+                  <span className="text-xs xl:text-base text-red-700 mt-2 block text-left">
+                    {errors.shipment.message}
+                  </span>
+                )}
+                <label htmlFor="shipmentPrice">Precio</label>
+                <input
+                  name={`shipmentPrice`}
+                  type="number"
+                  className="border-solid border-2 border-opacity mb-2 rounded-md "
+                  {...register(`shipmentPrice`)}
+                  min="0"
+                />
+              </div>
+              <div className="flex  w-1/2 my-4 gap-4">
+                <label htmlFor="showModules">
+                  Mostrar módulos en presupuesto
+                </label>
+                <input
+                  type="checkbox"
+                  name="showModules"
+                  id="showModules"
+                  {...register(`showModules`)}
+                />
+              </div>
+              <p className="text-center">Total: {formatCurrency(totalPrice)}</p>
+              {!submitLoader ? (
+                <button
+                  type="submit"
+                  className="text-white bg-amber-600 rounded-md px-2 py-1 mb-2 w-1/6 m-auto"
+                >
+                  Editar presupuesto
+                </button>
+              ) : (
+                <div className="flex justify-center w-full mt-8">
+                  <div className="flex justify-center bg-lightblue rounded-md px-2 py-1 mb-2 w-1/6 m-auto">
+                    <Oval
+                      visible={submitLoader}
+                      height="30"
+                      width="30"
+                      color="#fff"
+                      secondaryColor="#fff"
+                      strokeWidth="6"
+                      ariaLabel="oval-loading"
+                      wrapperStyle={{}}
+                      wrapperClass=""
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </form>
