@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { Grid } from "react-loader-spinner";
+import { Grid, Oval } from "react-loader-spinner";
 import {
   getBudgetById,
   getAllServices,
@@ -10,6 +10,9 @@ import {
   getAllVeneerSupplies,
   FormCreateClient,
   getAllClients,
+  getClientById,
+  createClient,
+  editBudget,
 } from "../../index.js";
 
 function EditBudget() {
@@ -42,12 +45,15 @@ function EditBudget() {
   const [tables, setTables] = useState([]);
   const [countMaterial, setCountMaterial] = useState(0);
   const [totalMaterialPrice, setTotalMaterialPrice] = useState(0);
+  const [subtotalMaterialPrice, setSubtotalMaterialPrice] = useState(0);
   //Items extra
   const [countItemExtra, setCountItemExtra] = useState(0);
   const [subTotalItemExtraPrice, setSubTotalItemExtraPrice] = useState(0);
   //Chapa
   const [chapa, setChapa] = useState(0);
   const [veneer, setVeneer] = useState([]);
+  //Precio de ajuste
+  const [subtotalAdjustmentPrice, setSubtotalAdjustmentPrice] = useState(0);
   //Cliente
   const [clientOption, setClientOption] = useState("");
   const [allClients, setAllClients] = useState([]);
@@ -88,6 +94,19 @@ function EditBudget() {
         setTotalPantographed(
           Number(budgetData.data.pantographed[0].pantographedM2)
         );
+
+        //DATA PRINCIPAL DEL MUEBLE
+        //nombre
+        setValue("furniture_name", budgetData.data.furniture_name);
+        //height
+        setValue("height", budgetData.data.height);
+        //width
+        setValue("width", budgetData.data.width);
+        //length
+        setValue("length", budgetData.data.length);
+        //category
+        setValue("category", budgetData.data.category);
+
         //FILO LAQUEADO
         setValue(
           "edgeLaqueredM2",
@@ -369,7 +388,7 @@ function EditBudget() {
       setMaterialEdgeLaquered(0);
       setValue("edgeLaqueredPrice", 0);
     }
-    // calculateTotalPrice();
+    calculateTotalPrice();
   };
 
   //filo lustrado
@@ -414,7 +433,7 @@ function EditBudget() {
         Math.round((totalEdgeLength / 100) * selectedEdge.price * 3.8) +
           filoService?.price * (totalEdgeLength / 100)
       );
-      // calculateTotalPrice();
+      calculateTotalPrice();
     } else {
       setMaterialEdge(1);
       setValue(
@@ -422,7 +441,7 @@ function EditBudget() {
         Math.round((totalEdgeLength / 100) * 1 * 3.8) +
           filoService?.price * (totalEdgeLength / 100)
       );
-      // calculateTotalPrice();
+      calculateTotalPrice();
     }
   };
 
@@ -481,7 +500,7 @@ function EditBudget() {
     }
     subTotal = subTotal * 3.8 + totalQty * cortePlacaService?.price;
     total = total;
-    // setSubtotalMaterialPrice(subTotal);
+    setSubtotalMaterialPrice(subTotal);
     setTotalMaterialPrice(total);
   };
 
@@ -557,6 +576,14 @@ function EditBudget() {
       });
   };
 
+  //CALCULAR AJUSTE
+  const adjustmentPriceValue = Number(watch("adjustment_price"));
+
+  useEffect(() => {
+    setSubtotalAdjustmentPrice(adjustmentPriceValue);
+    // console.log(adjustmentPriceValue);
+  }, [adjustmentPriceValue]);
+
   // TRAER CLIENTES: para select de clientes
   const getAllClientsToSet = () => {
     getAllClients()
@@ -626,9 +653,306 @@ function EditBudget() {
     // console.log(shipmentPriceValue);
   }, [shipmentPriceValue]);
 
-  //FORMULARIO EDITAR PRESUPUESTO
-  const onSubmit = async (data, event) => {};
+  //CALCULAR TOTAL COMPLETO
+  const calculateTotalPrice = () => {
+    let enchapado_artesanal_subtotal = Number(getValues("veneerPrice")) || 0;
+    let lustrado_subtotal = Number(getValues("veneerPolishedPrice")) || 0;
+    let laqueado_subtotal = Number(getValues("lacqueredPrice")) || 0;
+    let laqueado_poro_subtotal = Number(getValues("lacqueredOpenPrice")) || 0;
+    let pantografiado_subtotal = Number(getValues("pantographedPrice")) || 0;
+    let chapa_price_subtotal = Number(getValues("chapa_price")) || 0;
+    let filo_laqueado_subtotal = Number(getValues("edgeLaqueredPrice")) || 0;
+    let filo_lustrado_subtotal = Number(getValues("edgePolishedPrice")) || 0;
+    let filo_subtotal = Number(getValues("edgePrice")) || 0;
 
+    //suma del total
+    let totalPrice =
+      (chapa_price_subtotal * 3.8 || 0) +
+      (enchapado_artesanal_subtotal * 3.8 || 0) +
+      (lustrado_subtotal || 0) +
+      (laqueado_subtotal || 0) +
+      (laqueado_poro_subtotal || 0) +
+      (pantografiado_subtotal || 0) +
+      (filo_laqueado_subtotal || 0) +
+      (filo_lustrado_subtotal || 0) +
+      (filo_subtotal || 0) +
+      (totalSuppliePrice * 3.8 || 0) +
+      (subtotalMaterialPrice || 0) +
+      (subTotalItemExtraPrice || 0) +
+      (subtotalAdjustmentPrice || 0) +
+      (subtotalPlacement || 0) +
+      (subtotalShipmentPrice || 0);
+
+    setTotalPrice(totalPrice);
+  };
+  const veneerPriceValue = getValues("veneerPrice");
+  const chapaPriceValue = getValues("chapa_price");
+  const edgeLaqueredPriceValue = getValues("edgeLaqueredPrice");
+  const edgePriceValue = getValues("edgePrice");
+  useEffect(() => {
+    calculateTotalPrice();
+  }, [
+    singleFurniture,
+    supplies,
+    services,
+    veneerPriceValue,
+    chapaPriceValue,
+    edgeLaqueredPriceValue,
+    edgePriceValue,
+    totalSuppliePrice,
+    subtotalMaterialPrice,
+    totalMaterialPrice,
+    subTotalItemExtraPrice,
+    subtotalAdjustmentPrice,
+    subtotalPlacement,
+    subtotalShipmentPrice,
+  ]);
+  //Función para limpiar el objeto budgetData:
+  function removeEmptyFields(obj) {
+    // Recorremos las claves del objeto
+    for (const key in obj) {
+      if (
+        obj[key] &&
+        typeof obj[key] === "object" &&
+        !Array.isArray(obj[key])
+      ) {
+        // Si es un objeto, hacemos la limpieza recursivamente
+        removeEmptyFields(obj[key]);
+      } else if (
+        obj[key] === undefined ||
+        obj[key] === "" ||
+        obj[key] === null
+      ) {
+        // Si el valor es undefined, null o una cadena vacía, eliminamos la clave
+        delete obj[key];
+      }
+    }
+    return obj;
+  }
+
+  //FORMULARIO EDITAR PRESUPUESTO
+  const onSubmit = async (data, event) => {
+    event.preventDefault();
+    console.log(data);
+    //SET LOADER
+    setSubmitLoader(true);
+
+    // Creación del objeto supplies agrupado por módulos
+    const supplies = {};
+
+    // Recorremos el objeto `data`
+    Object.keys(data).forEach((key) => {
+      // Extraemos el índice del nombre del insumo (asumiendo que siempre es suplieNameX, supliePriceX, etc.)
+      const match = key.match(/supplie(Name|Price|Qty|Length)(\d+)/);
+      if (match) {
+        const [_, field, index] = match; // Capturamos el campo (Name, Price, Qty, Length) y el índice
+
+        // Si no existe un objeto para este índice, lo creamos
+        if (!supplies[index]) {
+          supplies[index] = {};
+        }
+
+        // Asignamos los valores correspondientes según el campo
+        switch (field) {
+          case "Name":
+            supplies[index].name = data[key];
+            break;
+          case "Price":
+            supplies[index].price = Number(data[key]); // Convertimos a número
+            break;
+          case "Qty":
+            supplies[index].qty = Number(data[key]); // Convertimos a número
+            break;
+          case "Length":
+            supplies[index].length = Number(data[key]); // Convertimos a número
+            break;
+          default:
+            break;
+        }
+      }
+    });
+
+    // Convertimos el objeto `supplies` en una lista de objetos
+    const suppliesList = Object.values(supplies);
+
+    console.log(suppliesList);
+
+    // Carga cliente
+    let clientData;
+    // Código para crear o seleccionar cliente (comentado para ejemplo)
+    if (clientOption === "new") {
+      try {
+        await createClient({
+          ...data,
+        }).then((res) => {
+          clientData = res.data;
+          console.log("¡Creaste cliente!");
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    } else if (clientOption === "existing") {
+      try {
+        await getClientById(data.clientId).then((res) => {
+          clientData = res.data;
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    // Creación del objeto materials
+    const materials = {};
+    let totalMaterialPrice = 0; // Inicializa la variable totalMaterialPrice
+    let totalMaterialQty = 0; // Inicializa la variable totalMaterialQty
+
+    Object.keys(data).forEach((key) => {
+      const match = key.match(/(material\w+)(\d+)/);
+      if (match) {
+        const [_, prefix, index] = match;
+        const materialKey = `material${index}`;
+
+        if (!materials[materialKey]) {
+          materials[materialKey] = {};
+        }
+
+        if (prefix === "materialPrice") {
+          const price = Number(data[key]); // Convierte a número
+          materials[materialKey].price = price;
+
+          // Si ya existe qty, calcula el precio total para este material
+          if (materials[materialKey].qty !== undefined) {
+            totalMaterialPrice += price * materials[materialKey].qty;
+          }
+        }
+
+        if (prefix === "materialQty") {
+          const qty = Number(data[key]); // Convierte a número
+          materials[materialKey].qty = qty;
+
+          // Suma el qty al totalMaterialQty
+          totalMaterialQty += qty;
+
+          // Si ya existe price, calcula el precio total para este material
+          if (materials[materialKey].price !== undefined) {
+            totalMaterialPrice += qty * materials[materialKey].price;
+          }
+        }
+
+        if (prefix === "materialTable") {
+          materials[materialKey].table = data[key];
+        }
+      }
+    });
+    // Transformar el objeto materials en una lista (opcional)
+    const materialsList = Object.values(materials);
+
+    // Creación del objeto extra_items
+    const extraItems = {};
+    let extraItemPrice = 0; // Inicializa la variable extraItemPrice
+
+    Object.keys(data).forEach((key) => {
+      const match = key.match(/(itemExtra\w*)(\d+)/);
+      if (match) {
+        const [_, prefix, index] = match;
+        const itemExtraKey = `itemExtra${index}`;
+
+        if (!extraItems[itemExtraKey]) {
+          extraItems[itemExtraKey] = {};
+        }
+
+        if (prefix === "itemExtra") {
+          extraItems[itemExtraKey].name = data[key];
+        }
+
+        if (prefix === "itemExtraPrice") {
+          const price = Number(data[key]); // Convierte a número
+          extraItems[itemExtraKey].price = price;
+          extraItemPrice += price; // Suma el precio a extraItemPrice
+        }
+      }
+    });
+
+    // Transformar el objeto extraItems en una lista (opcional)
+    const extraItemsList = Object.values(extraItems);
+
+    // Objeto final para crear el presupuesto
+    const budgetData = {
+      budget_number: budget.budget_number,
+      furniture_name: data.furniture_name,
+      length: data.length,
+      width: data.width,
+      height: data.height,
+      category: data.category,
+      furniture: singleFurniture,
+      veneer: {
+        veneerM2: data.veneerM2,
+        veneerPrice: data.veneerPrice,
+      },
+      veneerPolished: {
+        veneerPolishedM2: data.veneerPolishedM2,
+        veneerPolishedPrice: data.veneerPolishedPrice,
+      },
+      chapa: {
+        veneerSelect: data.veneerSelect,
+        chapa_price: Number(data.chapa_price),
+      },
+      lacqueredOpen: {
+        lacqueredOpenM2: data.lacqueredOpenM2,
+        lacqueredOpenPrice: data.lacqueredOpenPrice,
+      },
+      lacquered: {
+        lacqueredM2: data.lacqueredM2,
+        lacqueredPrice: data.lacqueredPrice,
+      },
+      pantographed: {
+        pantographedM2: data.pantographedM2,
+        pantographedPrice: data.pantographedPrice,
+      },
+      edge_lacquered: {
+        edgeLaqueredThickness: Number(data.edgeThickness),
+        edgeLaqueredM2: Number(data.edgeLaqueredM2),
+        edgeLaqueredPrice: data.edgeLaqueredPrice,
+        totalLacqueredEdgeLength: totalLacqueredEdgeLength,
+      },
+      edge_polished: {
+        edgePolishedThickness: Number(data.edgePolishedThickness),
+        edgePolishedM2: Number(data.edgePolishedM2),
+        edgePolishedPrice: data.edgePolishedPrice,
+        totalPolishedEdgeLength: totalPolishedEdgeLength,
+      },
+      edge_no_lacquered: {
+        edgeSelect: data.edgeSelect,
+        edgeM2: Number(data.edgeM2),
+        edgePrice: data.edgePrice,
+      },
+      supplies: suppliesList,
+      materials: materialsList,
+      extra_items: extraItemsList,
+      adjustment_reason: data.adjustment_reason,
+      adjustment_price: Number(data.adjustment_price),
+      total_price: totalPrice,
+      deliver_date: data.deliver_date,
+      comments: data.comments,
+      client: clientData,
+      placement: data.placement,
+      placement_days: data.placementDays,
+      placement_price: Number(data.placementPrice),
+      shipment: data.shipment,
+      shipment_price: Number(data.shipmentPrice),
+      show_modules: data.showModules,
+    };
+    const cleanedBudgetData = removeEmptyFields(budgetData);
+    console.log(cleanedBudgetData);
+
+    try {
+      await editBudget(cleanedBudgetData, budget._id);
+      console.log("Presupuesto editado", cleanedBudgetData);
+      navigate("/ver-presupuestos");
+    } catch (error) {
+      console.error("Error editando presupuesto front:", error);
+    }
+  };
   const formatCurrency = (value) => {
     return new Intl.NumberFormat("es-AR", {
       style: "currency",
@@ -666,7 +990,6 @@ function EditBudget() {
           <input
             name={`furniture_name`}
             type="hidden"
-            value={singleFurniture?.name}
             {...register(`furniture_name`)}
           />
           <div className="p-4 bg-gray-100 rounded-md shadow-md">
@@ -829,7 +1152,7 @@ function EditBudget() {
                     <input
                       name={`lacqueredOpenM2`}
                       type="hidden"
-                      value={totalVeneerLacqueredOpen / 10000}
+                      value={totalVeneerLacqueredOpen}
                       {...register(`lacqueredOpenM2`)}
                     />
                     <input
@@ -837,8 +1160,7 @@ function EditBudget() {
                       type="hidden"
                       {...register(`lacqueredOpenPrice`)}
                       value={
-                        laqueadoOpenService?.price *
-                        (totalVeneerLacqueredOpen / 10000)
+                        laqueadoOpenService?.price * totalVeneerLacqueredOpen
                       }
                     />
                   </>
@@ -924,7 +1246,7 @@ function EditBudget() {
                             handleMaterialEdgeLaqueredOption({
                               target: { value: getValues("edgeThickness") },
                             });
-                            // calculateTotalPrice();
+                            calculateTotalPrice();
                           }}
                         />
                         {errors.edgeThickness && (
@@ -988,7 +1310,7 @@ function EditBudget() {
                                 value: getValues("edgePolishedThickness"),
                               },
                             });
-                            // calculateTotalPrice();
+                            calculateTotalPrice();
                           }}
                         />
                         {errors.edgeThickness && (
@@ -1028,7 +1350,7 @@ function EditBudget() {
                       <input
                         name={`edgeM2`}
                         type="hidden"
-                        value={(totalEdgeLength / 100).toFixed(2)}
+                        value={totalEdgeLength.toFixed(2)}
                         {...register(`edgeM2`)}
                       />
                       <input
@@ -1573,7 +1895,7 @@ function EditBudget() {
                 </button>
               ) : (
                 <div className="flex justify-center w-full mt-8">
-                  <div className="flex justify-center bg-lightblue rounded-md px-2 py-1 mb-2 w-1/6 m-auto">
+                  <div className="flex justify-center bg-amber-600 rounded-md px-2 py-1 mb-2 w-1/6 m-auto">
                     <Oval
                       visible={submitLoader}
                       height="30"

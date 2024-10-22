@@ -4,10 +4,10 @@ import config from "../../config.json";
 /* const token = Cookies.get("token");
 const userId = Cookies.get("userId"); */
 
-//CREAR PRESUPUESTO
-async function createBudget(data) {
-  const res = await axios.post(
-    config.apiBudgets,
+//EDITAR PRESUPUESTO
+async function editBudget(data, budgetId) {
+  const res = await axios.put(
+    `${config.apiBudgets}/edit-budget/${budgetId}`,
     {
       ...data,
     },
@@ -21,4 +21,4 @@ async function createBudget(data) {
   return res;
 }
 
-export { createBudget };
+export { editBudget };

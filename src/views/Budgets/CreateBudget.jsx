@@ -571,25 +571,6 @@ function CreateBudget() {
       (subtotalShipmentPrice || 0);
 
     setTotalPrice(totalPrice);
-
-    // console.log("chapa_price_subtotal * 3.8:", chapa_price_subtotal * 3.8 || 0);
-    // console.log(
-    //   "enchapado_artesanal_subtotal * 3.8:",
-    //   enchapado_artesanal_subtotal * 3.8 || 0
-    // );
-    // console.log("lustrado_subtotal:", lustrado_subtotal || 0);
-    // console.log("laqueado_subtotal:", laqueado_subtotal || 0);
-    // console.log("laqueado_poro_subtotal:", laqueado_poro_subtotal || 0);
-    // console.log("pantografiado_subtotal:", pantografiado_subtotal || 0);
-    // console.log("filo_laqueado_subtotal:", filo_laqueado_subtotal || 0);
-    // console.log("filo_lustrado_subtotal:", filo_lustrado_subtotal || 0);
-    // console.log("filo_subtotal:", filo_subtotal || 0);
-    // console.log("totalSuppliePrice * 3.8:", totalSuppliePrice * 3.8 || 0);
-    // console.log("subtotalMaterialPrice:", subtotalMaterialPrice || 0);
-    // console.log("subTotalItemExtraPrice:", subTotalItemExtraPrice || 0);
-    // console.log("subtotalAdjustmentPrice:", subtotalAdjustmentPrice || 0);
-    // console.log("subtotalPlacement:", subtotalPlacement || 0);
-    // console.log("subtotalShipmentPrice:", subtotalShipmentPrice || 0);
   };
   const veneerPriceValue = getValues("veneerPrice");
   const chapaPriceValue = getValues("chapa_price");
@@ -614,6 +595,28 @@ function CreateBudget() {
     subtotalPlacement,
     subtotalShipmentPrice,
   ]);
+  //Función para limpiar el objeto budgetData:
+  function removeEmptyFields(obj) {
+    // Recorremos las claves del objeto
+    for (const key in obj) {
+      if (
+        obj[key] &&
+        typeof obj[key] === "object" &&
+        !Array.isArray(obj[key])
+      ) {
+        // Si es un objeto, hacemos la limpieza recursivamente
+        removeEmptyFields(obj[key]);
+      } else if (
+        obj[key] === undefined ||
+        obj[key] === "" ||
+        obj[key] === null
+      ) {
+        // Si el valor es undefined, null o una cadena vacía, eliminamos la clave
+        delete obj[key];
+      }
+    }
+    return obj;
+  }
 
   //FORMULARIO GENERAR PRESUPUESTO
   const onSubmit = async (data, event) => {
@@ -838,10 +841,10 @@ function CreateBudget() {
 
     // //TODO AGREGAR USERNAME
     console.log(budgetData);
-
+    const cleanedBudgetData = removeEmptyFields(budgetData);
     try {
-      await createBudget(budgetData);
-      console.log("Presupuesto creado", budgetData);
+      await createBudget(cleanedBudgetData);
+      console.log("Presupuesto creado", cleanedBudgetData);
       navigate("/ver-presupuestos");
     } catch (error) {
       console.error("Error creando presupuesto:", error);
