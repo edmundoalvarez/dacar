@@ -191,7 +191,17 @@ function ViewModulesFurniture({ sortedModules }) {
                         )}
                       </td>
                       <td className="px-4 py-2 text-center border-b">
-                        {piece.edgeWidth
+                        {piece.orientation === "cross-horizontal"
+                          ? piece.edgeLength
+                            ? `Sí, ${
+                                piece.edgeLengthSides === 1
+                                  ? "un lado"
+                                  : piece.edgeLengthSides === 2
+                                  ? "dos lados"
+                                  : "falta cantidad lados"
+                              }`
+                            : "No"
+                          : piece.edgeWidth
                           ? `Sí, ${
                               piece.edgeWidthSides === 1
                                 ? "un lado"
@@ -203,7 +213,17 @@ function ViewModulesFurniture({ sortedModules }) {
                       </td>
 
                       <td className="px-4 py-2 text-center border-b">
-                        {piece.edgeLength
+                        {piece.orientation === "cross-horizontal"
+                          ? piece.edgeWidth
+                            ? `Sí, ${
+                                piece.edgeWidthSides === 1
+                                  ? "un lado"
+                                  : piece.edgeWidthSides === 2
+                                  ? "dos lados"
+                                  : "falta cantidad lados"
+                              }`
+                            : "No"
+                          : piece.edgeLength
                           ? `Sí, ${
                               piece.edgeLengthSides === 1
                                 ? "un lado"

@@ -2,11 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import debounce from "lodash.debounce";
 import { Grid, Oval } from "react-loader-spinner";
-import {
-  getAllSupplies,
-  deleteSupplie,
-  filterSupplieByName,
-} from "../../index.js";
+import { getAllSupplies, deleteSupplie } from "../../index.js";
 
 function Supplies() {
   const [supplies, setSupplies] = useState([]);
@@ -14,47 +10,56 @@ function Supplies() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
 
-  const getSuppliesToSet = () => {
-    getAllSupplies()
-      .then((suppliesData) => {
-        setSupplies(suppliesData.data);
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10; // Límite de insumos por página
+
+  const getSuppliesToSet = (term = "", page = 1) => {
+    setLoader(true);
+    getAllSupplies(term, page, itemsPerPage)
+      .then((response) => {
+        setSupplies(response.supplies);
+        setCurrentPage(response.currentPage);
+        setTotalPages(response.totalPages);
         setLoader(false);
+        setSearchLoader(false);
       })
       .catch((error) => {
-        console.error("Este es el error:", error);
+        console.error("Error al obtener los insumos:", error);
+        setLoader(false);
+        setSearchLoader(false);
       });
   };
-
   //traer los insumo
   useEffect(() => {
-    getSuppliesToSet();
-  }, []);
+    getSuppliesToSet(searchTerm, currentPage);
+  }, [currentPage]);
 
-  // Manejar la búsqueda de insumos
   const handleSearch = debounce((term) => {
-    if (term.trim() !== "") {
-      filterSupplieByName(term)
-        .then((res) => {
-          setSupplies(res.data);
-          setLoader(false);
-          setSearchLoader(false);
-        })
-        .catch((error) => {
-          setSearchLoader(true);
-          console.error("Error al filtrar los insumos:", error);
-        });
-    } else {
-      getSuppliesToSet();
-      setSearchLoader(false); // Si no hay término de búsqueda, obtener todos los insumos
-    }
+    setCurrentPage(1); // Restablece la página a 1 al buscar
+    getSuppliesToSet(term, 1); // Filtra desde la primera página
   }, 800);
 
   // Actualizar el término de búsqueda y llamar a la función de búsqueda
   const handleChange = (e) => {
-    setSearchTerm(e.target.value);
-    setLoader(true);
+    const term = e.target.value;
+    setSearchTerm(term);
     setSearchLoader(true);
-    handleSearch(e.target.value);
+    handleSearch(term);
+  };
+
+  // Controladores de cambio de página
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      getSuppliesToSet(searchTerm, currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      getSuppliesToSet(searchTerm, currentPage + 1);
+    }
   };
 
   //Eliminar insumo
@@ -69,7 +74,7 @@ function Supplies() {
   function deleteSingleSupplie(supplieId) {
     deleteSupplie(supplieId)
       .then((res) => {
-        getSuppliesToSet();
+        getSuppliesToSet((term = ""), (page = 1));
         // console.log(res.data);
       })
       .catch((error) => {
@@ -192,53 +197,50 @@ function Supplies() {
             </thead>
 
             <tbody className="bg-white divide-y divide-gray-200">
-              {supplies
-                .slice()
-                .sort((a, b) => a.name.localeCompare(b.name)) // Ordena alfabéticamente
-                .map((supplie) => (
-                  <tr key={supplie.name}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.length}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.width}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.thickness}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.category}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.material}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatCurrency(supplie.price)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {supplie.supplier_id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex gap-2">
-                        <Link
-                          to={`/editar-insumo/${supplie._id}`}
-                          className="text-white bg-orange rounded-md px-2 py-1 mb-2"
-                        >
-                          Editar
-                        </Link>
-                        <button
-                          className="text-white bg-red-500 rounded-md px-2 py-1 mb-2"
-                          onClick={() => handleDeleteSupplie(supplie._id)}
-                        >
-                          Eliminar
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+              {supplies.slice().map((supplie) => (
+                <tr key={supplie.name}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {supplie.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {supplie.length}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {supplie.width}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {supplie.thickness}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {supplie.category}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {supplie.material}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {formatCurrency(supplie.price)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {supplie.supplier_id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex gap-2">
+                      <Link
+                        to={`/editar-insumo/${supplie._id}`}
+                        className="text-white bg-orange rounded-md px-2 py-1 mb-2"
+                      >
+                        Editar
+                      </Link>
+                      <button
+                        className="text-white bg-red-500 rounded-md px-2 py-1 mb-2"
+                        onClick={() => handleDeleteSupplie(supplie._id)}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
           <div className="flex justify-center w-full mt-8">
@@ -253,6 +255,36 @@ function Supplies() {
               wrapperClass="grid-wrapper"
             />
           </div>
+        </div>
+        {/* Controles de Paginación */}
+        <div className="flex justify-center items-center gap-4 py-8">
+          <button
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 
+      ${
+        currentPage === 1
+          ? "bg-gray-300 cursor-not-allowed"
+          : "bg-blue-600 hover:bg-blue-700"
+      }`}
+          >
+            Anterior
+          </button>
+          <span className="text-lg font-medium">
+            Página <span>{currentPage}</span> de <span>{totalPages}</span>
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 
+      ${
+        currentPage === totalPages
+          ? "bg-gray-300 cursor-not-allowed"
+          : "bg-blue-600 hover:bg-blue-700"
+      }`}
+          >
+            Siguiente
+          </button>
         </div>
       </div>
       {openModalToDelete && (

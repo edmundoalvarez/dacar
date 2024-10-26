@@ -4,10 +4,10 @@ import config from "../../config.json";
 const token = Cookies.get("token");
 const userId = Cookies.get("userId"); */
 
-//TRAER TODOS LOS INSUMOS
-async function getAllSupplies(term = "", page = 1, itemsPerPage = 10) {
+//TRAER TODAS LOS MODULOS CREADOS
+async function getAllModulesList(term = "", page = 1, itemsPerPage = 10) {
   try {
-    const res = await axios.get(`${config.apiSupplies}`, {
+    const res = await axios.get(`${config.apiModules}/list`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -19,14 +19,13 @@ async function getAllSupplies(term = "", page = 1, itemsPerPage = 10) {
     });
 
     return {
-      supplies: res.data.data,
+      modules: res.data.data,
       currentPage: res.data.currentPage,
       totalPages: res.data.totalPages,
     };
   } catch (error) {
-    console.error("Error fetching supplies:", error);
+    console.error("Error fetching modules:", error);
     throw error;
   }
 }
-
-export { getAllSupplies };
+export { getAllModulesList };

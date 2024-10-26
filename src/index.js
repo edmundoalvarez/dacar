@@ -3,6 +3,7 @@
 //FURNITURE
 export { createFurniture } from "./services/Furniture/createFurniture.js";
 export { getAllFurnitures } from "./services/Furniture/getAllFurnitures.js";
+export { getAllFurnituresList } from "./services/Furniture/getAllFurnituresList.js";
 export { getFurnitureById } from "./services/Furniture/getFurnitureById.js";
 export { updateModuleOfFurniture } from "./services/Furniture/updateModuleOfFurniture.js";
 export { deleteModuleOnFurniture } from "./services/Furniture/deleteModuleOnFurniture.js";
@@ -15,6 +16,7 @@ export { deleteFurniture } from "./services/Furniture/deleteFurniture.js";
 //MODULES
 export { createModule } from "./services/ModulesForFurniture/createModule.js";
 export { getAllModules } from "./services/ModulesForFurniture/getAllModules.js";
+export { getAllModulesList } from "./services/ModulesForFurniture/getAllModulesList.js";
 export { getModuleById } from "./services/ModulesForFurniture/getModuleById.js";
 export { updateModule } from "./services/ModulesForFurniture/updateModule.js";
 export { updateModulePiecesNumber } from "./services/ModulesForFurniture/updateModulePiecesNumber.js";
@@ -47,6 +49,7 @@ export { getAllSuppliesCategories } from "./services/SuppliesCategories/getAllSu
 
 //SERVICES FURNITURE
 export { getAllServices } from "./services/ServicesFurniture/getAllServices.js";
+export { getAllServicesList } from "./services/ServicesFurniture/getAllServicesList.js";
 export { createService } from "./services/ServicesFurniture/createService.js";
 export { updateService } from "./services/ServicesFurniture/updateService.js";
 export { getServiceById } from "./services/ServicesFurniture/getServiceById.js";
@@ -56,6 +59,7 @@ export { filterServiceByName } from "./services/ServicesFurniture/filterServiceB
 //CLIENTS
 export { createClient } from "./services/Clients/createClient.js";
 export { getAllClients } from "./services/Clients/getAllClients.js";
+export { getAllClientsList } from "./services/Clients/getAllClientsList.js";
 export { getClientById } from "./services/Clients/getClientById.js";
 export { filterClientByName } from "./services/Clients/filterClientByName.js";
 export { deleteClient } from "./services/Clients/deleteClient.js";

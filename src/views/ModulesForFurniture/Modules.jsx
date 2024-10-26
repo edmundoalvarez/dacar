@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import debounce from "lodash.debounce";
 import { Grid, Oval } from "react-loader-spinner";
 import {
-  getAllModules,
+  getAllModulesList,
   cloneModule,
   deleteOriginalModule,
   filterModuleByName,
@@ -19,45 +19,57 @@ function Modules() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
 
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10; // Límite de insumos por página
+
   //eliminar modulo
   const [openModalToDeleteModule, setOpenModalToDeleteModule] = useState(false);
   const [moduleToDelete, setModuleToDelete] = useState(null);
-  const getAllModulesToSet = () => {
-    getAllModules()
+
+  const getAllModulesToSet = (term = "", page = 1) => {
+    setLoader(true);
+    getAllModulesList(term, page, itemsPerPage)
       .then((modulesData) => {
-        setModules(modulesData.data);
+        setModules(modulesData.modules);
+        setCurrentPage(modulesData.currentPage);
+        setTotalPages(modulesData.totalPages);
         setLoader(false);
+        setSearchLoader(false);
       })
       .catch((error) => {
         console.error(error);
+        setLoader(false);
+        setSearchLoader(false);
       });
   };
 
   // Manejar la búsqueda de modulos
   const handleSearch = debounce((term) => {
-    if (term.trim() !== "") {
-      filterModuleByName(term)
-        .then((res) => {
-          setModules(res.data);
-          setLoader(false);
-          setSearchLoader(false);
-        })
-        .catch((error) => {
-          setSearchLoader(true);
-          console.error("Error al filtrar los modulos:", error);
-        });
-    } else {
-      getAllModulesToSet();
-      setSearchLoader(false); // Si no hay término de búsqueda, obtener todos los servicios
-    }
+    setCurrentPage(1); // Restablece la página a 1 al buscar
+    getAllModulesToSet(term, 1); // Filtra desde la primera página
   }, 800);
 
   // Actualizar el término de búsqueda y llamar a la función de búsqueda
   const handleChange = (e) => {
-    setSearchTerm(e.target.value);
-    setLoader(true);
+    const term = e.target.value;
+    setSearchTerm(term);
     setSearchLoader(true);
-    handleSearch(e.target.value);
+    handleSearch(term);
+  };
+
+  // Controladores de cambio de página
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      getAllModulesToSet(searchTerm, currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      getAllModulesToSet(searchTerm, currentPage + 1);
+    }
   };
 
   //eliminar modulo
@@ -69,7 +81,7 @@ function Modules() {
   function deleteSingleModule(moduleId) {
     deleteOriginalModule(moduleId)
       .then((res) => {
-        getAllModulesToSet();
+        getAllModulesToSet((term = ""), (page = 1));
         console.log(res.data);
       })
       .catch((error) => {
@@ -84,13 +96,13 @@ function Modules() {
   //clonar módulo
   async function handleCloneModule(moduleId) {
     await cloneModule(moduleId);
-    getAllModulesToSet();
+    getAllModulesToSet((term = ""), (page = 1));
   }
 
   //traer los modulos
   useEffect(() => {
-    getAllModulesToSet();
-  }, []);
+    getAllModulesToSet(searchTerm, currentPage);
+  }, [currentPage]);
 
   // Manejo de la ventana modal
   const handleOpenModal = async (module) => {
@@ -274,6 +286,36 @@ function Modules() {
             />
           </div>
         </div>
+        {/* Controles de Paginación */}
+        <div className="flex justify-center items-center gap-4 py-8">
+          <button
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 
+      ${
+        currentPage === 1
+          ? "bg-gray-300 cursor-not-allowed"
+          : "bg-blue-600 hover:bg-blue-700"
+      }`}
+          >
+            Anterior
+          </button>
+          <span className="text-lg font-medium">
+            Página <span>{currentPage}</span> de <span>{totalPages}</span>
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 
+      ${
+        currentPage === totalPages
+          ? "bg-gray-300 cursor-not-allowed"
+          : "bg-blue-600 hover:bg-blue-700"
+      }`}
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
       {/* Abrimos la modal en caso que el estado isModalOpen cambie */}
       {isModalOpen && (
@@ -307,6 +349,7 @@ function Modules() {
           </div>
         </div>
       )}
+
       {/* modal de desea eliminar el modulo */}
       {openModalToDeleteModule && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">

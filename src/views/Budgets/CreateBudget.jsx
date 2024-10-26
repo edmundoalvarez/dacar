@@ -842,6 +842,7 @@ function CreateBudget() {
     // //TODO AGREGAR USERNAME
     console.log(budgetData);
     const cleanedBudgetData = removeEmptyFields(budgetData);
+
     try {
       await createBudget(cleanedBudgetData);
       console.log("Presupuesto creado", cleanedBudgetData);
@@ -1399,7 +1400,7 @@ function CreateBudget() {
                                   }
 
                                   // Sumar la cantidad de insumos
-                                  acc[key].qty += supply?.supplie_qty;
+                                  acc[key].qty += Number(supply?.supplie_qty);
 
                                   // Obtener detalles del suministro
                                   const supplyDetails = supplies?.find(

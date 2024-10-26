@@ -2,11 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import debounce from "lodash.debounce";
 import { Grid, Oval } from "react-loader-spinner";
-import {
-  getAllClients,
-  deleteClient,
-  filterClientByName,
-} from "../../index.js";
+import { getAllClientsList, deleteClient } from "../../index.js";
 
 function Clients() {
   const [clients, setClients] = useState([]);
@@ -16,47 +12,58 @@ function Clients() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
 
-  const getClientsToSet = () => {
-    getAllClients()
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10; // Límite de clientes por página
+
+  const getClientsToSet = (term = "", page = 1) => {
+    setLoader(true);
+    getAllClientsList(term, page, itemsPerPage)
       .then((clientsData) => {
-        setClients(clientsData.data);
+        setClients(clientsData.clients);
+        setCurrentPage(clientsData.currentPage);
+        setTotalPages(clientsData.totalPages);
         setLoader(false);
+        setSearchLoader(false);
       })
       .catch((error) => {
         console.error("Este es el error:", error);
+        setLoader(false);
+        setSearchLoader(false);
       });
   };
 
   //traer los clientes
   useEffect(() => {
-    getClientsToSet();
-  }, []);
+    getClientsToSet(searchTerm, currentPage);
+  }, [currentPage]);
 
   // Manejar la búsqueda de clientes
   const handleSearch = debounce((term) => {
-    if (term.trim() !== "") {
-      filterClientByName(term)
-        .then((res) => {
-          setClients(res.data);
-          setLoader(false);
-          setSearchLoader(false);
-        })
-        .catch((error) => {
-          setSearchLoader(true);
-          console.error("Error al filtrar los clientes:", error);
-        });
-    } else {
-      getClientsToSet();
-      setSearchLoader(false); // Si no hay término de búsqueda, obtener todos los insumos
-    }
+    setCurrentPage(1); // Restablece la página a 1 al buscar
+    getClientsToSet(term, 1); // Filtra desde la primera página
   }, 800);
 
   // Actualizar el término de búsqueda y llamar a la función de búsqueda
   const handleChange = (e) => {
-    setSearchTerm(e.target.value);
-    setLoader(true);
+    const term = e.target.value;
+    setSearchTerm(term);
     setSearchLoader(true);
-    handleSearch(e.target.value);
+    handleSearch(term);
+  };
+
+  // Controladores de cambio de página
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      getClientsToSet(searchTerm, currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      getClientsToSet(searchTerm, currentPage + 1);
+    }
   };
 
   //Eliminar cliente
@@ -68,7 +75,7 @@ function Clients() {
   function deleteSingleClient(clientId) {
     deleteClient(clientId)
       .then((res) => {
-        getClientsToSet();
+        getClientsToSet((term = ""), (page = 1));
         // console.log(res.data);
       })
       .catch((error) => {
@@ -179,51 +186,48 @@ function Clients() {
             </thead>
 
             <tbody className="bg-white divide-y divide-gray-200">
-              {clients
-                .slice()
-                .sort((a, b) => a.name.localeCompare(b.name)) // Ordena alfabéticamente
-                .map((client) => (
-                  <tr key={client._id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {client.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {client.lastname}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {client.phone}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {client.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {client.dni}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {client.cuil_cuit}
-                    </td>
+              {clients.slice().map((client) => (
+                <tr key={client._id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {client.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {client.lastname}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {client.phone}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {client.email}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {client.dni}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {client.cuil_cuit}
+                  </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {client.address}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex gap-2">
-                        <Link
-                          to={`/editar-cliente/${client._id}`}
-                          className="text-white bg-orange rounded-md px-2 py-1 mb-2"
-                        >
-                          Editar
-                        </Link>
-                        <button
-                          className="text-white bg-red-500 rounded-md px-2 py-1 mb-2"
-                          onClick={() => handleDeleteClient(client._id)}
-                        >
-                          Eliminar
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {client.address}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex gap-2">
+                      <Link
+                        to={`/editar-cliente/${client._id}`}
+                        className="text-white bg-orange rounded-md px-2 py-1 mb-2"
+                      >
+                        Editar
+                      </Link>
+                      <button
+                        className="text-white bg-red-500 rounded-md px-2 py-1 mb-2"
+                        onClick={() => handleDeleteClient(client._id)}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
           <div className="flex justify-center w-full mt-8">
@@ -238,6 +242,36 @@ function Clients() {
               wrapperClass="grid-wrapper"
             />
           </div>
+        </div>
+        {/* Controles de Paginación */}
+        <div className="flex justify-center items-center gap-4 py-8">
+          <button
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 
+      ${
+        currentPage === 1
+          ? "bg-gray-300 cursor-not-allowed"
+          : "bg-blue-600 hover:bg-blue-700"
+      }`}
+          >
+            Anterior
+          </button>
+          <span className="text-lg font-medium">
+            Página <span>{currentPage}</span> de <span>{totalPages}</span>
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 
+      ${
+        currentPage === totalPages
+          ? "bg-gray-300 cursor-not-allowed"
+          : "bg-blue-600 hover:bg-blue-700"
+      }`}
+          >
+            Siguiente
+          </button>
         </div>
       </div>
       {openModalToDelete && (

@@ -8,8 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 
 import {
-  getAllFurnitures,
-  filterFurnitureByName,
+  getAllFurnituresList,
   getLoosePiecesByFurnitureId,
   getPiecesByFurnitureId,
   deleteFurniture,
@@ -24,48 +23,47 @@ function Furniture() {
   const [loader, setLoader] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10; // Límite de insumos por página
+
   const navigate = useNavigate();
 
-  const getAllFurnituresToSet = () => {
-    getAllFurnitures()
+  const getAllFurnituresToSet = (term = "", page = 1) => {
+    setLoader(true);
+    getAllFurnituresList(term, page, itemsPerPage)
       .then((furnituresData) => {
-        setFurnitures(furnituresData.data);
+        console.log(furnituresData);
+        setFurnitures(furnituresData.furnitures);
+        setCurrentPage(furnituresData.currentPage);
+        setTotalPages(furnituresData.totalPages);
         setLoader(false);
+        setSearchLoader(false);
       })
       .catch((error) => {
-        console.error("Este es el error:", error);
+        console.error("Error al obtener los muebles:", error);
+        setLoader(false);
+        setSearchLoader(false);
       });
   };
 
   useEffect(() => {
-    getAllFurnituresToSet();
-  }, []);
+    getAllFurnituresToSet(searchTerm, currentPage);
+  }, [currentPage]);
 
   // Manejar la búsqueda de muebles
   const handleSearch = debounce((term) => {
-    if (term.trim() !== "") {
-      filterFurnitureByName(term)
-        .then((res) => {
-          setFurnitures(res.data);
-          setLoader(false);
-          setSearchLoader(false);
-        })
-        .catch((error) => {
-          setSearchLoader(true);
-          console.error("Error al filtrar los muebles:", error);
-        });
-    } else {
-      getAllFurnituresToSet();
-      setSearchLoader(false); // Si no hay término de búsqueda, obtener todos los servicios
-    }
+    setCurrentPage(1); // Restablece la página a 1 al buscar
+    getAllFurnituresToSet(term, 1); // Filtra desde la primera página
   }, 800);
 
   // Actualizar el término de búsqueda y llamar a la función de búsqueda
   const handleChange = (e) => {
-    setSearchTerm(e.target.value);
-    setLoader(true);
+    const term = e.target.value;
+    setSearchTerm(term);
     setSearchLoader(true);
-    handleSearch(e.target.value);
+    handleSearch(term);
   };
 
   // Manejo de la ventana modal
@@ -77,6 +75,19 @@ function Furniture() {
     // console.log(sortedModules);
     setSelectedModules(sortedModules);
     setIsModalOpen(true);
+  };
+
+  // Controladores de cambio de página
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      getAllFurnituresToSet(searchTerm, currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      getAllFurnituresToSet(searchTerm, currentPage + 1);
+    }
   };
 
   const handleCloseModal = () => {
@@ -96,7 +107,7 @@ function Furniture() {
   function deleteSingleFurniture(furnitureId) {
     deleteFurniture(furnitureId)
       .then((res) => {
-        getAllFurnituresToSet();
+        getAllFurnituresToSet((term = ""), (page = 1));
         // console.log(res.data);
       })
       .catch((error) => {
@@ -397,6 +408,36 @@ function Furniture() {
               wrapperClass="grid-wrapper"
             />
           </div>
+        </div>
+        {/* Controles de Paginación */}
+        <div className="flex justify-center items-center gap-4 py-8">
+          <button
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 
+      ${
+        currentPage === 1
+          ? "bg-gray-300 cursor-not-allowed"
+          : "bg-blue-600 hover:bg-blue-700"
+      }`}
+          >
+            Anterior
+          </button>
+          <span className="text-lg font-medium">
+            Página <span>{currentPage}</span> de <span>{totalPages}</span>
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 
+      ${
+        currentPage === totalPages
+          ? "bg-gray-300 cursor-not-allowed"
+          : "bg-blue-600 hover:bg-blue-700"
+      }`}
+          >
+            Siguiente
+          </button>
         </div>
       </div>
       {/* Abrimos la modal en caso que el estado isModalOpen cambie */}

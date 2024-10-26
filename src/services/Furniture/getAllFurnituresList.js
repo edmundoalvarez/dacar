@@ -4,10 +4,10 @@ import config from "../../config.json";
 const token = Cookies.get("token");
 const userId = Cookies.get("userId"); */
 
-//TRAER TODOS LOS INSUMOS
-async function getAllSupplies(term = "", page = 1, itemsPerPage = 10) {
+//TRAER TODAS LOS MUEBLES CREADOS
+async function getAllFurnituresList(term = "", page = 1, itemsPerPage = 10) {
   try {
-    const res = await axios.get(`${config.apiSupplies}`, {
+    const res = await axios.get(`${config.apiFurnitures}/list`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -17,16 +17,15 @@ async function getAllSupplies(term = "", page = 1, itemsPerPage = 10) {
         search: term, // Agrega el término de búsqueda
       },
     });
-
     return {
-      supplies: res.data.data,
+      furnitures: res.data.data,
       currentPage: res.data.currentPage,
       totalPages: res.data.totalPages,
     };
   } catch (error) {
-    console.error("Error fetching supplies:", error);
+    console.error("Error fetching muebles:", error);
     throw error;
   }
 }
 
-export { getAllSupplies };
+export { getAllFurnituresList };
