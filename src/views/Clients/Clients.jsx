@@ -75,7 +75,7 @@ function Clients() {
   function deleteSingleClient(clientId) {
     deleteClient(clientId)
       .then((res) => {
-        getClientsToSet((term = ""), (page = 1));
+        getClientsToSet(searchTerm, currentPage);
         // console.log(res.data);
       })
       .catch((error) => {

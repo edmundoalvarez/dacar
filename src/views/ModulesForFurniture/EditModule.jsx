@@ -442,6 +442,11 @@ function EditModule() {
         action=""
         className="flex flex-wrap w-full"
         onSubmit={handleSubmit(onSubmit)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        }}
       >
         <div className="flex flex-col w-3/12 my-2">
           <label htmlFor="name" className="font-semibold mb-1">

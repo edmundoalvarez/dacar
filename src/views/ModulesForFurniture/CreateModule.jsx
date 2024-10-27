@@ -226,6 +226,11 @@ function CreateModule() {
         action=""
         className="flex flex-wrap w-full"
         onSubmit={handleSubmit(onSubmit)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        }}
       >
         <div className="flex flex-col w-4/12 my-2">
           <label className="font-semibold mb-1" htmlFor="name">

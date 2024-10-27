@@ -74,7 +74,7 @@ function Supplies() {
   function deleteSingleSupplie(supplieId) {
     deleteSupplie(supplieId)
       .then((res) => {
-        getSuppliesToSet((term = ""), (page = 1));
+        getSuppliesToSet(searchTerm, currentPage);
         // console.log(res.data);
       })
       .catch((error) => {

@@ -81,7 +81,7 @@ function Modules() {
   function deleteSingleModule(moduleId) {
     deleteOriginalModule(moduleId)
       .then((res) => {
-        getAllModulesToSet((term = ""), (page = 1));
+        getAllModulesToSet(searchTerm, currentPag);
         console.log(res.data);
       })
       .catch((error) => {
@@ -96,7 +96,7 @@ function Modules() {
   //clonar módulo
   async function handleCloneModule(moduleId) {
     await cloneModule(moduleId);
-    getAllModulesToSet((term = ""), (page = 1));
+    getAllModulesToSet(searchTerm, currentPage);
   }
 
   //traer los modulos

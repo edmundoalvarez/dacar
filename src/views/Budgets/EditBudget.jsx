@@ -986,7 +986,16 @@ function EditBudget() {
           -<span className="font-semibold"> Cliente:</span>{" "}
           {budget?.client?.[0]?.name} {budget?.client?.[0]?.lastname}
         </h2>
-        <form action="" className="" onSubmit={handleSubmit(onSubmit)}>
+        <form
+          action=""
+          className=""
+          onSubmit={handleSubmit(onSubmit)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+            }
+          }}
+        >
           <input
             name={`furniture_name`}
             type="hidden"

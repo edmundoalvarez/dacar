@@ -124,10 +124,17 @@ function BudgetDetails() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       <p className="mb-6">
                         <span className="font-bold">
-                          {furn.category.toUpperCase()}
+                          {furn.category ? furn.category.toUpperCase() : ""}
                         </span>{" "}
-                        de {furn.width} (ancho) x {furn.height} (alto) x{" "}
-                        {furn.length} (profundidad).
+                        {console.log(furn.width, furn.height, furn.length)}
+                        {furn.width && furn.height && furn.length ? (
+                          <>
+                            de {furn.width} (ancho) x {furn.height} (alto) x{" "}
+                            {furn.length} (profundidad).
+                          </>
+                        ) : (
+                          ""
+                        )}
                       </p>
                       {budget?.show_modules ? (
                         <>

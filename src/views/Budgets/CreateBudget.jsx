@@ -896,7 +896,16 @@ function CreateBudget() {
             Ver Muebles
           </Link>
         </div>
-        <form action="" className="" onSubmit={handleSubmit(onSubmit)}>
+        <form
+          action=""
+          className=""
+          onSubmit={handleSubmit(onSubmit)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+            }
+          }}
+        >
           <input
             name={`furniture_name`}
             type="hidden"

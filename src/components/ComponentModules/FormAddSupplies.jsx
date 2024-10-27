@@ -62,7 +62,7 @@ function FormAddSupplies({ register, index, errors, supplies }) {
             </span>
           )}
         </div>
-        <div className="flex flex-col w-2/12 my-2">
+        {/* <div className="flex flex-col w-2/12 my-2">
           <label
             htmlFor={`supplie_length${index}`}
             className="font-semibold mb-1"
@@ -81,7 +81,7 @@ function FormAddSupplies({ register, index, errors, supplies }) {
               {errors[`supplie_length${index}`].message}
             </span>
           )}
-        </div>
+        </div> */}
       </div>
     </>
   );

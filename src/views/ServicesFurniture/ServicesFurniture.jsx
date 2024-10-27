@@ -73,7 +73,7 @@ function ServicesFurniture() {
   function deleteSingleService(serviceId) {
     deleteService(serviceId)
       .then((res) => {
-        getServicesToSet((term = ""), (page = 1));
+        getServicesToSet(searchTerm, currentPage);
         // console.log(res.data);
       })
       .catch((error) => {

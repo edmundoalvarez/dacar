@@ -107,7 +107,7 @@ function Furniture() {
   function deleteSingleFurniture(furnitureId) {
     deleteFurniture(furnitureId)
       .then((res) => {
-        getAllFurnituresToSet((term = ""), (page = 1));
+        getAllFurnituresToSet(searchTerm, currentPage);
         // console.log(res.data);
       })
       .catch((error) => {

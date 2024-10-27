@@ -149,7 +149,16 @@ function CreateFurniture() {
           Ver muebles
         </Link>
       </div>
-      <form action="" className="w-1/2" onSubmit={handleSubmit(onSubmit)}>
+      <form
+        action=""
+        className="w-1/2"
+        onSubmit={handleSubmit(onSubmit)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        }}
+      >
         <div className="flex flex-col w-11/12 my-2">
           <label htmlFor="name">Nombre del mueble</label>
           <input
@@ -173,7 +182,7 @@ function CreateFurniture() {
             type="text"
             name="length"
             id="length"
-            {...register("length", { required: "El campo es obligatorio" })}
+            {...register("length")}
           />
           {errors.length && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -188,7 +197,7 @@ function CreateFurniture() {
             type="text"
             name="height"
             id="height"
-            {...register("height", { required: "El campo es obligatorio" })}
+            {...register("height")}
           />
           {errors.height && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -203,7 +212,7 @@ function CreateFurniture() {
             type="text"
             name="width"
             id="width"
-            {...register("width", { required: "El campo es obligatorio" })}
+            {...register("width")}
           />
           {errors.width && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -219,7 +228,7 @@ function CreateFurniture() {
             type="text"
             name="category"
             id="category"
-            {...register("category", { required: "El campo es obligatorio" })}
+            {...register("category")}
           />
           {errors.category && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
