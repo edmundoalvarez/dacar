@@ -172,7 +172,7 @@ function EditBudget() {
               },
               0
             );
-
+            console.log(budgetData.data.supplies);
             setTotalSuppliePrice(totalPrice);
           }
         }
@@ -271,12 +271,9 @@ function EditBudget() {
         //ENVÍO
         if (budgetData.data.shipment) {
           setValue("shipment", "true" || "");
-          setValue("shipmentPrice", budgetData.data.placement_price || "");
-          setSubtotalPlacement(
-            budgetData.data.placement_price * budgetData.data.placement_days
-          );
+          setValue("shipmentPrice", budgetData.data.shipment_price || "");
         } else {
-          setValue("placement", "false" || "");
+          setValue("shipment", "false" || "");
         }
         //MOSTRAR MÓDULOS
         setValue("showModules", budgetData.data.show_modules || "");

@@ -1472,6 +1472,10 @@ function CreateBudget() {
                                       Precio total:
                                     </span>{" "}
                                     {formatCurrency(supply.price)}
+                                    {setValue(
+                                      `suppliePrice${index}`,
+                                      supply.price
+                                    )}
                                   </p>
                                   <input
                                     name={`suppliePrice${index}`}

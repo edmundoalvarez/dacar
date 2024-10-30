@@ -5,6 +5,7 @@ import {
   createFurniture,
   getAllModules,
   getPiecesByModuleId,
+  ViewModulesFurniture,
 } from "../../index.js";
 
 function CreateFurniture() {
@@ -17,12 +18,27 @@ function CreateFurniture() {
   const [selectedModuleIds, setSelectedModuleIds] = useState([]);
   const [moduleQuantities, setModuleQuantities] = useState({});
 
-  const handleOpenModal = (module) => {
-    setSelectedModule(module);
-    setIsModalOpen(true);
+  // Manejo de la ventana modal
+  const handleOpenModal = async (module) => {
+    try {
+      // Obtén las piezas por el ID del módulo
+      const pieces = await getPiecesByModuleId(module._id);
+
+      // Agrega las piezas al módulo bajo el nombre 'pieces'
+      const moduleWithPieces = { ...module, pieces };
+
+      // Envuelve el módulo en un array y establece 'selectedModules'
+      setSelectedModule([moduleWithPieces]);
+
+      // Abre la modal
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Error al obtener las piezas del módulo:", error);
+    }
   };
 
   const handleCloseModal = () => {
+    setSelectedModule(null);
     setIsModalOpen(false);
   };
 
@@ -295,62 +311,29 @@ function CreateFurniture() {
           </div>
 
           {isModalOpen && selectedModule && (
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-              <div className="bg-white p-10 rounded-lg shadow-lg flex justify-start items-start gap-3 flex-col">
-                <h2 className="text-xl mb-4">
-                  <b>Detalles del Módulo</b>
-                </h2>
-                <div className="mb-2 w-full">
-                  <table className="w-full border-collapse border border-gray-400">
-                    <tbody>
-                      <tr>
-                        <th className="border border-gray-400 px-4 py-2 text-left">
-                          Nombre
-                        </th>
-                        <td className="border border-gray-400 px-4 py-2">
-                          {formData[selectedModule._id]?.name || ""}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th className="border border-gray-400 px-4 py-2 text-left">
-                          Alto
-                        </th>
-                        <td className="border border-gray-400 px-4 py-2">
-                          {formData[selectedModule._id]?.height || ""}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th className="border border-gray-400 px-4 py-2 text-left">
-                          Largo
-                        </th>
-                        <td className="border border-gray-400 px-4 py-2">
-                          {formData[selectedModule._id]?.length || ""}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th className="border border-gray-400 px-4 py-2 text-left">
-                          Profundidad
-                        </th>
-                        <td className="border border-gray-400 px-4 py-2">
-                          {formData[selectedModule._id]?.width || ""}
-                        </td>
-                      </tr>
+            <div
+              onClick={handleCloseModal} // Cierra la modal si se hace clic fuera de ella
+              className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50"
+            >
+              <div
+                onClick={(e) => e.stopPropagation()} // Evita que el clic dentro de la modal la cierre
+                className="bg-white p-10 rounded-lg shadow-lg flex flex-col max-h-[550px] overflow-y-auto relative m-8"
+              >
+                {/* Botón de cierre en la esquina superior derecha */}
+                <button
+                  onClick={handleCloseModal}
+                  className="absolute top-2 right-2 bg-red-600 text-white rounded-md w-8 h-8 flex items-center justify-center"
+                >
+                  &times;
+                </button>
 
-                      <tr>
-                        <th className="border border-gray-400 px-4 py-2 text-left">
-                          Cantidad de piezas
-                        </th>
-                        <td className="border border-gray-400 px-4 py-2">
-                          {formData[selectedModule._id]?.pieces_number || ""}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div className="flex justify-center items-center m-auto">
+                {/* Contenido de la modal */}
+                <ViewModulesFurniture sortedModules={selectedModule} />
+
+                <div className="flex justify-center items-center m-auto gap-2 mt-4">
                   <button
                     onClick={handleCloseModal}
-                    className="mt-4 bg-red-500 text-white py-2 px-4 rounded"
+                    className="bg-red-500 text-white py-2 px-4 rounded"
                   >
                     Cerrar
                   </button>
