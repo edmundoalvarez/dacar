@@ -81,7 +81,7 @@ function Modules() {
   function deleteSingleModule(moduleId) {
     deleteOriginalModule(moduleId)
       .then((res) => {
-        getAllModulesToSet(searchTerm, currentPag);
+        getAllModulesToSet(searchTerm, currentPage);
         console.log(res.data);
       })
       .catch((error) => {

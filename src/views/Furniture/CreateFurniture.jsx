@@ -167,7 +167,7 @@ function CreateFurniture() {
       </div>
       <form
         action=""
-        className="w-1/2"
+        className="w-3/4"
         onSubmit={handleSubmit(onSubmit)}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
@@ -264,7 +264,10 @@ function CreateFurniture() {
                   onChange={handleModuleChange}
                   className="mr-2"
                 />
-                <label htmlFor={`module-${module._id}`}>{module.name}</label>
+                <div className="flex items-center">
+                  <p htmlFor={`module-${module._id}`}>{module.name}</p>
+                  <p className="ml-4 w-3/4">{module.description}</p>
+                </div>
                 {selectedModuleIds.includes(module._id) && (
                   <>
                     <label htmlFor={`qty-module-${module._id}`}>Cantidad</label>
@@ -299,6 +302,7 @@ function CreateFurniture() {
                 className="border-solid border-2 border-opacity mb-2 rounded-md p-4 flex items-center justify-between"
               >
                 <p>{module.name}</p>
+
                 <button
                   type="button"
                   onClick={() => handleOpenModal(module)}

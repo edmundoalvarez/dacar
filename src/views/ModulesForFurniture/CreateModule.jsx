@@ -51,10 +51,9 @@ function CreateModule() {
 
   const onSubmit = async (data, event) => {
     event.preventDefault();
-
     try {
       // Crear el módulo y obtener el ID del módulo creado
-      const { name, length, width, material } = data; // Extraer datos relevantes para el módulo
+      const { name, length, width, material, description } = data; // Extraer datos relevantes para el módulo
       console.log("data del form", data);
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
         const supplyIdName = data[`supplie_id_name${index}`];
@@ -85,6 +84,7 @@ function CreateModule() {
         width,
         height: data.height,
         material,
+        description,
         pieces_number: piecesNumber,
         supplies_module, // Asignar el array de insumos
       }; // Crear objeto moduleData con los datos del módulo
@@ -290,7 +290,7 @@ function CreateModule() {
             </span>
           )}
         </div>
-        <div className="flex flex-col w-2/12 my-2 ml-4">
+        <div className="flex flex-col w-2/12 my-2">
           <label className="font-semibold mb-1" htmlFor="width">
             Profundidad
           </label>
@@ -325,6 +325,25 @@ function CreateModule() {
           {errors.material && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
               {errors.material.message}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col w-3/12 my-2  ml-4">
+          <label className="font-semibold mb-1" htmlFor="description">
+            Descripción
+          </label>
+          <textarea
+            className="border border-gray-300 rounded-md p-2"
+            type="text"
+            name="description"
+            id="description"
+            {...register("description", {
+              required: "El campo es obligatorio",
+            })}
+          />
+          {errors.description && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors.description.message}
             </span>
           )}
         </div>

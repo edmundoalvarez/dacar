@@ -136,7 +136,7 @@ function EditModule() {
     event.preventDefault();
 
     try {
-      const { name, height, length, width, material } = data;
+      const { name, height, length, width, material, description } = data;
 
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
         const supplyIdName = data[`supplie_id_name${index}`];
@@ -256,6 +256,7 @@ function EditModule() {
         width: parseFloat(width),
         height: parseFloat(height),
         material,
+        description,
         pieces_number: piecesNumber,
         supplies_module,
       };
@@ -283,20 +284,12 @@ function EditModule() {
     let moduleNewHeight;
     let moduleNewLength;
     let moduleNewWidth;
-    switch (name) {
-      case "height":
-        moduleNewHeight = Number(getValues("height"));
-        break;
-      case "length":
-        moduleNewLength = Number(getValues("length"));
-        break;
-      case "width":
-        moduleNewWidth = Number(getValues("width"));
-        break;
 
-      default:
-        break;
-    }
+    moduleNewHeight = Number(getValues("height"));
+
+    moduleNewLength = Number(getValues("length"));
+
+    moduleNewWidth = Number(getValues("width"));
 
     currentModule.pieces.map((piece, index) => {
       const orientation = getValues(`orientation${index}`);
@@ -544,6 +537,26 @@ function EditModule() {
           {errors.material && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
               {errors.material.message}
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-col w-3/12 my-2">
+          <label htmlFor="description" className="font-semibold mb-1">
+            Description
+          </label>
+          <textarea
+            className="border border-gray-300 rounded-md p-2 w-11/12"
+            type="text"
+            name="description"
+            id="description"
+            {...register("description", {
+              required: "El campo es obligatorio",
+            })}
+          />
+          {errors.description && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors.description.message}
             </span>
           )}
         </div>

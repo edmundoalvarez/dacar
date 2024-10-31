@@ -10,7 +10,7 @@ function ViewModulesFurniture({ sortedModules }) {
           <h3 className="text-xl font-bold mb-2">{module.name}</h3>
           {/* container datos  modulo e insumos */}
           <div className="flex gap-28">
-            <div>
+            <div className="w-1/4">
               <h4 className="text-xl font-semibold">Descripción módulo:</h4>
               <p className="mb-1">
                 <span className="font-bold">Material:</span> {module.material}
@@ -23,6 +23,10 @@ function ViewModulesFurniture({ sortedModules }) {
               </p>
               <p className="mb-1">
                 <span className="font-bold">Profundidad:</span> {module.width}
+              </p>
+              <p className="mb-1">
+                <span className="font-bold">Descripción:</span>{" "}
+                {module.description}
               </p>
               <p className="mb-1">
                 <span className="font-bold">Cantidad de piezas:</span>{" "}
@@ -42,10 +46,10 @@ function ViewModulesFurniture({ sortedModules }) {
                       <span className="font-bold">Cantidad:</span>{" "}
                       {supply.supplie_qty}
                     </p>
-                    <p>
+                    {/* <p>
                       <span className="font-bold">Largo:</span>{" "}
                       {supply.supplie_length}
-                    </p>
+                    </p> */}
                   </div>
                 ))}
               </div>

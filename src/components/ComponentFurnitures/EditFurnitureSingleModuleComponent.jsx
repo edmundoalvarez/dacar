@@ -153,7 +153,7 @@ function EditFurnitureSingleModuleComponent({
     event.preventDefault();
 
     try {
-      const { name, height, length, width, material } = data;
+      const { name, height, length, width, material, description } = data;
 
       const supplies_module = [...Array(suppliesCount)].map((_, index) => {
         const supplyIdName = data[`supplie_id_name${index}`];
@@ -227,26 +227,40 @@ function EditFurnitureSingleModuleComponent({
           comment: data[`commentPiece${index}`],
           material: data[`materialPiece${index}`],
           lacqueredPiece: lacqueredPiece,
-          lacqueredPieceSides: data[`lacqueredPieceSides${index}`],
+          lacqueredPieceSides: data[`lacqueredPieceSides${index}`]
+            ? Number(data[`lacqueredPieceSides${index}`])
+            : undefined,
           veneer: veneer,
           veneerFinishing: data[`veneerOption${index}`],
-          veneerLacqueredPieceSides: data[`veneerLacqueredPieceSides${index}`],
+          veneerLacqueredPieceSides: data[`veneerLacqueredPieceSides${index}`]
+            ? Number(data[`veneerLacqueredPieceSides${index}`])
+            : undefined,
           veneer2: veneer2,
           veneer2Finishing: data[`veneer2Option${index}`],
-          veneer2LacqueredPieceSides:
-            data[`veneer2LacqueredPieceSides${index}`],
+          veneer2LacqueredPieceSides: data[`veneer2LacqueredPieceSides${index}`]
+            ? Number(data[`veneer2LacqueredPieceSides${index}`])
+            : undefined,
           melamine: melamine,
           melamineLacquered: data[`melamineLacquered${index}`],
-          melamineLacqueredPieceSides:
-            data[`melamineLacqueredPieceSides${index}`],
+          melamineLacqueredPieceSides: Number(
+            data[`melamineLacqueredPieceSides${index}`]
+          )
+            ? Number(data[`melamineLacqueredPieceSides${index}`])
+            : undefined,
           pantographed: data[`pantographed${index}`],
           edgeLength: data[`edgeLength${index}`],
-          edgeLengthSides: Number(data[`edgeLengthSides${index}`]),
+          edgeLengthSides: data[`edgeLengthSides${index}`]
+            ? Number(data[`edgeLengthSides${index}`])
+            : undefined,
           edgeWidth: data[`edgeWidth${index}`],
-          edgeWidthSides: Number(data[`edgeWidthSides${index}`]),
+          edgeWidthSides: data[`edgeWidthSides${index}`]
+            ? Number(data[`edgeWidthSides${index}`])
+            : undefined,
           lacqueredEdge: lacqueredEdge,
           polishedEdge: polishedEdge,
-          loose_piece: data[`loose_piece${index}`],
+          loose_piece: data[`loose_piece${index}`]
+            ? Number(data[`loose_piece${index}`])
+            : undefined,
         };
       });
 
@@ -257,6 +271,7 @@ function EditFurnitureSingleModuleComponent({
         width: parseInt(width),
         height: parseInt(height),
         material,
+        description,
         pieces_number: piecesNumber,
         supplies_module,
         pieces,
@@ -285,20 +300,12 @@ function EditFurnitureSingleModuleComponent({
     let moduleNewHeight;
     let moduleNewLength;
     let moduleNewWidth;
-    switch (name) {
-      case "height":
-        moduleNewHeight = Number(getValues("height"));
-        break;
-      case "length":
-        moduleNewLength = Number(getValues("length"));
-        break;
-      case "width":
-        moduleNewWidth = Number(getValues("width"));
-        break;
 
-      default:
-        break;
-    }
+    moduleNewHeight = Number(getValues("height"));
+
+    moduleNewLength = Number(getValues("length"));
+
+    moduleNewWidth = Number(getValues("width"));
 
     currentModule.pieces.map((piece, index) => {
       const orientation = getValues(`orientation${index}`);
@@ -529,6 +536,25 @@ function EditFurnitureSingleModuleComponent({
           {errors.material && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
               {errors.material.message}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col w-3/12 my-2">
+          <label className="font-semibold mb-1" htmlFor="description">
+            Descripción
+          </label>
+          <textarea
+            className="border border-gray-300 rounded-md p-2 w-11/12"
+            type="text"
+            name="description"
+            id="description"
+            {...register("description", {
+              required: "El campo es obligatorio",
+            })}
+          />
+          {errors.description && (
+            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+              {errors.description.message}
             </span>
           )}
         </div>
