@@ -95,22 +95,23 @@ function Supplies() {
 
   return (
     <>
-      <div>
-        <div className="flex gap-4 items-center p-8">
-          <h1 className="text-4xl">Insumos</h1>
-
-          <Link
-            to="/"
-            className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
-          >
-            Volver al Inicio
-          </Link>
-          <Link
-            to="/crear-insumo"
-            className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
-          >
-            Crear Insumo
-          </Link>
+      <div className="py-8 px-16 bg-gray-100 min-h-screen">
+        <div className="flex gap-4 items-center mb-8">
+          <h1 className="text-3xl font-semibold text-gray-800">Insumos</h1>
+          <div className="flex gap-3">
+            <Link
+              to="/"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200"
+            >
+              Volver al Inicio
+            </Link>
+            <Link
+              to="/crear-insumo"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200"
+            >
+              Crear Insumo
+            </Link>
+          </div>
           {/* Campo de búsqueda */}
           <div className="flex items-center gap-4">
             <input
@@ -118,7 +119,7 @@ function Supplies() {
               value={searchTerm}
               onChange={handleChange}
               placeholder="Buscar por nombre"
-              className="border border-gray-400 p-2 rounded-lg ml-auto"
+              className="border border-gray-300 p-2 rounded-lg ml-auto shadow-md "
             />
 
             <Oval
@@ -134,115 +135,119 @@ function Supplies() {
             />
           </div>
         </div>
-
         <div className="overflow-x-auto mt-4">
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-gray-700">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                >
-                  Nombre
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                >
-                  Largo
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                >
-                  Ancho
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                >
-                  Grosor
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                >
-                  Categoria
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                >
-                  Material
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                >
-                  Precio
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                >
-                  Proveedor
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                >
-                  Acción
-                </th>
-              </tr>
-            </thead>
-
-            <tbody className="bg-white divide-y divide-gray-200">
-              {supplies.slice().map((supplie) => (
-                <tr key={supplie.name}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {supplie.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {supplie.length}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {supplie.width}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {supplie.thickness}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {supplie.category}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {supplie.material}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatCurrency(supplie.price)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {supplie.supplier_id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex gap-2">
-                      <Link
-                        to={`/editar-insumo/${supplie._id}`}
-                        className="text-white bg-orange rounded-md px-2 py-1 mb-2"
-                      >
-                        Editar
-                      </Link>
-                      <button
-                        className="text-white bg-red-500 rounded-md px-2 py-1 mb-2"
-                        onClick={() => handleDeleteSupplie(supplie._id)}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-700">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  >
+                    Nombre
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  >
+                    Largo
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  >
+                    Ancho
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  >
+                    Grosor
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  >
+                    Categoria
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  >
+                    Material
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  >
+                    Precio
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  >
+                    Proveedor
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                  >
+                    Acción
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody className="bg-white divide-y divide-gray-200">
+                {supplies.slice().map((supplie) => (
+                  <tr
+                    key={supplie.name}
+                    className="hover:bg-gray-100 transition duration-150"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {supplie.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {supplie.length}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {supplie.width}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {supplie.thickness}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {supplie.category}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {supplie.material}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatCurrency(supplie.price)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {supplie.supplier_id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div className="flex gap-2">
+                        <Link
+                          to={`/editar-insumo/${supplie._id}`}
+                          className="text-white bg-orange rounded-md px-2 py-1 mb-2"
+                        >
+                          Editar
+                        </Link>
+                        <button
+                          className="text-white bg-red-500 rounded-md px-2 py-1 mb-2"
+                          onClick={() => handleDeleteSupplie(supplie._id)}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div className="flex justify-center w-full mt-8">
             <Grid
               visible={loader}
@@ -257,31 +262,31 @@ function Supplies() {
           </div>
         </div>
         {/* Controles de Paginación */}
+
         <div className="flex justify-center items-center gap-4 py-8">
           <button
             onClick={handlePreviousPage}
             disabled={currentPage === 1}
-            className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 
-      ${
-        currentPage === 1
-          ? "bg-gray-300 cursor-not-allowed"
-          : "bg-blue-600 hover:bg-blue-700"
-      }`}
+            className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 ${
+              currentPage === 1
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
             Anterior
           </button>
-          <span className="text-lg font-medium">
-            Página <span>{currentPage}</span> de <span>{totalPages}</span>
+          <span className="text-lg font-medium text-gray-700">
+            Página <span className="font-bold">{currentPage}</span> de{" "}
+            <span className="font-bold">{totalPages}</span>
           </span>
           <button
             onClick={handleNextPage}
             disabled={currentPage === totalPages}
-            className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 
-      ${
-        currentPage === totalPages
-          ? "bg-gray-300 cursor-not-allowed"
-          : "bg-blue-600 hover:bg-blue-700"
-      }`}
+            className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 ${
+              currentPage === totalPages
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
             Siguiente
           </button>

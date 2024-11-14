@@ -147,27 +147,34 @@ function CreateFurniture() {
     getAllModulesToSet();
   }, []);
 
-  return (
-    <div className="m-4">
-      <div className="flex gap-4">
-        <h1 className="text-4xl">Crear Mueble</h1>
+  const fields = [
+    { name: "name", label: "Nombre del mueble", required: true },
+    { name: "length", label: "Largo" },
+    { name: "height", label: "Alto" },
+    { name: "width", label: "Profundidad" },
+    { name: "category", label: "Categoría" },
+  ];
 
+  return (
+    <div className="py-8 px-16 bg-gray-100 min-h-screen">
+      <div className="flex gap-4 items-center mb-8">
+        <h1 className="text-4xl font-semibold text-gray-800">Crear Mueble</h1>
         <Link
           to="/"
-          className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
+          className="bg-emerald-600 py-2 px-4 rounded-full hover:bg-emerald-700 text-white font-medium transition duration-300"
         >
           Volver al Inicio
         </Link>
         <Link
           to={`/ver-muebles`}
-          className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
+          className="bg-emerald-600 py-2 px-4 rounded-full hover:bg-emerald-700 text-white font-medium transition duration-300"
         >
           Ver muebles
         </Link>
       </div>
+
       <form
-        action=""
-        className="w-3/4"
+        className="w-full  bg-white shadow-md rounded-lg p-8 mx-auto"
         onSubmit={handleSubmit(onSubmit)}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
@@ -175,138 +182,123 @@ function CreateFurniture() {
           }
         }}
       >
-        <div className="flex flex-col w-11/12 my-2">
-          <label htmlFor="name">Nombre del mueble</label>
-          <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
-            type="text"
-            name="name"
-            id="name"
-            {...register("name", { required: "El campo es obligatorio" })}
-          />
-          {errors.name && (
-            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.name.message}
-            </span>
-          )}
-        </div>
-
-        <div className="flex flex-col w-11/12 my-2">
-          <label htmlFor="length">Largo</label>
-          <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
-            type="text"
-            name="length"
-            id="length"
-            {...register("length")}
-          />
-          {errors.length && (
-            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.length.message}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-col w-11/12 my-2">
-          <label htmlFor="height">Alto</label>
-          <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
-            type="text"
-            name="height"
-            id="height"
-            {...register("height")}
-          />
-          {errors.height && (
-            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.height.message}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-col w-11/12 my-2">
-          <label htmlFor="width">Profundidad</label>
-          <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
-            type="text"
-            name="width"
-            id="width"
-            {...register("width")}
-          />
-          {errors.width && (
-            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.width.message}
-            </span>
-          )}
-        </div>
-
-        <div className="flex flex-col w-11/12 my-2">
-          <label htmlFor="category">Categoria</label>
-          <input
-            className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12"
-            type="text"
-            name="category"
-            id="category"
-            {...register("category")}
-          />
-          {errors.category && (
-            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.category.message}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-col w-11/12 my-2">
-          <label htmlFor="modules">Módulos</label>
-          <div className="border-solid border-2 border-opacity mb-2 rounded-md w-11/12 overflow-y-auto max-h-40">
-            {modules.map((module) => (
-              <div key={module._id} className="flex items-center p-2">
+        <div className="flex">
+          {/* Campos del formulario */}
+          <div className="flex flex-col w-1/2">
+            {fields.map((field, index) => (
+              <div key={index} className="flex flex-col w-11/12 my-2">
+                <label
+                  htmlFor={field.name}
+                  className="text-gray-700 font-medium"
+                >
+                  {field.label}
+                </label>
                 <input
-                  type="checkbox"
-                  id={`module-${module._id}`}
-                  value={module._id}
-                  onChange={handleModuleChange}
-                  className="mr-2"
+                  className="border border-gray-300 rounded-md px-4 py-2 mt-1 focus:border-emerald-500 w-full"
+                  type="text"
+                  id={field.name}
+                  {...register(field.name, {
+                    required: field.required
+                      ? "El campo es obligatorio"
+                      : false,
+                  })}
                 />
-                <div className="flex items-center">
-                  <p htmlFor={`module-${module._id}`}>{module.name}</p>
-                  <p className="ml-4 w-3/4">{module.description}</p>
-                </div>
-                {selectedModuleIds.includes(module._id) && (
-                  <>
-                    <label htmlFor={`qty-module-${module._id}`}>Cantidad</label>
-                    <input
-                      className="border-solid border-2 border-opacity ml-2 rounded-md w-1/12"
-                      type="number"
-                      name={`qty-module-${module._id}`}
-                      min="1"
-                      value={moduleQuantities[module._id] || 0}
-                      onChange={(e) =>
-                        handleInputChange(module._id, e.target.value)
-                      }
-                    />
-                  </>
+                {errors[field.name] && (
+                  <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                    {errors[field.name].message}
+                  </span>
                 )}
               </div>
             ))}
           </div>
-          {errors.modules_furniture && (
-            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-              {errors.modules_furniture.message}
-            </span>
-          )}
+          {/* Tabla de módulos disponibles */}
+          <div className="mb-6 w-1/2">
+            <label
+              htmlFor="modules"
+              className="block font-semibold text-lg text-gray-800 mb-2"
+            >
+              Módulos Disponibles
+            </label>
+            <div className="border border-gray-300 rounded-lg overflow-y-auto max-h-80">
+              <table className="min-w-full">
+                <thead className="bg-gray-200 sticky top-0 text-gray-600 text-sm font-medium">
+                  <tr>
+                    {["Seleccionar", "Nombre", "Descripción", "Cantidad"].map(
+                      (header, index) => (
+                        <th key={index} className="px-4 py-2 text-left">
+                          {header}
+                        </th>
+                      )
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {modules.map((module) => (
+                    <tr key={module._id} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 border-t border-gray-200">
+                        <input
+                          type="checkbox"
+                          id={`module-${module._id}`}
+                          value={module._id}
+                          onChange={handleModuleChange}
+                          className="rounded-sm text-emerald-500 focus:ring-0"
+                        />
+                      </td>
+                      <td className="px-4 py-2 border-t border-gray-200">
+                        <label
+                          htmlFor={`module-${module._id}`}
+                          className="font-medium"
+                        >
+                          {module.name}
+                        </label>
+                      </td>
+                      <td className="px-4 py-2 border-t border-gray-200 text-gray-700">
+                        {module.description}
+                      </td>
+                      <td className="px-4 py-2 border-t border-gray-200 text-center">
+                        {selectedModuleIds.includes(module._id) ? (
+                          <input
+                            className="border border-gray-300 bg-gray-100 rounded-md px-2 py-1 w-20 text-center"
+                            type="number"
+                            min="1"
+                            value={moduleQuantities[module._id] || 0}
+                            onChange={(e) =>
+                              handleInputChange(module._id, e.target.value)
+                            }
+                          />
+                        ) : (
+                          <span className="text-gray-500">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {errors.modules_furniture && (
+              <span className="text-red-600 text-sm mt-2">
+                {errors.modules_furniture.message}
+              </span>
+            )}
+          </div>
         </div>
-
-        <div className="mt-4">
-          <h2 className="text-2xl">Módulos Seleccionados:</h2>
+        {/* Módulos Seleccionados */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Módulos Seleccionados:
+          </h2>
           <div>
             {selectedModules.flatMap((module, index) => (
               <div
                 key={module._id + "-" + index}
-                className="border-solid border-2 border-opacity mb-2 rounded-md p-4 flex items-center justify-between"
+                className="border border-gray-300 rounded-md p-4 my-2 flex items-center justify-between bg-gray-50"
               >
                 <p>{module.name}</p>
-
+                <p>{module.description}</p>
                 <button
                   type="button"
                   onClick={() => handleOpenModal(module)}
-                  className="ml-2 bg-blue-500 text-white py-1 px-2 rounded"
+                  className="ml-2 bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600 transition duration-300"
                 >
                   Ver
                 </button>
@@ -316,43 +308,40 @@ function CreateFurniture() {
 
           {isModalOpen && selectedModule && (
             <div
-              onClick={handleCloseModal} // Cierra la modal si se hace clic fuera de ella
-              className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50"
+              onClick={handleCloseModal}
+              className="fixed inset-0 bg-gray-700 bg-opacity-75 flex items-center justify-center z-50"
             >
               <div
-                onClick={(e) => e.stopPropagation()} // Evita que el clic dentro de la modal la cierre
-                className="bg-white p-10 rounded-lg shadow-lg flex flex-col max-h-[550px] overflow-y-auto relative m-8"
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white p-8 rounded-lg shadow-lg max-h-96 overflow-y-auto relative"
               >
-                {/* Botón de cierre en la esquina superior derecha */}
                 <button
                   onClick={handleCloseModal}
-                  className="absolute top-2 right-2 bg-red-600 text-white rounded-md w-8 h-8 flex items-center justify-center"
+                  className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center"
                 >
                   &times;
                 </button>
-
-                {/* Contenido de la modal */}
                 <ViewModulesFurniture sortedModules={selectedModule} />
-
-                <div className="flex justify-center items-center m-auto gap-2 mt-4">
-                  <button
-                    onClick={handleCloseModal}
-                    className="bg-red-500 text-white py-2 px-4 rounded"
-                  >
-                    Cerrar
-                  </button>
-                </div>
+                <button
+                  onClick={handleCloseModal}
+                  className="bg-red-500 text-white py-2 px-4 rounded mt-4 hover:bg-red-600 transition duration-300"
+                >
+                  Cerrar
+                </button>
               </div>
             </div>
           )}
         </div>
 
-        <button
-          className="bg-blue-700 hover:bg-blue-500 text-white px-4 rounded-md"
-          type="submit"
-        >
-          Crear
-        </button>
+        {/* Botón de Crear */}
+        <div className="flex justify-center">
+          <button
+            className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-2 rounded-lg text-xl font-medium transition duration-300 w-1/6"
+            type="submit"
+          >
+            Crear
+          </button>
+        </div>
       </form>
     </div>
   );
