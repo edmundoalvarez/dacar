@@ -50,6 +50,7 @@ function FormAddSupplies({ register, index, errors, supplies }) {
           <input
             className="border border-gray-300 rounded-md p-2"
             type="number"
+            step="any"
             name={`supplie_qty${index}`}
             id={`supplie_qty${index}`}
             {...register(`supplie_qty${index}`, {

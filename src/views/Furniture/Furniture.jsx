@@ -26,7 +26,7 @@ function Furniture() {
   // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 10; // Límite de insumos por página
+  const itemsPerPage = 50; // Límite de insumos por página
 
   const navigate = useNavigate();
 

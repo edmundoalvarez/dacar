@@ -382,7 +382,7 @@ function EditModule() {
             (formattedModuleNewWidth - moduleOriginalWidth) *
               (pieceWidth / moduleOriginalWidth);
         }
-        if (width < moduleOriginalWidth) {
+        if (formattedModuleNewWidth < moduleOriginalWidth) {
           pieceWidth =
             pieceWidth -
             (moduleOriginalWidth - formattedModuleNewWidth) *

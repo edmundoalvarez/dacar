@@ -66,6 +66,7 @@ function FormEditSupplies({
         <input
           className="border border-gray-300 rounded-md p-2"
           type="number"
+          step="any"
           name={`supplie_qty${index}`}
           id={`supplie_qty${index}`}
           defaultValue={supplyModule ? supplyModule.supplie_qty : ""}

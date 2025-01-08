@@ -15,7 +15,7 @@ function Clients() {
   // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 10; // Límite de clientes por página
+  const itemsPerPage = 50; // Límite de clientes por página
 
   const getClientsToSet = (term = "", page = 1) => {
     setLoader(true);
