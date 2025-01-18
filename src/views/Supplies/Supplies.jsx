@@ -280,7 +280,7 @@ function Supplies() {
                             </tbody>
                         </table>
                     </div>
-                    <div className="flex justify-center w-full mt-8">
+                    <div className="overflow-x-auto my-8 flex justify-center items-center h-[100px]">
                         <Grid
                             visible={loader}
                             height="80"
@@ -293,31 +293,31 @@ function Supplies() {
                         />
                     </div>
                 </div>
-                {/* Controles de Paginación */}
-
-                <div className="flex justify-center items-center gap-4 py-8">
+                <div className="flex justify-center items-center gap-4 py-8 text-black">
                     <button
                         onClick={handlePreviousPage}
                         disabled={currentPage === 1}
-                        className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 ${
+                        className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 
+                        ${
                             currentPage === 1
-                                ? "bg-gray-300 cursor-not-allowed"
-                                : "bg-blue-600 hover:bg-blue-700"
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-emerald-500 hover:bg-emerald-700"
                         }`}
                     >
                         Anterior
                     </button>
-                    <span className="text-lg font-medium text-gray-700">
-                        Página <span className="font-bold">{currentPage}</span>{" "}
-                        de <span className="font-bold">{totalPages}</span>
+                    <span className="text-lg font-medium">
+                        Página <span>{currentPage}</span> de{" "}
+                        <span>{totalPages}</span>
                     </span>
                     <button
                         onClick={handleNextPage}
                         disabled={currentPage === totalPages}
-                        className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 ${
+                        className={`px-4 py-2 text-white font-semibold rounded-lg transition duration-300 
+                        ${
                             currentPage === totalPages
-                                ? "bg-gray-300 cursor-not-allowed"
-                                : "bg-blue-600 hover:bg-blue-700"
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-emerald-500 hover:bg-emerald-700"
                         }`}
                     >
                         Siguiente

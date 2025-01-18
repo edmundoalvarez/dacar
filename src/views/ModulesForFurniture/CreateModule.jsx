@@ -375,7 +375,7 @@ function CreateModule() {
                     )}
                 </div>
 
-                <div className="flex flex-col w-full my-8 pt-8 border-t border-t-emerald-600">
+                <div className="flex flex-col w-full my-8 pt-8 border-t-2 border-t-emerald-600">
                     <h2 className="text-xl font-bold">Insumos</h2>
                     <label
                         className="font-semibold mb-1"
@@ -408,7 +408,7 @@ function CreateModule() {
                         supplies={supplies}
                     />
                 ))}
-                <div className="flex flex-col w-full my-8 pt-8 border-t border-t-emerald-600">
+                <div className="flex flex-col w-full my-8 pt-8 border-t-2 border-t-emerald-600">
                     <h2 className="text-xl font-bold">Piezas</h2>
                     <div className="flex flex-col w-full mt-2 mb-6">
                         <label

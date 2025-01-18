@@ -91,7 +91,7 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
     };
 
     return (
-        <div className="flex flex-wrap gap-x-4 w-full border-b border-gray-200 pb-6 mb-6">
+        <div className="flex flex-wrap justify-start align-top content-start gap-x-4 w-full border-2 border-emerald-600 rounded-lg p-10 mb-6">
             <div className="flex flex-col w-full">
                 <label
                     htmlFor={`namePiece${index}`}
@@ -115,7 +115,7 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
                 )}
             </div>
             <div className="flex flex-row gap-4 w-full mt-4">
-                <div className="flex flex-col w-1/2">
+                <div className="flex flex-col w-1/3">
                     <label
                         htmlFor={`qty${index}`}
                         className="font-semibold mb-1"
@@ -135,44 +135,46 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
                         </span>
                     )}
                 </div>
-                <div className="flex flex-col align-middle justify-center items-center w-1/2">
-                    <label className="font-semibold mb-1">Pieza suelta</label>
+                <div className="flex flex-col align-middle justify-start items-center w-1/3 ">
+                    <label className="font-semibold mb-4">Pieza suelta</label>
                     <input
                         type="checkbox"
                         {...register(`loose_piece${index}`)}
                     />
                 </div>
+                <div className="flex flex-col w-1/3">
+                    <label
+                        htmlFor={`orientation${index}`}
+                        className="font-semibold mb-1"
+                    >
+                        Orientación
+                    </label>
+                    <select
+                        className="border border-gray-300 rounded-md p-2"
+                        name={`orientation${index}`}
+                        id={`orientation${index}`}
+                        {...register(`orientation${index}`, {
+                            required: "El campo es obligatorio",
+                        })}
+                        onChange={handleOrientationOptionChange}
+                    >
+                        <option value="">Elegir una opción</option>
+                        <option value="cross-vertical">
+                            Transversal Vertical
+                        </option>
+                        <option value="cross-horizontal">
+                            Transversal Horizontal
+                        </option>
+                        <option value="side">Lateral</option>
+                    </select>
+                    {errors[`orientation${index}`] && (
+                        <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                            {errors[`orientation${index}`].message}
+                        </span>
+                    )}
+                </div>
             </div>
 
-            <div className="flex flex-col w-full mt-4">
-                <label
-                    htmlFor={`orientation${index}`}
-                    className="font-semibold mb-1"
-                >
-                    Orientación
-                </label>
-                <select
-                    className="border border-gray-300 rounded-md p-2"
-                    name={`orientation${index}`}
-                    id={`orientation${index}`}
-                    {...register(`orientation${index}`, {
-                        required: "El campo es obligatorio",
-                    })}
-                    onChange={handleOrientationOptionChange}
-                >
-                    <option value="">Elegir una opción</option>
-                    <option value="cross-vertical">Transversal Vertical</option>
-                    <option value="cross-horizontal">
-                        Transversal Horizontal
-                    </option>
-                    <option value="side">Lateral</option>
-                </select>
-                {errors[`orientation${index}`] && (
-                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                        {errors[`orientation${index}`].message}
-                    </span>
-                )}
-            </div>
             {lengthLabel !== "" && (
                 <div className="flex flex-row gap-4 w-full mt-4">
                     {/* Width de la pieza */}
@@ -302,31 +304,36 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
             <div className="flex flex-row gap-4 w-full mt-4">
                 {/* Condicional para mostrar elementos dependiendo de `finishingModule` */}
                 {finishingModule === "lacqueredPiece" && (
-                    <div className="flex flex-col w-full">
-                        <label
-                            htmlFor={`lacqueredPieceSides${index}`}
-                            className="font-semibold mb-1"
-                        >
-                            Laqueado (opcional)
-                        </label>
-                        <select
-                            className="border border-gray-300 rounded-md p-2"
-                            name={`lacqueredPieceSides${index}`}
-                            id={`lacqueredPieceSides${index}`}
-                            {...register(`lacqueredPieceSides${index}`, {
-                                required: "El campo es obligatorio",
-                            })}
-                        >
-                            <option value="">Elegir una opción</option>
-                            <option value="1">1 Lado</option>
-                            <option value="2">2 Lados</option>
-                        </select>
-                        {errors[`lacqueredPieceSides${index}`] && (
-                            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                                {errors[`lacqueredPieceSides${index}`].message}
-                            </span>
-                        )}
-                        <div className="flex items-center mt-2">
+                    <div className="flex flex-row gap-4 w-full">
+                        <div className="flex flex-col w-1/2">
+                            <label
+                                htmlFor={`lacqueredPieceSides${index}`}
+                                className="font-semibold mb-1"
+                            >
+                                Laqueado (opcional)
+                            </label>
+                            <select
+                                className="border border-gray-300 rounded-md p-2"
+                                name={`lacqueredPieceSides${index}`}
+                                id={`lacqueredPieceSides${index}`}
+                                {...register(`lacqueredPieceSides${index}`, {
+                                    required: "El campo es obligatorio",
+                                })}
+                            >
+                                <option value="">Elegir una opción</option>
+                                <option value="1">1 Lado</option>
+                                <option value="2">2 Lados</option>
+                            </select>
+                            {errors[`lacqueredPieceSides${index}`] && (
+                                <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                                    {
+                                        errors[`lacqueredPieceSides${index}`]
+                                            .message
+                                    }
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex flex-col justify-start items-center gap-3 mt-2 w-1/2">
                             <label className="font-semibold">
                                 Pantografiado
                             </label>
@@ -552,7 +559,7 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
                 )}
             </div>
 
-            <div className="flex flex-col w-2/12 mt-4">
+            <div className="flex flex-col w-2/12 mt-8">
                 <label className="font-semibold mb-1">¿Tiene filo?</label>
                 <div className="flex gap-4">
                     <div>
@@ -593,10 +600,10 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
                 )}
             </div>
             {showEdgePiece && (
-                <div className="flex mt-4 gap-8">
+                <div className="flex gap-8 w-9/12 mt-8">
                     {/* filo width */}
-                    <div>
-                        <div>
+                    <div className="w-4/12">
+                        <div className="mb-4">
                             <label className="font-semibold mb-1">
                                 Filo de {widthLabel}
                             </label>
@@ -631,8 +638,8 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
                         </div>
                     </div>
                     {/* filo length */}
-                    <div>
-                        <div>
+                    <div className="w-4/12">
+                        <div className="mb-4">
                             <label className="font-semibold mb-1">
                                 Filo de {lengthLabel}
                             </label>
@@ -668,7 +675,7 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
 
                         {/* filo laqueado */}
                     </div>
-                    <div className="flex flex-col ml-4">
+                    <div className="w-4/12 mt-11">
                         <label className="font-semibold mb-1">
                             Tipo de Filo
                         </label>

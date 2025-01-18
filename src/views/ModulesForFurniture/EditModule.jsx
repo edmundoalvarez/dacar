@@ -602,7 +602,7 @@ function EditModule() {
                     )}
                 </div>
 
-                <div className="flex flex-col w-full my-8 pt-8 border-t border-t-emerald-600">
+                <div className="flex flex-col w-full my-8 pt-8 border-t-2 border-t-emerald-600">
                     <h2 className="text-xl font-bold">Insumos</h2>
                     <label
                         htmlFor="suppliesNumber"
@@ -639,7 +639,7 @@ function EditModule() {
                             setValue={setValue} // Asegúrate de pasar setValue aquí también
                         />
                     ))}
-                <div className="flex flex-col w-full my-8 pt-8 border-t border-t-emerald-600">
+                <div className="flex flex-col w-full my-8 pt-8 border-t-2 border-t-emerald-600">
                     <h2 className="text-xl font-bold">Piezas</h2>
                     <div className="flex flex-col w-full mt-2 mb-6">
                         <label

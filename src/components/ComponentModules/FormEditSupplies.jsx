@@ -28,7 +28,7 @@ function FormEditSupplies({
     };
 
     return (
-        <div className="flex gap-x-4 w-full">
+        <div className="flex gap-x-4 w-full border-2 border-emerald-600 rounded-lg p-10 mb-6">
             <div className="flex flex-col w-1/2 my-2">
                 <label
                     htmlFor={`supplie_id_name${index}`}
