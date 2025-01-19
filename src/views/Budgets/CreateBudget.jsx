@@ -1088,6 +1088,7 @@ function CreateBudget() {
                                             {...register(`veneerPolishedM2`)}
                                         />
                                         <input
+                                            className="border border-gray-300 rounded-md p-2"
                                             name={`veneerPolishedPrice`}
                                             type="hidden"
                                             value={
@@ -1301,7 +1302,7 @@ function CreateBudget() {
                                                     type="text"
                                                     name="edgeThickness"
                                                     id="edgeThickness"
-                                                    className="border-solid border-2 border-opacity mb-2 rounded-md"
+                                                    className="border border-gray-300 rounded-md p-2"
                                                     {...register(
                                                         "edgeThickness"
                                                     )}
@@ -1411,7 +1412,7 @@ function CreateBudget() {
                                                     type="text"
                                                     name="edgePolishedThickness"
                                                     id="edgePolishedThickness"
-                                                    className="border-solid border-2 border-opacity mb-2 rounded-md"
+                                                    className="border border-gray-300 rounded-md p-2"
                                                     {...register(
                                                         "edgePolishedThickness"
                                                     )}
