@@ -903,27 +903,39 @@ function CreateBudget() {
 
     return (
         <>
-            <div className="p-4">
-                <div className="flex gap-8 px-4 pb-4">
-                    <h1 className="text-2xl font-bold">
+            <div className="pb-8 px-16 bg-gray-100 min-h-screen">
+                <div className="shadow-sm flex gap-4 justify-between items-center mb-8 bg-gray-800 p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500">
+                    <h1 className="text-4xl font-semibold text-white">
                         Presupuestar el mueble: {singleFurniture?.name}
                     </h1>
-                    <Link
-                        to="/"
-                        className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium"
-                    >
-                        Volver al Inicio
-                    </Link>
-                    <Link
-                        to="/ver-muebles"
-                        className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium"
-                    >
-                        Ver Muebles
-                    </Link>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            to={`/ver-muebles`}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center align-middle items-center gap-2"
+                        >
+                            <img
+                                src="./../icon_back.svg"
+                                alt="Icono de budgets"
+                                className="w-[18px]"
+                            />
+                            <p className="m-0 leading-loose">Volver</p>
+                        </Link>
+                        <Link
+                            to="/"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center align-middle items-center gap-2"
+                        >
+                            <img
+                                src="./../icon_home.svg"
+                                alt="Icono de budgets"
+                                className="w-[20px]"
+                            />
+                            <p className="m-0 leading-loose">Ir a Inicio</p>
+                        </Link>
+                    </div>
                 </div>
                 <form
                     action=""
-                    className=""
+                    className="flex flex-row flex-wrap gap-2 w-full max-w-full m-auto p-12 rounded-lg bg-white shadow-sm text-gray-700"
                     onSubmit={handleSubmit(onSubmit)}
                     onKeyDown={(e) => {
                         if (e.key === "Enter") {
@@ -937,11 +949,11 @@ function CreateBudget() {
                         value={singleFurniture?.name}
                         {...register(`furniture_name`)}
                     />
-                    <div className="p-4 bg-gray-100 rounded-md shadow-md">
+                    <div className="p-0 pb-8 border-b-2 border-b-emerald-600 w-full mb-6">
                         <h2 className="text-2xl font-semibold mb-2">
                             Datos del Mueble
                         </h2>
-                        <div className="flex gap-4">
+                        <div className="flex gap-8 bg-emerald-600 text-white w-fit py-1 px-4 my-4 rounded">
                             <p className="mb-1">
                                 <span className="font-bold">Alto:</span>{" "}
                                 {singleFurniture?.height}
@@ -983,8 +995,8 @@ function CreateBudget() {
                                 {...register(`category`)}
                             />
                         </div>
-                        <div className="flex gap-16">
-                            <div className="w-1/3">
+                        <div className="flex gap-16 w-full">
+                            <div className="w-1/2">
                                 <h2 className="text-2xl font-semibold mb-2">
                                     Acabados del Mueble
                                 </h2>
@@ -1008,12 +1020,14 @@ function CreateBudget() {
                                             )}
                                         </p>
                                         <input
+                                            className="border border-gray-300 rounded-md p-2"
                                             name={`veneerM2`}
                                             type="hidden"
                                             value={totalVeneer / 10000}
                                             {...register(`veneerM2`)}
                                         />
                                         <input
+                                            className="border border-gray-300 rounded-md p-2"
                                             name={`veneerPrice`}
                                             type="hidden"
                                             value={
@@ -1067,6 +1081,7 @@ function CreateBudget() {
                                             )}
                                         </p>
                                         <input
+                                            className="border border-gray-300 rounded-md p-2"
                                             name={`veneerPolishedM2`}
                                             type="hidden"
                                             value={totalVeneerPolished / 10000}
@@ -1431,8 +1446,8 @@ function CreateBudget() {
                                 {totalEdgeLength > 0 ? (
                                     <>
                                         <div className="flex gap-4">
-                                            <p className="flex flex-col mb-1">
-                                                <span className="font-bold">
+                                            <p className="flex flex-col mb-1 w-2/3">
+                                                <span className="font-bold w-full">
                                                     Filo total (sin laquear):
                                                 </span>{" "}
                                                 <span>
@@ -1463,6 +1478,7 @@ function CreateBudget() {
                                                 </span>
                                             </p>
                                             <input
+                                                className="border border-gray-300 rounded-md p-2"
                                                 name={`edgeM2`}
                                                 type="hidden"
                                                 value={(
@@ -1471,16 +1487,17 @@ function CreateBudget() {
                                                 {...register(`edgeM2`)}
                                             />
                                             <input
+                                                className="border border-gray-300 rounded-md p-2"
                                                 name={`edgePrice`}
                                                 type="hidden"
                                                 {...register(`edgePrice`)}
                                             />
 
-                                            <div className="flex flex-col w-1/2 ">
+                                            <div className="flex flex-col w-1/3 ">
                                                 <select
                                                     name={`edgeSelect`}
                                                     id={`edgeSelect`}
-                                                    className="border-solid border-2 border-opacity mb-2 rounded-md"
+                                                    className="border border-gray-300 rounded-md p-2"
                                                     {...register(`edgeSelect`)}
                                                     onChange={
                                                         handleMaterialEdgeOption
@@ -1516,16 +1533,16 @@ function CreateBudget() {
 
                             {/* INSUMOS */}
                             {showSupplies ? (
-                                <div className="w-2/3">
+                                <div className="w-1/2">
                                     <h2 className="text-2xl font-semibold mb-2">
                                         Insumos totales del mueble{" "}
                                         {formatCurrency(totalSuppliePrice)}
                                     </h2>
-                                    <div className="flex flex-wrap -mx-2">
+                                    <div className="flex flex-wrap">
                                         {sortedModules &&
                                             sortedModules?.length > 0 && (
                                                 <div className="w-full">
-                                                    <div className="p-4 rounded shadow">
+                                                    <div className="rounded-lg overflow-hidden border-2 border-emerald-600">
                                                         {(() => {
                                                             let totalSupplieCost = 0; // Inicializar variable para el total
 
@@ -1612,7 +1629,13 @@ function CreateBudget() {
                                                                         key={
                                                                             index
                                                                         }
-                                                                        className="mb-2"
+                                                                        className={`mb-0 p-4 ${
+                                                                            index %
+                                                                                2 ===
+                                                                            0
+                                                                                ? "bg-gray-200"
+                                                                                : "bg-white"
+                                                                        }`}
                                                                     >
                                                                         {/* Detalles de cada insumo */}
                                                                         <p>
@@ -1726,23 +1749,23 @@ function CreateBudget() {
                     </div>
 
                     {/* cargar cantidad de placas a usar */}
-                    <div className="p-4 bg-gray-300 rounded-md shadow-md">
+                    <div className="py-6 w-full">
                         <div className="flex items-center gap-2">
-                            <p className="text-md font-semibold">
+                            <p className="text-2xl mr-6 uppercase font-semibold w-1/4">
                                 Cantidad de placas
                             </p>
                             {""}
-                            <div className="flex gap-4">
+                            <div className="flex gap-2">
                                 <button
                                     type="button"
-                                    className="text-xl font-semibold bg-slate-100 rounded-md p-1 w-6 h-6 flex items-center justify-center"
+                                    className="text-lg font-semibold bg-emerald-500 text-white rounded-md h-7 w-7 flex items-center justify-center"
                                     onClick={counterMaterial}
                                 >
                                     +
                                 </button>
                                 <button
                                     type="button"
-                                    className="text-xl font-semibold bg-slate-100 rounded-md p-1 w-6 h-6 flex items-center justify-center"
+                                    className="text-lg font-semibold bg-emerald-500 text-white rounded-md h-7 w-7 flex items-center justify-center"
                                     onClick={counterMaterial}
                                 >
                                     -
@@ -1752,94 +1775,111 @@ function CreateBudget() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col">
+                        <div className="flex flex-col my-6">
                             {[...Array(countMaterial)].map((_, index) => (
-                                <div key={`containerMaterial${index}`}>
-                                    <div className="flex w-1/2 my-2 gap-4">
-                                        <label
-                                            htmlFor={`materialTable${index}`}
-                                        >
-                                            Seleccionar placa
-                                        </label>
-                                        <select
-                                            name={`materialTable${index}`}
-                                            id={`materialTable${index}`}
-                                            className="border-solid border-2 border-opacity mb-2 rounded-md"
-                                            {...register(
-                                                `materialTable${index}`
-                                            )}
-                                            onChange={handleMaterialOption(
-                                                index
-                                            )}
-                                        >
-                                            <option value="">
-                                                Elegir una opción
-                                            </option>
-                                            {tables.map((table) => (
-                                                <option
-                                                    key={table._id}
-                                                    value={table.name}
+                                <div
+                                    key={`containerMaterial${index}`}
+                                    className="w-full flex flex-col mb-6"
+                                >
+                                    <div className="flex flex-row w-full  gap-0">
+                                        <div className="flex flex-row gap-4 w-1/2">
+                                            <div className="flex flex-col gap-2 w-1/2">
+                                                <label
+                                                    htmlFor={`materialTable${index}`}
                                                 >
-                                                    {table.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors[`materialTable${index}`] && (
-                                            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                                                {
-                                                    errors[
+                                                    Seleccionar placa
+                                                </label>
+                                                <select
+                                                    name={`materialTable${index}`}
+                                                    id={`materialTable${index}`}
+                                                    className="border border-gray-300 rounded-md p-2"
+                                                    {...register(
                                                         `materialTable${index}`
-                                                    ].message
-                                                }
-                                            </span>
-                                        )}
-
-                                        <label htmlFor={`materialQty${index}`}>
-                                            Cantidad de placas
-                                        </label>
-                                        <input
-                                            name={`materialQty${index}`}
-                                            type="number"
-                                            className="border-solid border-2 border-opacity mb-2 rounded-md w-16"
-                                            {...register(`materialQty${index}`)}
-                                            min="0"
-                                        />
-                                        {errors[`materialQty${index}`] && (
-                                            <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                                                {
-                                                    errors[
+                                                    )}
+                                                    onChange={handleMaterialOption(
+                                                        index
+                                                    )}
+                                                >
+                                                    <option value="">
+                                                        Elegir una opción
+                                                    </option>
+                                                    {tables.map((table) => (
+                                                        <option
+                                                            key={table._id}
+                                                            value={table.name}
+                                                        >
+                                                            {table.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                {errors[
+                                                    `materialTable${index}`
+                                                ] && (
+                                                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                                                        {
+                                                            errors[
+                                                                `materialTable${index}`
+                                                            ].message
+                                                        }
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col gap-2 w-1/2">
+                                                <label
+                                                    htmlFor={`materialQty${index}`}
+                                                >
+                                                    Cantidad de placas
+                                                </label>
+                                                <input
+                                                    name={`materialQty${index}`}
+                                                    type="number"
+                                                    className="border border-gray-300 rounded-md p-2"
+                                                    {...register(
                                                         `materialQty${index}`
-                                                    ].message
-                                                }
-                                            </span>
-                                        )}
-                                        {/* placa price */}
-                                        <input
-                                            name={`materialPrice${index}`}
-                                            type="hidden"
-                                            {...register(
-                                                `materialPrice${index}`
-                                            )}
-                                        />
+                                                    )}
+                                                    min="0"
+                                                />
+                                                {errors[
+                                                    `materialQty${index}`
+                                                ] && (
+                                                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                                                        {
+                                                            errors[
+                                                                `materialQty${index}`
+                                                            ].message
+                                                        }
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* placa price */}
+                                            <input
+                                                name={`materialPrice${index}`}
+                                                type="hidden"
+                                                {...register(
+                                                    `materialPrice${index}`
+                                                )}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                             {/* item extra inicio */}
-                            <div className="flex items-center gap-2 pt-4">
-                                <p className="text-md font-semibold">
+                            <div className="flex items-center gap-2 mt-4">
+                                <p className="text-2xl mr-6 uppercase font-semibold w-1/4">
                                     Items extra
                                 </p>{" "}
-                                <div className="flex gap-4">
+                                <div className="flex gap-2">
                                     <button
                                         type="button"
-                                        className="text-xl font-semibold bg-slate-100 rounded-md p-1 w-6 h-6 flex items-center justify-center"
+                                        className="text-lg font-semibold bg-emerald-500 text-white rounded-md h-7 w-7 flex items-center justify-center"
                                         onClick={counterItemExtra}
                                     >
                                         +
                                     </button>
                                     <button
                                         type="button"
-                                        className="text-xl font-semibold bg-slate-100 rounded-md p-1 w-6 h-6 flex items-center justify-center"
+                                        className="text-lg font-semibold bg-emerald-500 text-white rounded-md h-7 w-7 flex items-center justify-center"
                                         onClick={counterItemExtra}
                                     >
                                         -
@@ -1853,16 +1893,16 @@ function CreateBudget() {
                             {[...Array(countItemExtra)].map((_, index) => (
                                 <div
                                     key={`containerItemExtra${index}`}
-                                    className="flex w-1/2 gap-4"
+                                    className="flex w-1/2 gap-4 mt-4"
                                 >
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col w-1/2">
                                         <label htmlFor={`itemExtra${index}`}>
                                             Nombre
                                         </label>
                                         <input
                                             name={`itemExtra${index}`}
                                             type="text"
-                                            className="border-solid border-2 border-opacity mb-2 rounded-md "
+                                            className="border border-gray-300 rounded-md p-2"
                                             {...register(`itemExtra${index}`)}
                                         />
                                         {errors[`itemExtra${index}`] && (
@@ -1874,7 +1914,7 @@ function CreateBudget() {
                                             </span>
                                         )}
                                     </div>
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col w-1/2">
                                         <label
                                             htmlFor={`itemExtraPrice${index}`}
                                         >
@@ -1883,7 +1923,7 @@ function CreateBudget() {
                                         <input
                                             name={`itemExtraPrice${index}`}
                                             type="text"
-                                            className="border-solid border-2 border-opacity mb-2 rounded-md "
+                                            className="border border-gray-300 rounded-md p-2"
                                             {...register(
                                                 `itemExtraPrice${index}`
                                             )}
@@ -1972,7 +2012,7 @@ function CreateBudget() {
                             )}
                             {/* chapa enchapado artesanal fin*/}
                             {/* item ajuste */}
-                            <h3 className="pt-4 font-semibold">
+                            <h3 className="pt-6 mb-0 font-semibold text-lg text-emerald-700 uppercase">
                                 Ítem de ajuste
                             </h3>
                             <div className="flex gap-4">
@@ -1984,7 +2024,7 @@ function CreateBudget() {
                                     <input
                                         name={`adjustment_reason`}
                                         type="text"
-                                        className="border-solid border-2 border-opacity mb-2 rounded-md "
+                                        className="border border-gray-300 rounded-md p-2"
                                         {...register(`adjustment_reason`)}
                                     />
                                     {errors[`adjustment_reason`] && (
@@ -2004,7 +2044,7 @@ function CreateBudget() {
                                     <input
                                         name={`adjustment_price`}
                                         type="number"
-                                        className="border-solid border-2 border-opacity mb-2 rounded-md "
+                                        className="border border-gray-300 rounded-md p-2"
                                         {...register(`adjustment_price`)}
                                         min="0"
                                     />
@@ -2017,11 +2057,11 @@ function CreateBudget() {
                             </div>
                             {/* item ajuste fin*/}
                             {/* carga cliente*/}
-                            <div className="flex flex-col w-1/4 my-2">
-                                <label>
+                            <div className="flex flex-col my-6 w-1/2">
+                                <label className="mt-2 mb-2 font-semibold text-lg text-emerald-700 uppercase w-full">
                                     ¿Cargar cliente o elegir uno existente?
                                 </label>
-                                <div className="flex items-center">
+                                <div className="flex items-center mb-2 mt-2">
                                     <input
                                         type="radio"
                                         id="newClient"
@@ -2030,6 +2070,7 @@ function CreateBudget() {
                                             required: "El campo es obligatorio",
                                         })}
                                         onChange={handleClientOption}
+                                        className="border border-gray-300 rounded-md p-2"
                                     />
                                     <label htmlFor="newClient" className="ml-2">
                                         Cargar cliente
@@ -2039,6 +2080,7 @@ function CreateBudget() {
                                     <input
                                         type="radio"
                                         id="existingClient"
+                                        className="border border-gray-300 rounded-md p-2"
                                         value="existing"
                                         {...register(`clientOption`, {
                                             required: "El campo es obligatorio",
@@ -2065,13 +2107,13 @@ function CreateBudget() {
                                 ></FormCreateClient>
                             ) : clientOption === "existing" ? (
                                 <>
-                                    <div className="relative">
+                                    <div className="relative w-full mb-8">
                                         <input
                                             type="text"
                                             placeholder="Buscar cliente por nombre"
                                             {...register("clientNameInput")}
                                             onChange={handleSearchTermChange}
-                                            className="border-solid border-2 border-opacity mb-2 rounded-md w-full"
+                                            className="border border-emerald-600 rounded-md p-2 w-1/2"
                                         />
                                         {filteredClients.length > 0 && (
                                             <ul className="absolute border bg-white w-full max-h-40 overflow-y-auto">
@@ -2109,8 +2151,8 @@ function CreateBudget() {
                                 ""
                             )}
                             {/* fin carga cliente */}
-                            <div className="flex gap-4">
-                                <div className="flex flex-col w-2/4  ">
+                            <div className="flex flex-col gap-4">
+                                <div className="flex flex-col w-full  ">
                                     {" "}
                                     <label htmlFor={`comments`}>
                                         Comentarios
@@ -2118,7 +2160,7 @@ function CreateBudget() {
                                     <textarea
                                         name={`comments`}
                                         type="text"
-                                        className="border-solid border-2 border-opacity mb-2 rounded-md "
+                                        className="border border-gray-300 rounded-md p-2 resize-none"
                                         {...register(`comments`)}
                                     />
                                     {errors[`comments`] && (
@@ -2127,7 +2169,7 @@ function CreateBudget() {
                                         </span>
                                     )}
                                 </div>
-                                <div className="flex flex-col w-1/4  ">
+                                <div className="flex flex-col w-full   ">
                                     {" "}
                                     <label htmlFor={`deliver_date`}>
                                         Fecha de entrega
@@ -2135,7 +2177,7 @@ function CreateBudget() {
                                     <input
                                         name={`deliver_date`}
                                         type="text"
-                                        className="border-solid border-2 border-opacity mb-2 rounded-md "
+                                        className="border border-gray-300 rounded-md p-2"
                                         {...register(`deliver_date`)}
                                     />
                                     {errors[`deliver_date`] && (
@@ -2145,26 +2187,32 @@ function CreateBudget() {
                                     )}
                                 </div>
                             </div>
-                            <div className="flex   my-4 gap-4">
-                                <label htmlFor="placement">Colocación</label>
-                                <select
-                                    name="placement"
-                                    id="placement"
-                                    className="border-solid border-2 border-opacity mb-2 rounded-md"
-                                    {...register("placement", {
-                                        required: "El campo es obligatorio",
-                                    })}
-                                >
-                                    <option value="">Elegir una opción</option>
-                                    <option value="true">Sí</option>
-                                    <option value="false">No</option>
-                                </select>
-                                {errors.placement && (
-                                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left">
-                                        {errors.placement.message}
-                                    </span>
-                                )}
-                                <div>
+                            <div className="flex flex-row gap-4">
+                                <div className="flex flex-col w-1/4 mt-4 gap-0">
+                                    <label htmlFor="placement">
+                                        Colocación
+                                    </label>
+                                    <select
+                                        name="placement"
+                                        id="placement"
+                                        className="border border-gray-300 rounded-md p-2"
+                                        {...register("placement", {
+                                            required: "El campo es obligatorio",
+                                        })}
+                                    >
+                                        <option value="">
+                                            Elegir una opción
+                                        </option>
+                                        <option value="true">Sí</option>
+                                        <option value="false">No</option>
+                                    </select>
+                                    {errors.placement && (
+                                        <span className="text-xs xl:text-base text-red-700 mt-2 block text-left">
+                                            {errors.placement.message}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="flex flex-col w-1/4 mt-4 gap-0">
                                     <label
                                         htmlFor="placementDays"
                                         className="mr-4"
@@ -2174,12 +2222,12 @@ function CreateBudget() {
                                     <input
                                         name={`placementDays`}
                                         type="number"
-                                        className="border-solid border-2 border-opacity mb-2 rounded-md "
+                                        className="border border-gray-300 rounded-md p-2"
                                         {...register(`placementDays`)}
                                         min="0"
                                     />
                                 </div>
-                                <div>
+                                <div className="flex flex-col w-1/4 mt-4 gap-0">
                                     <label
                                         htmlFor="placementPrice"
                                         className="mr-4"
@@ -2189,62 +2237,72 @@ function CreateBudget() {
                                     <input
                                         name={`placementPrice`}
                                         type="number"
-                                        className="border-solid border-2 border-opacity mb-2 rounded-md "
+                                        className="border border-gray-300 rounded-md p-2"
                                         {...register(`placementPrice`)}
                                         min="0"
                                     />
                                 </div>
-                                <p>{formatCurrency(subtotalPlacement)}</p>
+                                <p className="flex flex-col w-1/4 mt-12 gap-0 font-bold text-left ml-4 text-xl">
+                                    {formatCurrency(subtotalPlacement)}
+                                </p>
                             </div>
-                            <div className="flex  w-1/2 my-4 gap-4">
-                                <label htmlFor="shipment">Envío</label>
-                                <select
-                                    name="shipment"
-                                    id="shipment"
-                                    className="border-solid border-2 border-opacity mb-2 rounded-md"
-                                    {...register("shipment", {
-                                        required: "El campo es obligatorio",
-                                    })}
-                                >
-                                    <option value="">Elegir opción</option>
-                                    <option value="true">Sí</option>
-                                    <option value="false">No</option>
-                                </select>
-                                {errors.shipment && (
-                                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left">
-                                        {errors.shipment.message}
-                                    </span>
-                                )}
-                                <label htmlFor="shipmentPrice">Precio</label>
-                                <input
-                                    name={`shipmentPrice`}
-                                    type="number"
-                                    className="border-solid border-2 border-opacity mb-2 rounded-md "
-                                    {...register(`shipmentPrice`)}
-                                    min="0"
-                                />
+                            <div className="flex flex-row gap-4">
+                                <div className="flex flex-col w-1/3 mt-4 gap-0">
+                                    <label htmlFor="shipment">Envío</label>
+                                    <select
+                                        name="shipment"
+                                        id="shipment"
+                                        className="border border-gray-300 rounded-md p-2"
+                                        {...register("shipment", {
+                                            required: "El campo es obligatorio",
+                                        })}
+                                    >
+                                        <option value="">Elegir opción</option>
+                                        <option value="true">Sí</option>
+                                        <option value="false">No</option>
+                                    </select>
+                                    {errors.shipment && (
+                                        <span className="text-xs xl:text-base text-red-700 mt-2 block text-left">
+                                            {errors.shipment.message}
+                                        </span>
+                                    )}
+                                </div>{" "}
+                                <div className="flex flex-col w-1/3 mt-4 gap-0">
+                                    <label htmlFor="shipmentPrice">
+                                        Precio
+                                    </label>
+                                    <input
+                                        name={`shipmentPrice`}
+                                        type="number"
+                                        className="border border-gray-300 rounded-md p-2"
+                                        {...register(`shipmentPrice`)}
+                                        min="0"
+                                    />
+                                </div>
+                                <div className="flex flex-row justify-start align-middle items-center content-center mt-8 ml-8 gap-4  w-1/3">
+                                    <label htmlFor="showModules">
+                                        Mostrar módulos en presupuesto
+                                    </label>
+                                    <input
+                                        type="checkbox"
+                                        name="showModules"
+                                        id="showModules"
+                                        {...register(`showModules`)}
+                                    />
+                                </div>
                             </div>
-                            <div className="flex  w-1/2 my-4 gap-4">
-                                <label htmlFor="showModules">
-                                    Mostrar módulos en presupuesto
-                                </label>
-                                <input
-                                    type="checkbox"
-                                    name="showModules"
-                                    id="showModules"
-                                    {...register(`showModules`)}
-                                />
-                            </div>
-                            <p className="text-center">
+                            <p className="text-right text-2xl font-bold my-10 w-full">
                                 Total: {formatCurrency(totalPrice)}
                             </p>
                             {!submitLoader ? (
-                                <button
-                                    type="submit"
-                                    className="text-white bg-lightblue rounded-md px-2 py-1 mb-2 w-1/6 m-auto"
-                                >
-                                    Generar presupuesto
-                                </button>
+                                <div className="w-full">
+                                    <button
+                                        type="submit"
+                                        className="bg-orange text-white font-medium py-2 px-6 rounded-lg shadow-md mt-6 transition duration-200 w-full"
+                                    >
+                                        Generar presupuesto
+                                    </button>
+                                </div>
                             ) : (
                                 <div className="flex justify-center w-full mt-8">
                                     <div className="flex justify-center bg-lightblue rounded-md px-2 py-1 mb-2 w-1/6 m-auto">

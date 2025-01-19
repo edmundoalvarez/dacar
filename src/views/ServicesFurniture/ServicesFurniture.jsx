@@ -94,25 +94,11 @@ function ServicesFurniture() {
 
     return (
         <>
-            <div className="py-8 px-16 bg-gray-100 min-h-screen">
-                <div className="flex gap-4 items-center mb-8">
-                    <h1 className="text-3xl font-semibold text-gray-800">
+            <div className="pb-8 px-16 bg-gray-100 min-h-screen">
+                <div className="flex gap-4 justify-between items-center mb-8 bg-gray-800 p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
+                    <h1 className="text-4xl font-semibold text-white">
                         Servicios
                     </h1>
-                    <div className="flex gap-3">
-                        <Link
-                            to="/"
-                            className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200"
-                        >
-                            Volver al Inicio
-                        </Link>
-                        <Link
-                            to="/crear-servicio"
-                            className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200"
-                        >
-                            Crear Servicio
-                        </Link>
-                    </div>
                     {/* Campo de búsqueda */}
                     <div className="flex items-center gap-4">
                         <input
@@ -120,7 +106,7 @@ function ServicesFurniture() {
                             value={searchTerm}
                             onChange={handleChange}
                             placeholder="Buscar por nombre"
-                            className="border border-gray-300 p-2 rounded-lg ml-auto shadow-md "
+                            className="border border-gray-300 p-2 rounded-lg ml-auto shadow-md w-[400px]"
                         />
 
                         <Oval
@@ -134,6 +120,32 @@ function ServicesFurniture() {
                             wrapperStyle={{}}
                             wrapperClass=""
                         />
+                    </div>
+                    <div className="flex gap-3">
+                        <Link
+                            to="/"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center gap-2"
+                        >
+                            <img
+                                src="./icon_back.svg"
+                                alt="Icono de budgets"
+                                className="w-[20px]"
+                            />
+                            <p className="m-0 leading-loose">
+                                Volver al Inicio
+                            </p>
+                        </Link>
+                        <Link
+                            to="/crear-servicio"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center gap-2"
+                        >
+                            <img
+                                src="./icon_add.svg"
+                                alt="Icono de budgets"
+                                className="w-[20px]"
+                            />
+                            <p className="m-0 leading-loose">Crear Servicio</p>
+                        </Link>
                     </div>
                 </div>
                 <div className="overflow-x-auto mt-4">
@@ -169,9 +181,16 @@ function ServicesFurniture() {
                                             <div className="flex gap-2">
                                                 <Link
                                                     to={`/editar-servicio/${service._id}`}
-                                                    className="text-white bg-orange rounded-md px-3 py-1 hover:bg-orange-400 transition duration-200"
+                                                    className="text-white bg-orange rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
                                                 >
-                                                    Editar
+                                                    <img
+                                                        src="./../icon_edit.svg"
+                                                        alt="Icono de budgets"
+                                                        className="w-[20px]"
+                                                    />
+                                                    <p className="m-0 leading-loose">
+                                                        Editar
+                                                    </p>
                                                 </Link>
                                             </div>
                                         </td>
@@ -179,18 +198,18 @@ function ServicesFurniture() {
                                 ))}
                             </tbody>
                         </table>
-                    </div>
-                    <div className="overflow-x-auto my-8 flex justify-center items-center h-[100px]">
-                        <Grid
-                            visible={loader}
-                            height="80"
-                            width="80"
-                            color="rgb(92, 92, 92)"
-                            ariaLabel="grid-loading"
-                            radius="12.5"
-                            wrapperStyle={{}}
-                            wrapperClass="grid-wrapper"
-                        />
+                        <div className="overflow-x-auto my-8 flex justify-center items-center h-[100px]">
+                            <Grid
+                                visible={loader}
+                                height="80"
+                                width="80"
+                                color="rgb(92, 92, 92)"
+                                ariaLabel="grid-loading"
+                                radius="12.5"
+                                wrapperStyle={{}}
+                                wrapperClass="grid-wrapper"
+                            />
+                        </div>
                     </div>
                 </div>
                 <div className="flex justify-center items-center gap-4 py-8 text-black">

@@ -89,22 +89,11 @@ function Clients() {
 
     return (
         <>
-            <div>
-                <div className="flex gap-4 items-center p-8">
-                    <h1 className="text-4xl">Clientes</h1>
-
-                    <Link
-                        to="/"
-                        className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
-                    >
-                        Volver al Inicio
-                    </Link>
-                    <Link
-                        to="/crear-cliente"
-                        className="bg-dark py-2 px-4 rounded-xl hover:bg-emerald-600 text-light font-medium "
-                    >
-                        Crear Cliente
-                    </Link>
+            <div className="pb-8 px-16 bg-gray-100 min-h-screen">
+                <div className="flex gap-4 justify-between items-center mb-8 bg-gray-800 p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
+                    <h1 className="text-4xl font-semibold text-white">
+                        Clientes
+                    </h1>
                     {/* Campo de búsqueda */}
                     <div className="flex items-center gap-4">
                         <input
@@ -112,7 +101,7 @@ function Clients() {
                             value={searchTerm}
                             onChange={handleChange}
                             placeholder="Buscar por nombre"
-                            className="border border-gray-400 p-2 rounded-lg ml-auto"
+                            className="border border-gray-300 p-2 rounded-lg ml-auto shadow-md w-[400px]"
                         />
 
                         <Oval
@@ -127,113 +116,156 @@ function Clients() {
                             wrapperClass=""
                         />
                     </div>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            to="/"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center gap-2"
+                        >
+                            <img
+                                src="./icon_back.svg"
+                                alt="Icono de budgets"
+                                className="w-[20px]"
+                            />
+                            <p className="m-0 leading-loose">
+                                Volver al Inicio
+                            </p>
+                        </Link>
+                        <Link
+                            to="/crear-cliente"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center gap-2"
+                        >
+                            <img
+                                src="./icon_add.svg"
+                                alt="Icono de budgets"
+                                className="w-[20px]"
+                            />
+                            <p className="m-0 leading-loose">Crear Cliente</p>
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="overflow-x-auto mt-4">
-                    <table className="min-w-full divide-y divide-gray-700">
-                        <thead className="bg-gray-700">
-                            <tr>
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                                >
-                                    Nombre
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                                >
-                                    Apellido
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                                >
-                                    Teléfono
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                                >
-                                    Email
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                                >
-                                    DNI
-                                </th>
+                    <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white">
+                        <table className="min-w-full divide-y divide-gray-700">
+                            <thead className="bg-gray-700">
+                                <tr>
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                                    >
+                                        Nombre
+                                    </th>
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                                    >
+                                        Apellido
+                                    </th>
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                                    >
+                                        Teléfono
+                                    </th>
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                                    >
+                                        Email
+                                    </th>
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                                    >
+                                        DNI
+                                    </th>
 
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                                >
-                                    CUIT/CUIL
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                                >
-                                    Dirección
-                                </th>
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
-                                >
-                                    Acción
-                                </th>
-                            </tr>
-                        </thead>
-
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {clients.slice().map((client) => (
-                                <tr key={client._id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {client.name}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {client.lastname}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {client.phone}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {client.email}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {client.dni}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {client.cuil_cuit}
-                                    </td>
-
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {client.address}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <div className="flex gap-2">
-                                            <Link
-                                                to={`/editar-cliente/${client._id}`}
-                                                className="text-white bg-orange rounded-md px-2 py-1 mb-2"
-                                            >
-                                                Editar
-                                            </Link>
-                                            <button
-                                                className="text-white bg-red-500 rounded-md px-2 py-1 mb-2"
-                                                onClick={() =>
-                                                    handleDeleteClient(
-                                                        client._id
-                                                    )
-                                                }
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </div>
-                                    </td>
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                                    >
+                                        CUIT/CUIL
+                                    </th>
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                                    >
+                                        Dirección
+                                    </th>
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3 text-left text-xs font-medium text-light uppercase tracking-wider"
+                                    >
+                                        Acción
+                                    </th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {clients.slice().map((client) => (
+                                    <tr key={client._id}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {client.name}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {client.lastname}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {client.phone}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {client.email}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {client.dni}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {client.cuil_cuit}
+                                        </td>
+
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {client.address}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <div className="flex gap-2">
+                                                <Link
+                                                    to={`/editar-cliente/${client._id}`}
+                                                    className="text-white bg-orange rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                                                >
+                                                    <img
+                                                        src="./../icon_edit.svg"
+                                                        alt="Icono de budgets"
+                                                        className="w-[20px]"
+                                                    />
+                                                    <p className="m-0 leading-loose">
+                                                        Editar
+                                                    </p>
+                                                </Link>
+                                                <button
+                                                    onClick={() =>
+                                                        handleDeleteClient(
+                                                            client._id
+                                                        )
+                                                    }
+                                                    className="text-white bg-red-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                                                >
+                                                    <img
+                                                        src="./../icon_delete.svg"
+                                                        alt="Icono de budgets"
+                                                        className="w-[18px]"
+                                                    />
+                                                    <p className="m-0 leading-loose">
+                                                        Eliminar
+                                                    </p>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
                     <div className="overflow-x-auto my-8 flex justify-center items-center h-[100px]">
                         <Grid
                             visible={loader}

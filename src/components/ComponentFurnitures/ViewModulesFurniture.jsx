@@ -1,6 +1,6 @@
 function ViewModulesFurniture({ sortedModules }) {
     return (
-        <div className="p-4 text-black">
+        <div className="p-4 text-black mt-6">
             <h2 className="text-3xl font-semibold mb-8 uppercase">
                 Despiece por módulo
             </h2>
