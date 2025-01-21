@@ -159,7 +159,7 @@ function BudgetDetails() {
                                             {furn.name}
                                         </td>
                                         <td className="px-2 py-4 text-center whitespace-nowrap text-sm align-top text-gray-700 border-r border-r-black border-l border-l-black">
-                                            <div className="w-fit m-auto text-left">
+                                            <div className="w-fit max-w-[500px] m-auto text-left">
                                                 {/* <p className="mb-6">
                                                     <span className="font-bold">
                                                         {furn.category
@@ -264,7 +264,7 @@ function BudgetDetails() {
                                                         Comentarios:
                                                     </span>
                                                 </p>
-                                                <p className="mb-2">
+                                                <p className="mb-2 break-words whitespace-normal">
                                                     {budget.comments
                                                         ? budget.comments
                                                         : "- No hay comentarios -"}
