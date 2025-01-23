@@ -2047,7 +2047,6 @@ function CreateBudget() {
                                         type="number"
                                         className="border border-gray-300 rounded-md p-2"
                                         {...register(`adjustment_price`)}
-                                        min="0"
                                     />
                                     {errors[`adjustment_price`] && (
                                         <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
