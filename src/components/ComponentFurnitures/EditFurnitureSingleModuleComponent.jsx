@@ -446,12 +446,20 @@ function EditFurnitureSingleModuleComponent({
                     <h1 className="text-4xl font-semibold mb-4 text-black">
                         Editar Módulo
                     </h1>
-                    <button
-                        onClick={notModified}
-                        className="px-4 max-h-10 rounded-md bg-red-600 text-light font-medium"
-                    >
-                        Cerrar
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <button
+                            className="px-6 py-2 max-h-10 rounded-md bg-amber-500 text-light font-medium"
+                            type="submit"
+                        >
+                            Guardar
+                        </button>
+                        <button
+                            onClick={notModified}
+                            className="px-6 py-2 max-h-10 rounded-md bg-red-600 text-light font-medium"
+                        >
+                            Cerrar
+                        </button>
+                    </div>
                 </div>
                 <form
                     action=""
@@ -663,9 +671,9 @@ function EditFurnitureSingleModuleComponent({
                                 />
                             ))}
                     </div>
-                    <div className="w-full">
+                    <div className="w-full text-right">
                         <button
-                            className="bg-amber-500 hover:bg-amber-700 text-white px-8 py-2 rounded-lg text-xl font-medium transition duration-300 w-1/6"
+                            className="bg-amber-500 hover:bg-amber-700 text-white px-8 py-2 rounded-lg text-lg font-medium transition duration-300 w-1/6"
                             type="submit"
                         >
                             Guardar

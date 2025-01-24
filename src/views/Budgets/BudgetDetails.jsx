@@ -81,10 +81,10 @@ function BudgetDetails() {
                     </div>
                 ) : (
                     <div className="border border-gray-300 p-8 shadow-lg rounded-lg max-w-6xl m-auto">
-                        <div className="text-center w-[280px] m-auto mt-4 mb-6">
+                        <div className="text-center w-[240px] m-auto mt-4 mb-6">
                             <img
                                 className=""
-                                src="./../logo-dacar.png"
+                                src="./../logo-dacar.svg"
                                 alt="Logo Dacar"
                             />
                         </div>
@@ -130,26 +130,28 @@ function BudgetDetails() {
                                     <span className="font-bold">
                                         FECHA ESTIMADA DE ENTREGA:
                                     </span>{" "}
+                                </p>
+                                <p className="text-gray-600 uppercase text-right">
                                     {budget.deliver_date}
                                 </p>
                             </div>
                         </div>
 
-                        <table className="min-w-full mb-4 border border-gray-700">
+                        <table className="min-w-full border border-gray-700 ">
                             <thead className="bg-[#9C846A]">
                                 <tr>
-                                    <th className="px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider">
+                                    <th className="w-1/4 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider">
                                         ITEM
                                     </th>
-                                    <th className="px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider border-r border-r-black border-l border-l-black">
+                                    <th className="w-2/4 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider border-r border-r-black border-l border-l-black">
                                         DESCRIPCIÓN
                                     </th>
-                                    <th className="px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider">
+                                    <th className="w-1/4 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider">
                                         TOTAL
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200 border border-gray-700">
+                            <tbody className="bg-white border border-gray-700">
                                 {budget.furniture?.map((furn, idx) => (
                                     <tr
                                         key={idx}
@@ -160,17 +162,59 @@ function BudgetDetails() {
                                         </td>
                                         <td className="px-2 py-4 text-center whitespace-nowrap text-sm align-top text-gray-700 border-r border-r-black border-l border-l-black">
                                             <div className="w-fit max-w-[500px] m-auto text-left">
-                                                {/* <p className="mb-6">
+                                                <p className="mb-2 break-words whitespace-normal">
+                                                    {budget.comments
+                                                        ? budget.comments
+                                                        : "- No hay comentarios -"}
+                                                </p>
+                                            </div>
+                                        </td>
+                                        <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700 ">
+                                            {formatCurrency(totalPriceInUnits)}
+                                        </td>
+                                    </tr>
+                                ))}
+                                {budget.furniture?.map((furn, idx) => (
+                                    <tr
+                                        key={idx}
+                                        className=" text-left whitespace-nowrap text-sm align-top text-gray-700 border-b border-gray-700"
+                                    >
+                                        <td colSpan={3} className="px-8 py-4">
+                                            {/* <p className="mb-6">
+                                                <span className="font-bold">
+                                                    {furn.category
+                                                        ? furn.category.toUpperCase()
+                                                        : ""}
+                                                </span>{" "}
+                                                {console.log(
+                                                    furn.width,
+                                                    furn.height,
+                                                    furn.length
+                                                )}
+                                                {furn.width &&
+                                                furn.height &&
+                                                furn.length ? (
+                                                    <>
+                                                        de {furn.width}{" "}
+                                                        (ancho) x{" "}
+                                                        {furn.height} (alto)
+                                                        x {furn.length}{" "}
+                                                        (profundidad).
+                                                    </>
+                                                ) : (
+                                                    ""
+                                                )}
+                                            </p> */}
+                                            {furn.category ||
+                                            (furn.width &&
+                                                furn.height &&
+                                                furn.length) ? (
+                                                <p className="mb-0">
                                                     <span className="font-bold">
                                                         {furn.category
                                                             ? furn.category.toUpperCase()
                                                             : ""}
                                                     </span>{" "}
-                                                    {console.log(
-                                                        furn.width,
-                                                        furn.height,
-                                                        furn.length
-                                                    )}
                                                     {furn.width &&
                                                     furn.height &&
                                                     furn.length ? (
@@ -184,173 +228,138 @@ function BudgetDetails() {
                                                     ) : (
                                                         ""
                                                     )}
-                                                </p> */}
-                                                {furn.category ||
-                                                (furn.width &&
-                                                    furn.height &&
-                                                    furn.length) ? (
-                                                    <p className="mb-6">
+                                                </p>
+                                            ) : (
+                                                ""
+                                            )}
+                                            {budget?.show_modules ? (
+                                                <>
+                                                    <p className="mb-0">
                                                         <span className="font-bold">
-                                                            {furn.category
-                                                                ? furn.category.toUpperCase()
-                                                                : ""}
-                                                        </span>{" "}
-                                                        {furn.width &&
-                                                        furn.height &&
-                                                        furn.length ? (
-                                                            <>
-                                                                de {furn.width}{" "}
-                                                                (ancho) x{" "}
-                                                                {furn.height}{" "}
-                                                                (alto) x{" "}
-                                                                {furn.length}{" "}
-                                                                (profundidad).
-                                                            </>
-                                                        ) : (
-                                                            ""
-                                                        )}
+                                                            MÓDULOS:
+                                                        </span>
                                                     </p>
-                                                ) : (
-                                                    ""
-                                                )}
-                                                {budget?.show_modules ? (
-                                                    <>
-                                                        <p className="mb-2">
-                                                            Incluye los
-                                                            siguientes{" "}
-                                                            <span className="font-bold">
-                                                                MÓDULOS:
-                                                            </span>
-                                                        </p>
 
-                                                        <ul className="mb-6">
-                                                            {furn.modules_furniture.map(
-                                                                (
-                                                                    module,
-                                                                    idx
-                                                                ) => (
-                                                                    <li
-                                                                        key={
-                                                                            idx
-                                                                        }
-                                                                    >
-                                                                        {
-                                                                            module.name
-                                                                        }{" "}
-                                                                        -{" "}
-                                                                        {
-                                                                            module.height
-                                                                        }{" "}
-                                                                        (alto) x{" "}
-                                                                        {
-                                                                            module.length
-                                                                        }{" "}
-                                                                        (largo)
-                                                                        x{" "}
-                                                                        {
-                                                                            module.width
-                                                                        }{" "}
-                                                                        (profundidad)
-                                                                    </li>
-                                                                )
-                                                            )}
-                                                        </ul>
-                                                    </>
-                                                ) : (
-                                                    ""
-                                                )}
-                                                <p className="mb-2">
-                                                    <span className="font-bold">
-                                                        Comentarios:
-                                                    </span>
-                                                </p>
-                                                <p className="mb-2 break-words whitespace-normal">
-                                                    {budget.comments
-                                                        ? budget.comments
-                                                        : "- No hay comentarios -"}
-                                                </p>
-                                            </div>
-                                        </td>
-                                        <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700 ">
-                                            {formatCurrency(totalPriceInUnits)}
+                                                    <ul className="mb-0">
+                                                        {furn.modules_furniture.map(
+                                                            (module, idx) => (
+                                                                <li key={idx}>
+                                                                    {
+                                                                        module.name
+                                                                    }{" "}
+                                                                    -{" "}
+                                                                    {
+                                                                        module.height
+                                                                    }{" "}
+                                                                    (alto) x{" "}
+                                                                    {
+                                                                        module.length
+                                                                    }{" "}
+                                                                    (largo) x{" "}
+                                                                    {
+                                                                        module.width
+                                                                    }{" "}
+                                                                    (profundidad)
+                                                                </li>
+                                                            )
+                                                        )}
+                                                    </ul>
+                                                </>
+                                            ) : (
+                                                ""
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
+
+                                <tr className=" text-center border-b border-gray-700 text-[#726352]">
+                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black">
+                                        COLOCACIÓN
+                                    </td>
+                                    <td
+                                        colSpan={2}
+                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black"
+                                    >
+                                        {budget.placement == true
+                                            ? "Incluido"
+                                            : "No Incluido"}
+                                    </td>
+                                </tr>
+                                <tr className=" text-center border-b border-gray-700 text-[#726352]">
+                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black">
+                                        ENVÍO
+                                    </td>
+                                    <td
+                                        colSpan={2}
+                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black"
+                                    >
+                                        {budget.shipment == true
+                                            ? "Incluido"
+                                            : "No Incluido"}
+                                    </td>
+                                </tr>
+                                <tr className=" text-center border-b border-gray-700 text-[#726352]">
+                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black">
+                                        FORMA DE PAGO
+                                    </td>
+                                    <td
+                                        colSpan={2}
+                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black"
+                                    >
+                                        50% de seña y 50% a contraentrega
+                                    </td>
+                                </tr>
+                                <tr className=" text-center border-b border-gray-700 text-[#726352]">
+                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black">
+                                        MEDIO DE PAGO
+                                    </td>
+                                    <td
+                                        colSpan={2}
+                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black"
+                                    >
+                                        Transferencia, Depósito, Efectivo
+                                    </td>
+                                </tr>
+                                <tr className=" text-left whitespace-nowrap text-sm align-top text-[#726352]">
+                                    <td
+                                        colSpan={3}
+                                        className="px-2 py-4 text-center whitespace-nowrap text-sm align-top border-r border-r-black border-l border-l-black"
+                                    >
+                                        *EL SALDO DEL SIGUIENTE PRESUPUESTO
+                                        ESTARÁ DOLARIZADO SEGÚN COTIZACIÓN AL
+                                        DÍA DE LA SEÑA
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
 
-                        <div className="bg-white text-[#726352] uppercase flex flex-col border border-gray-700">
-                            <div className="flex flex-row border-t border-x border-gray-200">
-                                <p className="px-4 py-2 whitespace-nowrap text-sm w-1/2">
-                                    ENVÍO
-                                </p>
-                                <p className="px-4 py-2 whitespace-nowrap text-sm w-1/2 border-l border-gray-200">
-                                    {budget.shipment == true
-                                        ? "Incluido"
-                                        : "No Incluido"}
-                                </p>
-                            </div>
-                            <div className="flex flex-row border-t border-x border-gray-200">
-                                <p className="px-4 py-2 whitespace-nowrap text-sm w-1/2">
-                                    COLOCACIÓN
-                                </p>
-                                <p className="px-4 py-2 whitespace-nowrap text-sm w-1/2 border-l border-gray-200">
-                                    {budget.placement == true
-                                        ? "Incluido"
-                                        : "No Incluido"}
-                                </p>
-                            </div>
-                            <div className="flex flex-row border-t border-x border-gray-200">
-                                <p className="px-4 py-2 whitespace-nowrap text-sm w-1/2">
-                                    FORMA DE PAGO
-                                </p>
-                                <p className="px-4 py-2 whitespace-nowrap text-sm w-1/2 border-l border-gray-200">
-                                    50% de seña y 50% a contraentrega
-                                </p>
-                            </div>
-                            <div className="flex flex-row border-t border-x border-gray-200">
-                                <p className="px-4 py-2 whitespace-nowrap text-sm w-1/2">
-                                    MEDIO DE PAGO
-                                </p>
-                                <p className="px-4 py-2 whitespace-nowrap text-sm w-1/2 border-l border-gray-200">
-                                    Transferencia, Depósito, Efectivo
-                                </p>
-                            </div>
-                            <div className="border-t border-x border-gray-200">
-                                <p className="px-4 py-2 whitespace-nowrap text-sm text-center">
-                                    *EL SALDO DEL SIGUIENTE PRESUPUESTO ESTARÁ
-                                    DOLARIZADO SEGÚN COTIZACIÓN AL DÍA DE LA
-                                    SEÑA
-                                </p>
-                            </div>
-                        </div>
                         <div className="border-t-4  border-t-[#9C846A] border-b-4  border-b-[#9C846A] pt-6 mt-6 pb-6">
                             <div className="w-full flex flex-col ">
                                 <table>
                                     <tbody>
                                         <tr className="bg-[#9C846A] text-white border border-gray-700">
-                                            <td className="px-6 text-md py-2 border-r border-gray-600 w-[200px]">
+                                            <td className="w-3/4 px-6 text-md py-1 border-r border-gray-600">
                                                 SUBTOTAL:
                                             </td>
-                                            <td className="px-6 text-md py-2 w-[200px] text-right">
+                                            <td className="w-1/4 px-6 text-md py-1 text-right">
                                                 {formatCurrency(
                                                     totalPriceInUnits
                                                 )}
                                             </td>
                                         </tr>
                                         <tr className="bg-white border border-gray-700">
-                                            <td className="px-6 text-md py-2 border-r border-gray-600 w-[200px]">
+                                            <td className="w-3/4 px-6 text-md py-1 border-r border-gray-600 text-[#726352]">
                                                 IVA 21%:
                                             </td>
-                                            <td className="px-6 text-md py-2 text-black w-[200px] text-right">
+                                            <td className="w-1/4 px-6 text-md py-1 text-[#726352]  text-right">
                                                 {formatCurrency(iva)}
                                             </td>
                                         </tr>
                                         <tr className="bg-[#9C846A] text-white font-bold border border-gray-700 w-[200px]">
-                                            <td className="px-6 text-md py-2 border-r border-gray-600">
+                                            <td className="w-3/4 px-6 text-md py-1 border-r border-gray-600">
                                                 TOTAL:
                                             </td>
-                                            <td className="px-6 text-md py-2 w-[200px] text-right">
+                                            <td className="w-1/4 px-6 text-md py-1 text-right">
                                                 {formatCurrency(total)}
                                             </td>
                                         </tr>
@@ -358,7 +367,7 @@ function BudgetDetails() {
                                 </table>
                             </div>
                             <p className="mt-6 text-center text-sm text-[#726352]">
-                                DOCUMENTO NO VALIDO COMO FACTURA. PRESUPUESTO
+                                DOCUMENTO NO VÁLIDO COMO FACTURA. PRESUPUESTO
                                 VALIDO POR 7 DÍAS
                             </p>
                         </div>
