@@ -137,13 +137,13 @@ function BudgetDetails() {
                             </div>
                         </div>
 
-                        <table className="min-w-full border border-gray-700 ">
+                        <table className="min-w-full border-2 border-gray-700 ">
                             <thead className="bg-[#9C846A]">
                                 <tr>
                                     <th className="w-1/4 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider">
                                         ITEM
                                     </th>
-                                    <th className="w-2/4 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider border-r border-r-black border-l border-l-black">
+                                    <th className="w-2/4 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider border-r-2 border-r-black border-l-2 border-l-black">
                                         DESCRIPCIÓN
                                     </th>
                                     <th className="w-1/4 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider">
@@ -151,16 +151,16 @@ function BudgetDetails() {
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white border border-gray-700">
+                            <tbody className="bg-white border-2 border-gray-700">
                                 {budget.furniture?.map((furn, idx) => (
                                     <tr
                                         key={idx}
-                                        className=" text-center border-b border-gray-700"
+                                        className=" text-center border-b-2 border-gray-700"
                                     >
                                         <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700 ">
                                             {furn.name}
                                         </td>
-                                        <td className="px-2 py-4 text-center whitespace-nowrap text-sm align-top text-gray-700 border-r border-r-black border-l border-l-black">
+                                        <td className="px-2 py-4 text-center whitespace-nowrap text-sm align-top text-gray-700 border-r-2 border-r-black border-l border-l-black">
                                             <div className="w-fit max-w-[500px] m-auto text-left">
                                                 <p className="mb-2 break-words whitespace-normal">
                                                     {budget.comments
@@ -177,8 +177,11 @@ function BudgetDetails() {
                                 {budget.furniture?.map((furn, idx) => (
                                     <tr
                                         key={idx}
-                                        className=" text-left whitespace-nowrap text-sm align-top text-gray-700 border-b border-gray-700"
+                                        className=" text-left whitespace-nowrap text-sm align-top text-gray-700 border-b-2 border-gray-700"
                                     >
+                                        <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-[#9C846A]  border-r-2 border-r-black">
+                                            DETALLES DE MODULOS
+                                        </td>
                                         <td colSpan={3} className="px-8 py-4">
                                             {/* <p className="mb-6">
                                                 <span className="font-bold">
@@ -234,12 +237,6 @@ function BudgetDetails() {
                                             )}
                                             {budget?.show_modules ? (
                                                 <>
-                                                    <p className="mb-0">
-                                                        <span className="font-bold">
-                                                            MÓDULOS:
-                                                        </span>
-                                                    </p>
-
                                                     <ul className="mb-0">
                                                         {furn.modules_furniture.map(
                                                             (module, idx) => (
@@ -260,6 +257,10 @@ function BudgetDetails() {
                                                                         module.width
                                                                     }{" "}
                                                                     (profundidad)
+                                                                    -{" "}
+                                                                    {
+                                                                        module.description
+                                                                    }
                                                                 </li>
                                                             )
                                                         )}
@@ -272,20 +273,26 @@ function BudgetDetails() {
                                     </tr>
                                 ))}
 
-                                <tr className=" text-center border-b border-gray-700 text-[#726352]">
-                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black">
+                                <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
+                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black">
                                         COLOCACIÓN
                                     </td>
                                     <td
                                         colSpan={2}
-                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black"
+                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black"
                                     >
-                                        {budget.placement == true
-                                            ? "Incluido"
-                                            : "No Incluido"}
+                                        <strong>
+                                            {budget.placement && budget.shipment
+                                                ? "INCLUYE COLOCACIÓN Y ENVÍO"
+                                                : budget.placement
+                                                ? "INCLUYE COLOCACIÓN"
+                                                : budget.shipment
+                                                ? "INCLUYE ENVÍO"
+                                                : "NO INCLUYE COLOCACIÓN NI ENVÍO"}
+                                        </strong>
                                     </td>
                                 </tr>
-                                <tr className=" text-center border-b border-gray-700 text-[#726352]">
+                                {/* <tr className=" text-center border-b border-gray-700 text-[#726352]">
                                     <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black">
                                         ENVÍO
                                     </td>
@@ -297,37 +304,54 @@ function BudgetDetails() {
                                             ? "Incluido"
                                             : "No Incluido"}
                                     </td>
-                                </tr>
-                                <tr className=" text-center border-b border-gray-700 text-[#726352]">
-                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black">
+                                </tr> */}
+                                <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
+                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black">
                                         FORMA DE PAGO
                                     </td>
                                     <td
                                         colSpan={2}
-                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black"
+                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black"
                                     >
-                                        50% de seña y 50% a contraentrega
+                                        <p>
+                                            50% SEÑA. 50% SALDO PARA COORDINAR
+                                            ENTREGA.
+                                        </p>
+                                        <p>
+                                            SALDO DOLARIZADO SEGÚN COTIZCIÓN AL
+                                            DÍA DE LA SEÑA - DÓLAR OFICIAL /
+                                            VENTA BNA
+                                        </p>
                                     </td>
                                 </tr>
-                                <tr className=" text-center border-b border-gray-700 text-[#726352]">
-                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black">
+                                <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
+                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black">
                                         MEDIO DE PAGO
                                     </td>
                                     <td
                                         colSpan={2}
-                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black"
+                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black"
                                     >
                                         Transferencia, Depósito, Efectivo
                                     </td>
                                 </tr>
-                                <tr className=" text-left whitespace-nowrap text-sm align-top text-[#726352]">
+                                <tr className=" text-left whitespace-nowrap text-sm align-top text-gray-700">
+                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black">
+                                        PLAZO DE ENTREGA
+                                    </td>
                                     <td
-                                        colSpan={3}
-                                        className="px-2 py-4 text-center whitespace-nowrap text-sm align-top border-r border-r-black border-l border-l-black"
+                                        colSpan={2}
+                                        className="uppercase px-2 py-4 text-left whitespace-normal text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black"
                                     >
-                                        *EL SALDO DEL SIGUIENTE PRESUPUESTO
-                                        ESTARÁ DOLARIZADO SEGÚN COTIZACIÓN AL
-                                        DÍA DE LA SEÑA
+                                        TIEMPO DE PRODUCCIÓN: 90 DÍAS A PARTIR
+                                        DE LA APROBACIÓN Y FIRMA DE PLANOS. NO
+                                        DESDE CONTRATACIÓN.DESARROLLO DE PLANOS:
+                                        15 DÍAS HABILES DESDE{" "}
+                                        <strong>
+                                            MEDICIÓN EN OBRA - SEGÚN
+                                            PROYECTOMEDICIÓN EN OBRA A COORDINAR
+                                            CON EL CLIENTE
+                                        </strong>
                                     </td>
                                 </tr>
                             </tbody>
