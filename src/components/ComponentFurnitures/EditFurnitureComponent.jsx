@@ -20,6 +20,7 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedModuleIds, setSelectedModuleIds] = useState([]);
     const [moduleQuantities, setModuleQuantities] = useState({});
+    const [searchTerm, setSearchTerm] = useState("");
     const {
         register,
         handleSubmit,
@@ -176,7 +177,18 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
         getAllModulesToSet();
         getFurnitureData();
     }, []);
+ //Filtrar dentro de los modulos a elegir
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
+  const filteredModules = modules.filter((module) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      module.name.toLowerCase().includes(term) ||
+      module.description.toLowerCase().includes(term)
+    );
+  });
     return (
         <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white p-6">
             <div className="flex flex-row justify-between gap-4">
@@ -283,8 +295,16 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
                 </div>
                 <div className="flex flex-col w-4/12 my-2">
                     <label htmlFor="modules">Agregar Módulos</label>
+                    {/* Campo de búsqueda */}
+                    <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    placeholder="Buscar por nombre o descripción"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
+                    />
                     <div className="border border-gray-300 mb-2  p-2 rounded-md w-11/12 overflow-y-auto max-h-[400px]">
-                        {modules.map((module) => (
+                        {filteredModules.map((module) => (
                             <div
                                 key={module._id}
                                 className="flex items-center p-2"
