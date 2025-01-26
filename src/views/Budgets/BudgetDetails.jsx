@@ -177,37 +177,12 @@ function BudgetDetails() {
                                 {budget.furniture?.map((furn, idx) => (
                                     <tr
                                         key={idx}
-                                        className=" text-left whitespace-nowrap text-sm align-top text-gray-700 border-b-2 border-gray-700"
+                                        className=" text-left whitespace-nowrap text-sm align-middle text-gray-700 border-b-2 border-gray-700"
                                     >
-                                        <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-[#9C846A]  border-r-2 border-r-black">
-                                            DETALLES DE MODULOS
+                                        <td className="px-2 py-4 whitespace-nowrap text-sm align-middel text-gray-[#9C846A]  border-r-2 border-r-black">
+                                            DETALLES DE MÓDULOS
                                         </td>
                                         <td colSpan={3} className="px-8 py-4">
-                                            {/* <p className="mb-6">
-                                                <span className="font-bold">
-                                                    {furn.category
-                                                        ? furn.category.toUpperCase()
-                                                        : ""}
-                                                </span>{" "}
-                                                {console.log(
-                                                    furn.width,
-                                                    furn.height,
-                                                    furn.length
-                                                )}
-                                                {furn.width &&
-                                                furn.height &&
-                                                furn.length ? (
-                                                    <>
-                                                        de {furn.width}{" "}
-                                                        (ancho) x{" "}
-                                                        {furn.height} (alto)
-                                                        x {furn.length}{" "}
-                                                        (profundidad).
-                                                    </>
-                                                ) : (
-                                                    ""
-                                                )}
-                                            </p> */}
                                             {furn.category ||
                                             (furn.width &&
                                                 furn.height &&
@@ -274,12 +249,12 @@ function BudgetDetails() {
                                 ))}
 
                                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
-                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black">
+                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
                                         COLOCACIÓN
                                     </td>
                                     <td
                                         colSpan={2}
-                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black"
+                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black"
                                     >
                                         <strong>
                                             {budget.placement && budget.shipment
@@ -292,26 +267,14 @@ function BudgetDetails() {
                                         </strong>
                                     </td>
                                 </tr>
-                                {/* <tr className=" text-center border-b border-gray-700 text-[#726352]">
-                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black">
-                                        ENVÍO
-                                    </td>
-                                    <td
-                                        colSpan={2}
-                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r border-r-black border-l border-l-black"
-                                    >
-                                        {budget.shipment == true
-                                            ? "Incluido"
-                                            : "No Incluido"}
-                                    </td>
-                                </tr> */}
+               
                                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
-                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black">
+                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
                                         FORMA DE PAGO
                                     </td>
                                     <td
                                         colSpan={2}
-                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black"
+                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black"
                                     >
                                         <p>
                                             50% SEÑA. 50% SALDO PARA COORDINAR
@@ -325,23 +288,23 @@ function BudgetDetails() {
                                     </td>
                                 </tr>
                                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
-                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black">
+                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
                                         MEDIO DE PAGO
                                     </td>
                                     <td
                                         colSpan={2}
-                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black"
+                                        className="uppercase px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black"
                                     >
                                         Transferencia, Depósito, Efectivo
                                     </td>
                                 </tr>
-                                <tr className=" text-left whitespace-nowrap text-sm align-top text-gray-700">
-                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black">
+                                <tr className=" text-left whitespace-nowrap text-sm align-midd text-gray-700">
+                                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
                                         PLAZO DE ENTREGA
                                     </td>
                                     <td
                                         colSpan={2}
-                                        className="uppercase px-2 py-4 text-left whitespace-normal text-sm align-top  border-r-2 border-r-black border-l-2 border-l-black"
+                                        className="uppercase px-2 py-4 text-left whitespace-normal text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black"
                                     >
                                         TIEMPO DE PRODUCCIÓN: 90 DÍAS A PARTIR
                                         DE LA APROBACIÓN Y FIRMA DE PLANOS. NO

@@ -176,40 +176,6 @@ function Furniture() {
     });
   };
 
-  //   const generatePiecesPDF = (pieces, furnitureName) => {
-  //     const doc = new jsPDF();
-
-  //     // Títulos de las columnas de la tabla
-  //     const tableColumn = ["Nombre", "Cantidad", "Largo", "Alto", "Material"];
-
-  //     // Mapear los datos de las piezas para las filas de la tabla
-  //     const tableRows = pieces.map((piece) => [
-  //       piece.name,
-  //       piece.qty,
-  //       piece.orientation === "cross-horizontal" ? piece.length : piece.width,
-  //       piece.orientation === "cross-horizontal" ? piece.width : piece.length,
-  //       piece.material,
-  //     ]);
-
-  //     // Agregar texto al documento
-  //     doc.text(`Despiece del mueble: ${furnitureName}`, 14, 20);
-
-  //     // Agregar la tabla al documento
-  //     doc.autoTable(tableColumn, tableRows, { startY: 30 });
-
-  //     // Guardar el documento PDF
-  //     const fileName = `Despiece-${furnitureName}.pdf`;
-  //     doc.save(fileName);
-  //   };
-
-  //   //funcion descargar despiece
-  //   const handleDownloadPieces = (furnitureId, furnitureName) => {
-  //     getPiecesByFurnitureId(furnitureId).then((piecesData) => {
-  //       const pieces = piecesData.data;
-  //       generatePiecesPDF(pieces, furnitureName);
-  //     });
-  //   };
-
   const generatePiecesExcelByMaterial = async (pieces, furnitureName) => {
     // Agrupar las piezas por material
     const piecesByMaterial = pieces.reduce((acc, piece) => {

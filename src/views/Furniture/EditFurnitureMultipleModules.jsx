@@ -66,6 +66,7 @@ function EditFurnitureMultipleModules() {
 
     // Handle editing a furniture
     const handleEditFurniture = (singleFurniture) => {
+        setModuleToEdit(null);
         setFurnitureToEdit(singleFurniture);
     };
 
