@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef  } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import {
@@ -439,6 +439,14 @@ function EditFurnitureSingleModuleComponent({
         });
     };
 
+    const formRef = useRef(null); // Crear referencia para el formulario
+
+    const handleExternalSubmit = () => {
+        if (formRef.current) {
+            formRef.current.requestSubmit(); // Enviar formulario manualmente
+        }
+    };
+
     return (
         <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white p-6">
             <div className="w-full max-w-full m-auto p-12 rounded-lg bg-white shadow-sm">
@@ -447,9 +455,9 @@ function EditFurnitureSingleModuleComponent({
                         Editar Módulo
                     </h1>
                     <div className="flex items-center gap-4">
-                        <button
+                      <button
                             className="px-6 py-2 max-h-10 rounded-md bg-amber-500 text-light font-medium"
-                            type="submit"
+                            onClick={handleExternalSubmit}
                         >
                             Guardar
                         </button>
@@ -462,6 +470,7 @@ function EditFurnitureSingleModuleComponent({
                     </div>
                 </div>
                 <form
+                    ref={formRef}
                     action=""
                     className="flex flex-wrap w-full"
                     onSubmit={handleSubmit(onSubmit)}
