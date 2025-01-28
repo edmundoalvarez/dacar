@@ -73,7 +73,7 @@ function BudgetDetails() {
             </Link>
           </div>
         </div>
-        <div className="flex justify-end">
+        <div className="flex justify-end mb-4 mr-8">
           <button
             onClick={handleGeneratePDF}
             className="bg-orange  text-white px-4 py-2 rounded-lg shadow-md hover:bg-[#E57C31] focus:outline-none flex flex-row justify-center align-middle items-center gap-2"
