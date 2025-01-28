@@ -195,9 +195,19 @@ function Furniture() {
       // Agregar títulos de las columnas
       worksheet.columns = [
         { header: "#", key: "index", width: 5 },
-        { header: "Largo", key: "length", width: 10 },
-        { header: "Ancho", key: "width", width: 10 },
-        { header: "Cantidad", key: "qty", width: 10 },
+        {
+          header: "Largo",
+          key: "length",
+          width: 10,
+          style: { numFmt: "0.00" },
+        },
+        { header: "Ancho", key: "width", width: 10, style: { numFmt: "0.00" } },
+        {
+          header: "Cantidad",
+          key: "qty",
+          width: 10,
+          style: { numFmt: "0" },
+        },
         { header: "Rotación", key: "rotation", width: 20 },
         { header: "Nombre", key: "name", width: 20 },
         { header: "Material", key: "material", width: 20 },

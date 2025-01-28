@@ -152,13 +152,13 @@ function BudgetDetails() {
             <table className="min-w-full border-2 border-gray-700 ">
               <thead className="bg-[#9C846A]">
                 <tr>
-                  <th className="w-1/4 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider">
+                  <th className="w-1/6 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider">
                     ITEM
                   </th>
-                  <th className="w-2/4 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider border-r-2 border-r-black border-l-2 border-l-black">
+                  <th className="w-4/6 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider border-r-2 border-r-black border-l-2 border-l-black">
                     DESCRIPCIÓN
                   </th>
-                  <th className="w-1/4 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider">
+                  <th className="w-1/6 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider">
                     TOTAL
                   </th>
                 </tr>
@@ -170,11 +170,11 @@ function BudgetDetails() {
                     className=" text-left border-b-2 border-gray-700"
                   >
                     <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700 ">
-                      {furn.name}
+                      {budget.category}
                     </td>
                     <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top text-gray-700 border-r-2 border-r-black border-l-2 border-l-black">
-                      <div className="w-fit max-w-[500px] m-auto text-left">
-                        <p className="mb-2 break-words whitespace-normal">
+                      <div className="w-fit max-w-[700px] m-auto text-left">
+                        <p className="mb-2 break-words whitespace-pre-line">
                           {budget.comments
                             ? budget.comments
                             : "- No hay comentarios -"}
