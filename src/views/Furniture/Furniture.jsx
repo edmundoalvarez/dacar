@@ -199,32 +199,31 @@ function Furniture() {
           header: "Largo",
           key: "length",
           width: 10,
-          style: { numFmt: "0.00" },
         },
-        { header: "Ancho", key: "width", width: 10, style: { numFmt: "0.00" } },
+        { header: "Ancho", key: "width", width: 10 },
         {
           header: "Cantidad",
           key: "qty",
           width: 10,
-          style: { numFmt: "0" },
         },
         { header: "Rotación", key: "rotation", width: 20 },
         { header: "Nombre", key: "name", width: 20 },
         { header: "Material", key: "material", width: 20 },
       ];
-
+      worksheet.getColumn("length").numFmt = "@"; // Forzar como texto
+      worksheet.getColumn("width").numFmt = "@"; // Forzar como texto
       // Mapear los datos de las piezas del material actual y agregarlos al worksheet
       materialPieces.forEach((piece, index) => {
         worksheet.addRow({
           index: index + 1,
           length:
             piece.orientation === "cross-horizontal"
-              ? piece.length
-              : piece.width,
+              ? piece.length.toString()
+              : piece.width.toString(),
           width:
             piece.orientation === "cross-horizontal"
-              ? piece.width
-              : piece.length,
+              ? piece.width.toString()
+              : piece.length.toString(),
           qty: piece.qty,
           rotation: "",
           name: piece.name,

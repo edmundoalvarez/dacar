@@ -128,7 +128,7 @@ export const generatePDF = async (elementId, budget) => {
 
     // Generar el canvas usando el clon con estilos personalizados
     const canvas = await html2canvas(clonedElement, {
-      scale: 2, // Mejor calidad
+      scale: 1.2, // Mejor calidad
       useCORS: true,
     });
 
