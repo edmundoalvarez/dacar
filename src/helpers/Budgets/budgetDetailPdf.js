@@ -138,13 +138,33 @@ export const generatePDF = async (elementId, budget) => {
     // Convertimos el canvas en una imagen PNG
     const imgData = canvas.toDataURL("image/png");
 
-    // Crear el PDF
     const pdf = new jsPDF("portrait", "mm", "a4");
-    const pdfWidth = 210; // Ancho en mm para A4
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width; // Altura proporcional
+    const maxWidth = 210; // Ancho máximo en mm (A4)
+    const maxHeight = 297; // Altura máxima en mm (A4)
 
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    // Convertir tamaño de la imagen de píxeles a mm
+    const imgWidth = canvas.width * 0.264583; // 1 px ≈ 0.264583 mm
+    const imgHeight = canvas.height * 0.264583;
 
+    // Escalar la imagen manteniendo la proporción
+    let scaledWidth = imgWidth;
+    let scaledHeight = imgHeight;
+
+    if (scaledWidth > maxWidth) {
+      scaledHeight *= maxWidth / scaledWidth;
+      scaledWidth = maxWidth;
+    }
+
+    if (scaledHeight > maxHeight) {
+      scaledWidth *= maxHeight / scaledHeight;
+      scaledHeight = maxHeight;
+    }
+
+    // Centrar la imagen en la página
+    const x = (maxWidth - scaledWidth) / 2;
+    const y = 0;
+
+    pdf.addImage(imgData, "PNG", x, y, scaledWidth, scaledHeight);
     // Abrir en nueva pestaña
     pdf.save(
       "presupuesto_N°" +
