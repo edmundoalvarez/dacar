@@ -1,13 +1,13 @@
 {
-  "apiUsers": "https://dacar-api.vercel.app/users",
-  "apiSuppliers": "https://dacar-api.vercel.app/suppliers",
-  "apiSupplies": "https://dacar-api.vercel.app/supplies",
-  "apiSuppliesCategory": "https://dacar-api.vercel.app/supplies-categories",
-  "apiServices": "https://dacar-api.vercel.app/services",
-  "apiFurnitures": "https://dacar-api.vercel.app/furnitures",
-  "apiModules": "https://dacar-api.vercel.app/modules",
-  "apiPieces": "https://dacar-api.vercel.app/pieces",
-  "apiMainTable": "https://dacar-api.vercel.app/main-table",
-  "apiClients": "https://dacar-api.vercel.app/clients",
-  "apiBudgets": "https://dacar-api.vercel.app/budgets"
+  "apiUsers": "https://dacar-api-test.vercel.app/users",
+  "apiSuppliers": "https://dacar-api-test.vercel.app/suppliers",
+  "apiSupplies": "https://dacar-api-test.vercel.app/supplies",
+  "apiSuppliesCategory": "https://dacar-api-test.vercel.app/supplies-categories",
+  "apiServices": "https://dacar-api-test.vercel.app/services",
+  "apiFurnitures": "https://dacar-api-test.vercel.app/furnitures",
+  "apiModules": "https://dacar-api-test.vercel.app/modules",
+  "apiPieces": "https://dacar-api-test.vercel.app/pieces",
+  "apiMainTable": "https://dacar-api-test.vercel.app/main-table",
+  "apiClients": "https://dacar-api-test.vercel.app/clients",
+  "apiBudgets": "https://dacar-api-test.vercel.app/budgets"
 }

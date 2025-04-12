@@ -12,6 +12,20 @@
   "apiClients": "https://dacar-api.vercel.app/clients",
   "apiBudgets": "https://dacar-api.vercel.app/budgets"
 }
+/* TEST */
+{
+  "apiUsers": "https://dacar-api-test.vercel.app/users",
+  "apiSuppliers": "https://dacar-api-test.vercel.app/suppliers",
+  "apiSupplies": "https://dacar-api-test.vercel.app/supplies",
+  "apiSuppliesCategory": "https://dacar-api-test.vercel.app/supplies-categories",
+  "apiServices": "https://dacar-api-test.vercel.app/services",
+  "apiFurnitures": "https://dacar-api-test.vercel.app/furnitures",
+  "apiModules": "https://dacar-api-test.vercel.app/modules",
+  "apiPieces": "https://dacar-api-test.vercel.app/pieces",
+  "apiMainTable": "https://dacar-api-test.vercel.app/main-table",
+  "apiClients": "https://dacar-api-test.vercel.app/clients",
+  "apiBudgets": "https://dacar-api-test.vercel.app/budgets"
+}
 /* local */
  {
   "apiUsers": "http://localhost:3000/users",
