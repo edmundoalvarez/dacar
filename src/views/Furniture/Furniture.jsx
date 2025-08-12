@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import debounce from "lodash.debounce";
 import { Grid, Oval } from "react-loader-spinner";
 import jsPDF from "jspdf";
-import "jspdf-autotable"; // Para soporte de tablas
+import autoTable from "jspdf-autotable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import ExcelJS from "exceljs"; //Para transformar en excel
@@ -17,6 +17,8 @@ import {
 } from "../../index.js";
 
 function Furniture() {
+  const ENV = import.meta.env.VITE_ENV; //variable para determinar si esta en TEST o PROD
+
   const [furnitures, setFurnitures] = useState([]);
 
   const [selectedModules, setSelectedModules] = useState(null);
@@ -127,30 +129,32 @@ function Furniture() {
 
     doc.text(`Módulos y Piezas Sueltas: ${furnitureName}`, 14, 20);
 
-    // Configurar las columnas de la tabla
+    // Columnas de las tablas
     const moduleColumns = ["Nombre del Módulo", "Largo", "Ancho", "Alto"];
     const pieceColumns = ["Nombre", "Cantidad", "Largo", "Ancho", "Material"];
 
     let currentY = 30;
 
-    // Recorrer cada módulo y sus piezas sueltas para generar las filas
     modulesWithLoosePieces.forEach((module) => {
-      // Añadir datos del módulo
+      // Fila con datos del módulo
       const moduleRow = [
-        module.moduleName,
-        module.moduleLength,
-        module.moduleWidth,
-        module.moduleHeight,
+        [
+          module.moduleName,
+          module.moduleLength,
+          module.moduleWidth,
+          module.moduleHeight,
+        ],
       ];
-      doc.autoTable({
+
+      autoTable(doc, {
         head: [moduleColumns],
-        body: [moduleRow],
+        body: moduleRow,
         startY: currentY,
         headStyles: { fillColor: [79, 157, 98] },
       });
-      currentY = doc.lastAutoTable.finalY + 10; // Ajustar la posición Y para la siguiente tabla
 
-      // Añadir piezas sueltas si existen
+      currentY = doc.lastAutoTable.finalY + 10;
+
       if (module.loosePieces.length > 0) {
         const pieceRows = module.loosePieces.map((piece) => [
           piece.name,
@@ -159,8 +163,14 @@ function Furniture() {
           piece.orientation === "cross-horizontal" ? piece.width : piece.length,
           piece.material,
         ]);
-        doc.autoTable(pieceColumns, pieceRows, { startY: currentY });
-        currentY = doc.lastAutoTable.finalY + 10; // Ajustar la posición Y para la siguiente tabla
+
+        autoTable(doc, {
+          head: [pieceColumns],
+          body: pieceRows,
+          startY: currentY,
+        });
+
+        currentY = doc.lastAutoTable.finalY + 10;
       }
     });
 
@@ -311,6 +321,11 @@ function Furniture() {
             </Link>
           </div>
         </div>
+        {ENV === "TEST" && (
+          <div className="bg-red-600 text-white px-4 py-2 rounded-md mb-4 text-sm font-semibold">
+            ⚠️ Estás en entorno de pruebas (TEST)
+          </div>
+        )}
         <div className="overflow-x-auto mt-4">
           <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white">
             <table className="min-w-full divide-y divide-gray-700">

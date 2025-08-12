@@ -323,6 +323,7 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
                           id={`module-${module._id}`}
                           value={module._id}
                           onChange={handleModuleChange}
+                          checked={selectedModuleIds.includes(module._id)}
                           className="mr-2"
                           name={`module-${module._id}`}
                         />

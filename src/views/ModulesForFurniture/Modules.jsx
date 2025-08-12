@@ -11,6 +11,8 @@ import {
 } from "../../index.js";
 
 function Modules() {
+  const ENV = import.meta.env.VITE_ENV; //variable para determinar si esta en TEST o PROD
+
   const [modules, setModules] = useState([]);
   const [selectedModule, setSelectedModule] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -179,6 +181,11 @@ function Modules() {
             </Link>
           </div>
         </div>
+        {ENV === "TEST" && (
+          <div className="bg-red-600 text-white px-4 py-2 rounded-md mb-4 text-sm font-semibold">
+            ⚠️ Estás en entorno de pruebas (TEST)
+          </div>
+        )}
         <div className="overflow-x-auto mt-4">
           <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white">
             <table className="min-w-full divide-y divide-gray-700">

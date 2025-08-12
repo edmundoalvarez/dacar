@@ -17,7 +17,6 @@ const AuthContextProvider = ({ children }) => {
       setUser({
         email: decoded.user.email,
         id: decoded.user._id,
-        role: decoded.user.role,
       });
       // console.log(decoded.user);
     }

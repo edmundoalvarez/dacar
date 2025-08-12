@@ -1763,6 +1763,7 @@ function CreateBudget() {
                   <input
                     name={`adjustment_price`}
                     type="number"
+                    step="any"
                     className="border border-gray-300 rounded-md p-2"
                     {...register(`adjustment_price`)}
                   />

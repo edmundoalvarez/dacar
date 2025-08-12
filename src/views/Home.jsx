@@ -1,12 +1,27 @@
 import { Link } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext"; // ajustá el path si es necesario
 
 function Home() {
+  const { logout } = useContext(AuthContext);
+  const ENV = import.meta.env.VITE_ENV;
+
+  const bgColorClass = ENV === "PROD" ? "bg-gray-800" : "bg-yellow-700";
+
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="border-2 bg-gray-800 py-14 rounded-xl w-[800px] flex flex-col items-center justify-center gap-8">
+      <div
+        className={`border-2 ${bgColorClass} py-14 rounded-xl w-[800px] flex flex-col items-center justify-center gap-8`}
+      >
+        {ENV === "TEST" && (
+          <div className="bg-red-600 text-white px-4 py-2 rounded-md mb-4 text-sm font-semibold">
+            ⚠️ Estás en entorno de pruebas (TEST)
+          </div>
+        )}
         <h1 className="text-4xl text-center font-bold text-white">
           Bienvenido
         </h1>
+
         <div className="flex flex-row flex-wrap justify-center gap-4 mt-4 w-[800px]">
           <Link
             to={`/ver-presupuestos`}
@@ -76,6 +91,12 @@ function Home() {
             <p className="m-0 leading-loose">Clientes</p>
           </Link>
         </div>
+        <button
+          onClick={logout}
+          className="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-500 font-semibold"
+        >
+          Cerrar sesión
+        </button>
       </div>
     </div>
   );

@@ -275,6 +275,7 @@ function CreateFurniture() {
                           id={`module-${module._id}`}
                           value={module._id}
                           onChange={handleModuleChange}
+                          checked={selectedModuleIds.includes(module._id)}
                           className="rounded-sm text-emerald-500 focus:ring-0"
                         />
                       </td>

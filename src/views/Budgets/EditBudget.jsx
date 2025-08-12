@@ -260,7 +260,7 @@ function EditBudget() {
         if (budgetData.data.placement) {
           setValue("placement", "true" || "");
           setValue("placementDays", budgetData.data.placement_days || "");
-          setValue("placementPrice", budgetData.data.placement_price || "");
+          setValue("placementPrice", budgetData.data.placement_price || 0);
           setSubtotalPlacement(
             budgetData.data.placement_price * budgetData.data.placement_days
           );
@@ -1745,9 +1745,9 @@ function EditBudget() {
                   <input
                     name={`adjustment_price`}
                     type="number"
+                    step="any"
                     className="border border-gray-300 rounded-md p-2"
                     {...register(`adjustment_price`)}
-                    min="0"
                   />
                   {errors[`adjustment_price`] && (
                     <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">

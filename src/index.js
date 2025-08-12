@@ -1,4 +1,10 @@
+// AUTH --->
+export { ProtectedRoute } from "./components/ProtectedRoute.jsx";
+
 //Services --->
+
+//LOGIN
+export { login } from "./services/Login/login.js";
 
 //FURNITURE
 export { createFurniture } from "./services/Furniture/createFurniture.js";
@@ -77,7 +83,6 @@ export { editBudget } from "./services/Budgets/editBudget.js";
 //Components --->
 
 //MODULES
-export { ProtectedRoute } from "./components/ProtectedRoute.jsx";
 export { FormCreatePieces } from "./components/ComponentModules/FormCreatePieces.jsx";
 export { FormEditPieces } from "./components/ComponentModules/FormEditPieces.jsx";
 export { FormAddSupplies } from "./components/ComponentModules/FormAddSupplies.jsx";
@@ -94,6 +99,10 @@ export { FormCreateClient } from "./components/ComponentClients/FormCreateClient
 
 export { Home } from "./views/Home";
 export { NotFoundPage } from "./views/404/NotFoundPage";
+
+//LOGIN
+export { Login } from "./views/Login/Login.jsx";
+
 //FURNITURE
 export { Furniture } from "./views/Furniture/Furniture";
 export { CreateFurniture } from "./views/Furniture/CreateFurniture";
