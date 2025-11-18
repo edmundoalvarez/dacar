@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { Oval } from "react-loader-spinner";
 import {
   createFurniture,
   getAllModules,
@@ -18,42 +19,45 @@ function CreateFurniture() {
   const [selectedModuleIds, setSelectedModuleIds] = useState([]);
   const [moduleQuantities, setModuleQuantities] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false); // loader del submit
 
-  // Manejo de la ventana modal
+  const navigate = useNavigate();
+
+  // --- helper: solo los campos que cambiaron en el módulo ---
+  const getOverrides = (original, edited) => {
+    const diff = {};
+    const editedSafe = edited || {};
+    const originalSafe = original || {};
+    for (const k of Object.keys(editedSafe)) {
+      if (JSON.stringify(editedSafe[k]) !== JSON.stringify(originalSafe[k])) {
+        diff[k] = editedSafe[k];
+      }
+    }
+    return diff;
+  };
+
+  // Modal "Ver" (sigue igual, solo lee piezas para mostrar)
   const handleOpenModal = async (module) => {
     try {
-      // Obtén las piezas por el ID del módulo
       const pieces = await getPiecesByModuleId(module._id);
-
-      // Agrega las piezas al módulo bajo el nombre 'pieces'
       const moduleWithPieces = { ...module, pieces };
-
-      // Envuelve el módulo en un array y establece 'selectedModules'
       setSelectedModule([moduleWithPieces]);
-
-      // Abre la modal
       setIsModalOpen(true);
     } catch (error) {
       console.error("Error al obtener las piezas del módulo:", error);
     }
   };
-
   const handleCloseModal = () => {
     setSelectedModule(null);
     setIsModalOpen(false);
   };
 
-  const navigate = useNavigate();
-
   const getAllModulesToSet = () => {
     getAllModules()
       .then((modulesData) => {
         setModules(modulesData.data);
-        console.log(modulesData.data);
       })
-      .catch((error) => {
-        console.error(error);
-      });
+      .catch((error) => console.error(error));
   };
 
   const {
@@ -64,16 +68,17 @@ function CreateFurniture() {
 
   const handleModuleChange = (e) => {
     const { value, checked } = e.target;
-    const selectedModule = modules.find((module) => module._id === value);
+    const selectedModule = modules.find((m) => m._id === value);
+
     setSelectedModules((prev) =>
-      checked
-        ? [...prev, selectedModule]
-        : prev.filter((module) => module._id !== value)
+      checked ? [...prev, selectedModule] : prev.filter((m) => m._id !== value)
     );
     setSelectedModuleIds((prev) =>
       checked ? [...prev, value] : prev.filter((id) => id !== value)
     );
+
     if (checked) {
+      // seteo datos de edición
       setFormData((prev) => ({
         ...prev,
         [selectedModule._id]: { ...selectedModule },
@@ -82,16 +87,26 @@ function CreateFurniture() {
         ...prev,
         [selectedModule._id]: { ...selectedModule },
       }));
+      // 👇 default de cantidad = 1
+      setModuleQuantities((prev) => ({
+        ...prev,
+        [selectedModule._id]: prev[selectedModule._id] || 1,
+      }));
     } else {
       setFormData((prev) => {
-        const newFormData = { ...prev };
-        delete newFormData[selectedModule._id];
-        return newFormData;
+        const nd = { ...prev };
+        delete nd[selectedModule._id];
+        return nd;
       });
       setOriginalData((prev) => {
-        const newOriginalData = { ...prev };
-        delete newOriginalData[selectedModule._id];
-        return newOriginalData;
+        const no = { ...prev };
+        delete no[selectedModule._id];
+        return no;
+      });
+      setModuleQuantities((prev) => {
+        const nq = { ...prev };
+        delete nq[selectedModule._id];
+        return nq;
       });
     }
   };
@@ -103,44 +118,30 @@ function CreateFurniture() {
     }));
   };
 
+  // --- SUBMIT: payload mínimo ---
   const onSubmit = async (data, event) => {
     event.preventDefault();
+    if (isSubmitting) return; // evita doble click
+    setIsSubmitting(true);
 
     try {
-      const editedModules = await Promise.all(
-        selectedModules.flatMap(async (module) => {
-          const moduleId = module._id;
-          const quantity = moduleQuantities[moduleId] || 1;
-          const modulePieces = await getPiecesByModuleId(moduleId);
-          const isEdited =
-            JSON.stringify(formData[moduleId]) !==
-            JSON.stringify(originalData[moduleId]);
+      const modulesMinimal = selectedModules.map((m) => ({
+        moduleId: m._id,
+        quantity: moduleQuantities[m._id] || 1,
+        overrides: getOverrides(originalData[m._id], formData[m._id]),
+      }));
 
-          const newModules = Array.from({ length: quantity }, (_, i) => ({
-            ...module,
-            ...formData[moduleId],
-            _id: `${moduleId}-${i + 1}`, // Generar un nuevo ID único
-            name: isEdited
-              ? `${formData[moduleId].name} (editado ${i + 1})`
-              : `${formData[moduleId].name} (${i + 1})`,
-            pieces: modulePieces,
-          }));
-
-          return newModules;
-        })
-      ).then((modules) => modules.flat());
-
-      await createFurniture({
+      const res = await createFurniture({
         ...data,
-        modules_furniture: editedModules,
-      }).then((res) => {
-        const furnitureId = res.data._id;
-        console.log("¡Creaste el mueble con éxito!");
-
-        navigate(`/editar-modulos-mueble/${furnitureId}`);
+        modules_furniture: modulesMinimal,
       });
+
+      const furnitureId = res.data._id;
+      navigate(`/editar-modulos-mueble/${furnitureId}`);
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -156,11 +157,7 @@ function CreateFurniture() {
     { name: "category", label: "Categoría" },
   ];
 
-  //Filtrar dentro de los modulos a elegir
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
+  const handleSearchChange = (e) => setSearchTerm(e.target.value);
   const filteredModules = modules.filter((module) => {
     const term = searchTerm.toLowerCase();
     return (
@@ -326,10 +323,17 @@ function CreateFurniture() {
             {selectedModules.flatMap((module, index) => (
               <div
                 key={module._id + "-" + index}
-                className=" text-black border border-gray-300 rounded-md p-4 my-2 flex items-center justify-between bg-gray-50"
+                className="text-black border border-gray-300 rounded-md p-4 my-2 flex items-center justify-between bg-gray-50"
               >
-                <p>{module.name}</p>
-                <p>{module.description}</p>
+                <div className="flex items-center gap-4">
+                  <p className="font-semibold">{module.name}</p>
+                  <span className="text-sm bg-emerald-600  text-white  rounded-full px-3 py-1">
+                    x{moduleQuantities[module._id] ?? 1}
+                  </span>
+                </div>
+
+                <p className="text-gray-700">{module.description}</p>
+
                 <button
                   type="button"
                   onClick={() => handleOpenModal(module)}
@@ -371,10 +375,32 @@ function CreateFurniture() {
         {/* Botón de Crear */}
         <div className="flex justify-center mt-10">
           <button
-            className="px-6 py-2 max-h-10 w-1/6 rounded-md bg-amber-500 text-light font-medium"
+            className={`px-6 py-2 max-h-10 w-1/6 rounded-md text-light font-medium
+                ${
+                  isSubmitting
+                    ? "bg-amber-400 opacity-70 cursor-not-allowed"
+                    : "bg-amber-500"
+                }`}
             type="submit"
+            disabled={isSubmitting}
           >
-            Crear
+            {isSubmitting ? (
+              <div className="flex items-center justify-center gap-2">
+                <Oval
+                  visible={isSubmitting}
+                  height="30"
+                  width="30"
+                  color="rgb(92, 92, 92)"
+                  secondaryColor="rgb(92, 92, 92)"
+                  strokeWidth="6"
+                  ariaLabel="oval-loading"
+                  wrapperStyle={{}}
+                  wrapperClass=""
+                />
+              </div>
+            ) : (
+              "Crear"
+            )}
           </button>
         </div>
       </form>

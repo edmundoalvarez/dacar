@@ -1,21 +1,18 @@
+// services/furnitures.js
 import axios from "axios";
 import config from "../../config.json";
-/* import Cookies from "js-cookie";
-const token = Cookies.get("token");
-const userId = Cookies.get("userId"); */
 
-//TRAER TODAS LOS MUEBLES CREADOS
-async function getAllFurnituresList(term = "", page = 1, itemsPerPage = 10) {
+async function getAllFurnituresList(
+  term = "",
+  page = 1,
+  itemsPerPage = 10,
+  signal
+) {
   try {
     const res = await axios.get(`${config.apiFurnitures}/list`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      params: {
-        page: page,
-        limit: itemsPerPage,
-        search: term, // Agrega el término de búsqueda
-      },
+      headers: { "Content-Type": "application/json" },
+      params: { page, limit: itemsPerPage, search: term },
+      signal, // <- importante
     });
     return {
       furnitures: res.data.data,
@@ -23,6 +20,14 @@ async function getAllFurnituresList(term = "", page = 1, itemsPerPage = 10) {
       totalPages: res.data.totalPages,
     };
   } catch (error) {
+    // Si fue abortada, no lo trates como error “real”
+    if (
+      axios.isCancel?.(error) ||
+      error.name === "CanceledError" ||
+      error.name === "AbortError"
+    ) {
+      return null;
+    }
     console.error("Error fetching muebles:", error);
     throw error;
   }

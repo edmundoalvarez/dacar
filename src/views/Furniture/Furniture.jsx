@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import debounce from "lodash.debounce";
 import { Grid, Oval } from "react-loader-spinner";
 import jsPDF from "jspdf";
@@ -31,42 +31,75 @@ function Furniture() {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 50; // Límite de insumos por página
 
-  const navigate = useNavigate();
+  // Guardamos el AbortController actual para abortar la request previa
+  const controllerRef = useRef(null);
+  // (Opcional) sequence para evitar respuestas fuera de orden
+  const reqSeqRef = useRef(0);
 
-  const getAllFurnituresToSet = (term = "", page = 1) => {
-    setLoader(true);
-    getAllFurnituresList(term, page, itemsPerPage)
-      .then((furnituresData) => {
-        console.log(furnituresData);
-        setFurnitures(furnituresData.furnitures);
-        setCurrentPage(furnituresData.currentPage);
-        setTotalPages(furnituresData.totalPages);
+  const getAllFurnituresToSet = useCallback(
+    async (term = "", page = 1, { showMainLoader = false } = {}) => {
+      // abortar request previa
+      if (controllerRef.current) controllerRef.current.abort();
+      const controller = new AbortController();
+      controllerRef.current = controller;
+
+      const seq = ++reqSeqRef.current; // id de request
+
+      if (showMainLoader) setLoader(true);
+
+      try {
+        const data = await getAllFurnituresList(
+          term,
+          page,
+          itemsPerPage,
+          controller.signal
+        );
+        // Si se abortó o llegó fuera de orden, no toques el estado
+        if (!data || seq !== reqSeqRef.current) return;
+
+        setFurnitures(data.furnitures);
+        setCurrentPage(data.currentPage);
+        setTotalPages(data.totalPages);
+      } catch (e) {
+        // si no fue una cancelación, ya lo loguea el service
+      } finally {
         setLoader(false);
         setSearchLoader(false);
-      })
-      .catch((error) => {
-        console.error("Error al obtener los muebles:", error);
-        setLoader(false);
-        setSearchLoader(false);
-      });
-  };
+      }
+    },
+    [itemsPerPage]
+  );
 
   useEffect(() => {
-    getAllFurnituresToSet(searchTerm, currentPage);
-  }, [currentPage]);
+    getAllFurnituresToSet(searchTerm, currentPage, { showMainLoader: true });
+  }, [currentPage, getAllFurnituresToSet]);
 
   // Manejar la búsqueda de muebles
-  const handleSearch = debounce((term) => {
-    setCurrentPage(1); // Restablece la página a 1 al buscar
-    getAllFurnituresToSet(term, 1); // Filtra desde la primera página
-  }, 800);
+  // Debounce estable (se crea 1 sola vez)
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((term) => {
+        // al buscar, siempre volvemos a página 1
+        // Importante: como setState es async, le pasamos directamente page=1 a la fetch
+        getAllFurnituresToSet(term, 1);
+        setCurrentPage(1);
+      }, 800),
+    [getAllFurnituresToSet]
+  );
 
+  useEffect(() => {
+    // cleanup: cancelar el debounce y la request si desmonta
+    return () => {
+      debouncedSearch.cancel();
+      if (controllerRef.current) controllerRef.current.abort();
+    };
+  }, [debouncedSearch]);
   // Actualizar el término de búsqueda y llamar a la función de búsqueda
   const handleChange = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
     setSearchLoader(true);
-    handleSearch(term);
+    debouncedSearch(term);
   };
 
   // Manejo de la ventana modal
@@ -80,16 +113,21 @@ function Furniture() {
     setIsModalOpen(true);
   };
 
-  // Controladores de cambio de página
+  // Paginación con mismo término activo
   const handlePreviousPage = () => {
     if (currentPage > 1) {
-      getAllFurnituresToSet(searchTerm, currentPage - 1);
+      getAllFurnituresToSet(searchTerm, currentPage - 1, {
+        showMainLoader: true,
+      });
+      setCurrentPage((p) => p - 1);
     }
   };
-
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      getAllFurnituresToSet(searchTerm, currentPage + 1);
+      getAllFurnituresToSet(searchTerm, currentPage + 1, {
+        showMainLoader: true,
+      });
+      setCurrentPage((p) => p + 1);
     }
   };
 

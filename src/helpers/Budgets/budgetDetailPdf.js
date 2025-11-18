@@ -166,14 +166,20 @@ export const generatePDF = async (elementId, budget) => {
 
     pdf.addImage(imgData, "PNG", x, y, scaledWidth, scaledHeight);
     // Abrir en nueva pestaña
+    // Función para limpiar caracteres peligrosos en nombres de archivo
+    const sanitizeFileName = (name) => {
+      return name.replace(/[\/\\?%*:|"<>.]/g, ""); // elimina caracteres no válidos
+    };
+
     pdf.save(
       "presupuesto_N°" +
         budget.budget_number +
         " - " +
-        budget.client?.[0]?.name +
+        sanitizeFileName(budget.client?.[0]?.name || "") +
         " " +
-        budget.client?.[0]?.lastname
+        sanitizeFileName(budget.client?.[0]?.lastname || "")
     );
+
     // window.open(pdfBlobUrl, "_blank");
   } catch (error) {
     console.error("Error al generar el PDF:", error);
