@@ -25,7 +25,7 @@ function Home() {
         <div className="flex flex-row flex-wrap justify-center gap-4 mt-4 w-[800px]">
           <Link
             to={`/ver-presupuestos`}
-            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[200px] text-center flex flex-row justify-center gap-4"
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-2"
           >
             <img
               src="./icon_budgets.svg"
@@ -36,7 +36,7 @@ function Home() {
           </Link>
           <Link
             to={`/ver-modulos`}
-            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[200px] text-center flex flex-row justify-center gap-4"
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
           >
             <img
               src="./icon_modules.svg"
@@ -47,7 +47,7 @@ function Home() {
           </Link>
           <Link
             to={`/ver-muebles`}
-            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[200px] text-center flex flex-row justify-center gap-4"
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
           >
             <img
               src="./icon_furnitures.svg"
@@ -58,7 +58,7 @@ function Home() {
           </Link>
           <Link
             to={`/ver-insumos`}
-            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[200px] text-center flex flex-row justify-center gap-4"
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
           >
             <img
               src="./icon_supplies.svg"
@@ -70,7 +70,7 @@ function Home() {
 
           <Link
             to={`/ver-servicios`}
-            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[200px] text-center flex flex-row justify-center gap-4"
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
           >
             <img
               src="./icon_services.svg"
@@ -81,14 +81,25 @@ function Home() {
           </Link>
           <Link
             to={`/ver-clientes`}
-            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[200px] text-center flex flex-row justify-center gap-4"
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
           >
             <img
               src="./icon_clients.svg"
               alt="Icono de budgets"
-              className="w-[24px]"
+              className="w-[20px]"
             />
             <p className="m-0 leading-loose">Clientes</p>
+          </Link>
+          <Link
+            to={`/ver-usuarios`}
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
+          >
+            <img
+              src="./icon_users.svg"
+              alt="Icono de budgets"
+              className="w-[28px]"
+            />
+            <p className="m-0 leading-loose">Usuarios</p>
           </Link>
         </div>
         <button

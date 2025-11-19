@@ -4,9 +4,9 @@ import config from "../../config.json";
 const token = Cookies.get("token");
 const userId = Cookies.get("userId"); */
 
-//TRAER USUARIO POR ID
-async function getClientById(clientId) {
-  const res = await axios.get(`${config.apiClients}/${clientId}`, {
+//FILTRAR USUARIOS POR NOMBRE
+async function filterUserByName(name) {
+  const res = await axios.get(`${config.apiUsers}/find-by-name/${name}`, {
     headers: {
       "Content-Type": "application/json",
       /*       auth: token, */
@@ -15,4 +15,4 @@ async function getClientById(clientId) {
   return res;
 }
 
-export { getClientById };
+export { filterUserByName };

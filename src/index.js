@@ -80,6 +80,14 @@ export { filterBudgetByClientName } from "./services/Budgets/filterBudgetByClien
 export { deleteBudget } from "./services/Budgets/deleteBudget.js";
 export { editBudget } from "./services/Budgets/editBudget.js";
 
+//USERS
+export { createUser } from "./services/Users/createUser.js";
+export { getAllUsersList } from "./services/Users/getAllUsersList.js";
+export { getUserById } from "./services/Users/getUserById.js";
+export { filterUserByName } from "./services/Users/filterUserByName.js";
+export { inactiveUser } from "./services/Users/inactiveUser.js";
+export { updateUser } from "./services/Users/updateUser.js";
+
 //Components --->
 
 //MODULES
@@ -134,3 +142,8 @@ export { EditBudget } from "./views/Budgets/EditBudget";
 export { Clients } from "./views/Clients/Clients";
 export { CreateClient } from "./views/Clients/CreateClient";
 export { EditClient } from "./views/Clients/EditClient";
+
+//USERS
+export { Users } from "./views/Users/Users";
+export { CreateUser } from "./views/Users/CreateUser";
+export { EditUser } from "./views/Users/EditUser";
