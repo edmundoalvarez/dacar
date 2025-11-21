@@ -10,8 +10,8 @@ function Navbar() {
   return (
     <div className="w-full bg-gray-900 text-white py-2 px-4 flex justify-between items-center shadow-md fixed top-0 left-0 z-50 text-sm">
       {/* Logo / Home */}
-      <Link to="/" className="font-semibold text-base tracking-wide ps-12">
-        DACAR
+      <Link to="/" className="ps-4 flex items-center">
+        <img src="/logo-dacar-blanco.svg" alt="Dacar logo" className="h-4" />
       </Link>
 
       {/* Info usuario + logout */}

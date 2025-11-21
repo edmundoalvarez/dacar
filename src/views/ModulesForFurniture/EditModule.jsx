@@ -136,25 +136,49 @@ function EditModule() {
     try {
       const { name, height, length, width, material, description } = data;
 
-      const supplies_module = [...Array(suppliesCount)].map((_, index) => {
-        const supplie_id = data[`supplie_id${index}`];
+      const supplies_module = [...Array(suppliesCount)]
+        .map((_, index) => {
+          const supplie_id = data[`supplie_id${index}`];
 
-        // Buscamos nombre del catálogo actual:
-        const found = supplies.find((s) => s._id === supplie_id);
-        const supplie_name = found?.name ?? ""; // o directamente omitir este campo
+          // Si no hay insumo seleccionado, se ignora
+          if (!supplie_id) return null;
 
-        return {
-          supplie_id,
-          supplie_name, // <-- opcional; si no lo usás en backend, quitalo
-          supplie_qty: data[`supplie_qty${index}`],
-          supplie_length: data[`supplie_length${index}`],
-        };
-      });
+          const found = supplies.find((s) => s._id === supplie_id);
+          const supplie_name = found?.name ?? "";
 
+          // qty
+          const rawQty = data[`supplie_qty${index}`];
+          const qty =
+            rawQty === undefined || rawQty === null || rawQty === ""
+              ? 1
+              : Number(rawQty);
+
+          // length — aquí empieza la corrección para que NO mande 0
+          const rawLength = data[`supplie_length${index}`];
+
+          let supply = {
+            supplie_id,
+            supplie_name,
+            supplie_qty: qty,
+          };
+
+          // Solo enviamos length si el usuario escribió un número válido
+          if (
+            rawLength !== undefined &&
+            rawLength !== null &&
+            rawLength !== "" &&
+            !Number.isNaN(Number(rawLength))
+          ) {
+            supply.supplie_length = Number(rawLength);
+          }
+
+          return supply;
+        })
+        .filter(Boolean);
       let piecesNumber = 0;
 
       const pieces = [...Array(piecesCount)].map((_, index) => {
-        console.log("qty", data[`qty${index}`]);
+        // console.log("qty", data[`qty${index}`]);
         let qty =
           data[`qty${index}`] !== undefined &&
           data[`qty${index}`] !== "" &&
