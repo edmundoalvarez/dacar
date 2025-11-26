@@ -18,6 +18,7 @@ export { filterFurnitureByName } from "./services/Furniture/filterFurnitureByNam
 export { getLoosePiecesByFurnitureId } from "./services/Furniture/getLoosePiecesByFurnitureId.js";
 export { getPiecesByFurnitureId } from "./services/Furniture/getPiecesByFurnitureId.js";
 export { deleteFurniture } from "./services/Furniture/deleteFurniture.js";
+export { getFurnitureHistory } from "./services/Furniture/getFurnitureHistory.js";
 
 //MODULES
 export { createModule } from "./services/ModulesForFurniture/createModule.js";
@@ -29,6 +30,7 @@ export { updateModulePiecesNumber } from "./services/ModulesForFurniture/updateM
 export { cloneModule } from "./services/ModulesForFurniture/cloneModule.js";
 export { deleteOriginalModule } from "./services/ModulesForFurniture/deleteOriginalModule.js";
 export { filterModuleByName } from "./services/ModulesForFurniture/filterModuleByName.js";
+export { getModuleHistory } from "./services/ModulesForFurniture/getModuleHistory.js";
 
 //PIECES
 export { createPieces } from "./services/Pieces/createPieces.js";

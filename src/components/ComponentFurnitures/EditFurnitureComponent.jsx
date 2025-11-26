@@ -107,10 +107,10 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
 
   const onSubmit = async (data, event) => {
     event.preventDefault();
-    console.log("Data del form", data);
-    console.log("selectedModules", selectedModules);
-    console.log("moduleQuantities", moduleQuantities);
-    console.log("originalFurnitureModules", originalFurnitureModules);
+    // console.log("Data del form", data);
+    // console.log("selectedModules", selectedModules);
+    // console.log("moduleQuantities", moduleQuantities);
+    // console.log("originalFurnitureModules", originalFurnitureModules);
     try {
       const editedModules = await Promise.all(
         selectedModules.flatMap(async (module) => {
