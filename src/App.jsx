@@ -29,6 +29,7 @@ import {
   Budgets,
   BudgetDetails,
   EditBudget,
+  ConfirmedBudgetsReport,
   //Clientes
   Clients,
   CreateClient,
@@ -95,6 +96,10 @@ function App() {
             <Route
               path="/editar-presupuestos/:budgetId"
               element={<EditBudget />}
+            />
+            <Route
+              path="/reporte-presupuestos-confirmados"
+              element={<ConfirmedBudgetsReport />}
             />
             {/* clientes */}
             <Route path="/ver-clientes" element={<Clients />} />

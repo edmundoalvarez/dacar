@@ -35,6 +35,18 @@ function Home() {
             <p className="m-0 leading-loose">Presupuestos</p>
           </Link>
           <Link
+            to={`/reporte-presupuestos-confirmados`}
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[220px] text-center flex flex-row justify-center gap-2"
+          >
+            <img
+              src="./icon_budgets_confirmed.svg" // el icono que tengas
+              alt="Icono reporte presupuestos"
+              className="w-[40px]"
+            />
+            <p className="m-0 leading-loose">Pres. confirmados</p>
+          </Link>
+
+          <Link
             to={`/ver-modulos`}
             className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
           >

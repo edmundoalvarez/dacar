@@ -2,14 +2,12 @@ import axios from "axios";
 import config from "../../config.json";
 import Cookies from "js-cookie";
 
-//CREAR PRESUPUESTO
-async function createBudget(data) {
+async function unconfirmBudget(budgetId) {
   const token = Cookies.get("token");
-  const res = await axios.post(
-    config.apiBudgets,
-    {
-      ...data,
-    },
+
+  const res = await axios.patch(
+    `${config.apiBudgets}/${budgetId}/unconfirm`,
+    {},
     {
       headers: {
         "Content-Type": "application/json",
@@ -17,7 +15,8 @@ async function createBudget(data) {
       },
     }
   );
-  return res;
+
+  return res.data; // o res, pero lo más prolijo es data
 }
 
-export { createBudget };
+export { unconfirmBudget };

@@ -5,11 +5,20 @@ import { Grid } from "react-loader-spinner";
 import { generatePDF } from "../../helpers/Budgets/budgetDetailPdf.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { useLocation } from "react-router-dom";
 
 function BudgetDetails() {
   const [budget, setBudget] = useState({});
   const [loader, setLoader] = useState(true);
   const { idBudget } = useParams();
+
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const from = params.get("from");
+  const backUrl =
+    from === "confirmed"
+      ? "/reporte-presupuestos-confirmados"
+      : "/ver-presupuestos";
 
   const getBudgetToSet = () => {
     getBudgetById(idBudget)
@@ -50,7 +59,7 @@ function BudgetDetails() {
           </h1>
           <div className="flex items-center gap-4">
             <Link
-              to={`/ver-presupuestos`}
+              to={backUrl}
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center align-middle items-center gap-2"
             >
               <img

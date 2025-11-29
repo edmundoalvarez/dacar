@@ -14,6 +14,7 @@ import {
   createClient,
   editBudget,
 } from "../../index.js";
+import { useLocation } from "react-router-dom";
 
 function EditBudget() {
   const { budgetId } = useParams();
@@ -67,6 +68,15 @@ function EditBudget() {
   const [totalPrice, setTotalPrice] = useState(0);
   const navigate = useNavigate();
 
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const from = params.get("from");
+
+  const backUrl =
+    from === "confirmed"
+      ? "/reporte-presupuestos-confirmados"
+      : "/ver-presupuestos";
+
   const {
     register,
     unregister,
@@ -80,7 +90,7 @@ function EditBudget() {
   const getBudgetToSet = () => {
     getBudgetById(budgetId)
       .then((budgetData) => {
-        console.log(budgetData.data);
+        // console.log(budgetData.data);
         setBudget(budgetData.data);
         setSingleFurniture(budgetData.data.furniture[0]);
         setTotalVeneer(Number(budgetData.data.veneer[0].veneerM2));
@@ -112,10 +122,10 @@ function EditBudget() {
           "edgeLaqueredM2",
           budgetData.data.edge_lacquered[0].edgeLaqueredM2
         );
-        console.log(
-          " budgetData.data.edge_lacquered[0].edgeLaqueredPrice",
-          budgetData.data.edge_lacquered[0].edgeLaqueredPrice
-        );
+        // console.log(
+        //   " budgetData.data.edge_lacquered[0].edgeLaqueredPrice",
+        //   budgetData.data.edge_lacquered[0].edgeLaqueredPrice
+        // );
         setValue(
           "edgeLaqueredPrice",
           budgetData.data.edge_lacquered[0].edgeLaqueredPrice
@@ -172,7 +182,7 @@ function EditBudget() {
               },
               0
             );
-            console.log(budgetData.data.supplies);
+            // console.log(budgetData.data.supplies);
             setTotalSuppliePrice(totalPrice);
           }
         }
@@ -367,7 +377,7 @@ function EditBudget() {
   //filo laqueado
   const handleMaterialEdgeLaqueredOption = (event) => {
     let thickness = Number(event.target.value);
-    console.log("handleMaterialEdgeLaqueredOption");
+
     // console.log(option);
     if (thickness > 0) {
       console.log(laqueadoService?.price, totalLacqueredEdgeLength, thickness);
@@ -391,14 +401,14 @@ function EditBudget() {
   //filo lustrado
   const handleMaterialEdgePolishedOption = (event) => {
     let thickness = Number(event.target.value);
-    console.log("handleMaterialEdgePolishedOption");
+
     if (thickness > 0) {
-      console.log(
-        "handleMaterialEdgePolishedOption",
-        lustreService?.price,
-        totalPolishedEdgeLength,
-        thickness
-      );
+      // console.log(
+      //   "handleMaterialEdgePolishedOption",
+      //   lustreService?.price,
+      //   totalPolishedEdgeLength,
+      //   thickness
+      // );
       setMaterialEdgePolished(thickness);
       // console.log(totalPolishedEdgeLength);
       setValue(
@@ -619,7 +629,6 @@ function EditBudget() {
   //filtro de clientes
   useEffect(() => {
     if (searchTerm === "") {
-      console.log("if");
       setFilteredClients([]);
     } else {
       const results = allClients.filter((client) =>
@@ -730,7 +739,7 @@ function EditBudget() {
   //FORMULARIO EDITAR PRESUPUESTO
   const onSubmit = async (data, event) => {
     event.preventDefault();
-    console.log(data);
+    // console.log(data);
     //SET LOADER
     setSubmitLoader(true);
 
@@ -772,7 +781,7 @@ function EditBudget() {
     // Convertimos el objeto `supplies` en una lista de objetos
     const suppliesList = Object.values(supplies);
 
-    console.log(suppliesList);
+    // console.log(suppliesList);
 
     // Carga cliente
     let clientData;
@@ -783,7 +792,7 @@ function EditBudget() {
           ...data,
         }).then((res) => {
           clientData = res.data;
-          console.log("¡Creaste cliente!");
+          // console.log("¡Creaste cliente!");
         });
       } catch (error) {
         console.error(error);
@@ -940,11 +949,11 @@ function EditBudget() {
       show_modules: data.showModules,
     };
     const cleanedBudgetData = removeEmptyFields(budgetData);
-    console.log(cleanedBudgetData);
+    // console.log(cleanedBudgetData);
 
     try {
       await editBudget(cleanedBudgetData, budget._id);
-      console.log("Presupuesto editado", cleanedBudgetData);
+      // console.log("Presupuesto editado", cleanedBudgetData);
       navigate("/ver-presupuestos");
     } catch (error) {
       console.error("Error editando presupuesto front:", error);
@@ -967,7 +976,7 @@ function EditBudget() {
           </h1>{" "}
           <div className="flex items-center gap-4">
             <Link
-              to={`/ver-presupuestos`}
+              to={backUrl}
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center align-middle items-center gap-2"
             >
               <img

@@ -1,46 +1,44 @@
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import debounce from "lodash.debounce";
 import { Grid, Oval } from "react-loader-spinner";
+import debounce from "lodash.debounce";
 import {
-  getAllBudgets,
+  getConfirmedBudgets,
   deleteBudget,
   getBudgetHistory,
-  confirmBudget,
+  unconfirmBudget,
 } from "../../index.js";
 
-function Budgets() {
-  const ENV = import.meta.env.VITE_ENV;
-
+function ConfirmedBudgetsReport() {
   const [budgets, setBudgets] = useState([]);
-  const [openModalToDelete, setOpenModalToDelete] = useState(false);
-  const [budgetToDelete, setBudgetToDelete] = useState(null);
-
   const [loader, setLoader] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchLoader, setSearchLoader] = useState(false);
 
-  // Paginación
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 50;
 
-  // AbortController de la request en curso
-  const controllerRef = useRef(null);
-  const reqSeqRef = useRef(0);
+  const [searchLoader, setSearchLoader] = useState(false);
 
-  // --------- CONFIRMAR PRESUPUESTOS ----------
-  const [openModalToConfirm, setOpenModalToConfirm] = useState(false);
-  const [budgetToConfirm, setBudgetToConfirm] = useState(null);
-  const [budgetToConfirmNumber, setBudgetToConfirmNumber] = useState(null);
-  const [confirmLoader, setConfirmLoader] = useState(false);
+  // Eliminar
+  const [openModalToDelete, setOpenModalToDelete] = useState(false);
+  const [budgetToDelete, setBudgetToDelete] = useState(null);
 
-  // --------- HISTORIAL PRESUPUESTOS ----------
+  // Historial
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [historyEntries, setHistoryEntries] = useState([]);
   const [historyLoader, setHistoryLoader] = useState(false);
   const [historyBudgetNumber, setHistoryBudgetNumber] = useState(null);
   const [historyBudgetId, setHistoryBudgetId] = useState(null);
+
+  // Desconfirmar
+  const [openModalToUnconfirm, setOpenModalToUnconfirm] = useState(false);
+  const [budgetToUnconfirm, setBudgetToUnconfirm] = useState(null);
+  const [budgetToUnconfirmNumber, setBudgetToUnconfirmNumber] = useState(null);
+  const [unconfirmLoader, setUnconfirmLoader] = useState(false);
 
   const formatDateTime = (isoString) => {
     if (!isoString) return "—";
@@ -50,99 +48,110 @@ function Budgets() {
     });
   };
 
-  const getAllBudgetsToSet = useCallback(
-    async (term = "", page = 1, { showMainLoader = false } = {}) => {
-      if (controllerRef.current) controllerRef.current.abort();
-      const controller = new AbortController();
-      controllerRef.current = controller;
-
-      const seq = ++reqSeqRef.current;
-
-      if (showMainLoader) setLoader(true);
-
-      try {
-        const data = await getAllBudgets(
-          term,
-          page,
-          itemsPerPage,
-          controller.signal
-        );
-        if (!data || seq !== reqSeqRef.current) return;
-
-        setBudgets(data.budgets);
-        setCurrentPage(data.currentPage);
-        setTotalPages(data.totalPages);
-      } catch (_) {
-        // el service ya loguea
-      } finally {
-        setLoader(false);
-        setSearchLoader(false);
-      }
-    },
-    [itemsPerPage]
-  );
+  const fetchData = async (
+    term,
+    from,
+    to,
+    page,
+    { showMainLoader = false } = {}
+  ) => {
+    if (showMainLoader) setLoader(true);
+    try {
+      const result = await getConfirmedBudgets(
+        term,
+        page,
+        itemsPerPage,
+        from,
+        to
+      );
+      setBudgets(result.data || []);
+      setCurrentPage(result.currentPage);
+      setTotalPages(result.totalPages);
+    } catch (err) {
+      console.error("Error obteniendo presupuestos confirmados:", err);
+    } finally {
+      setLoader(false);
+      setSearchLoader(false);
+    }
+  };
 
   useEffect(() => {
-    getAllBudgetsToSet(searchTerm, currentPage, { showMainLoader: true });
-  }, [currentPage, searchTerm, getAllBudgetsToSet]);
+    fetchData(searchTerm, dateFrom, dateTo, currentPage, {
+      showMainLoader: true,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
 
   const debouncedSearch = useMemo(
     () =>
-      debounce((term) => {
-        getAllBudgetsToSet(term, 1);
+      debounce((term, from, to) => {
+        fetchData(term, from, to, 1);
         setCurrentPage(1);
       }, 800),
-    [getAllBudgetsToSet]
+    []
   );
 
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel();
-      if (controllerRef.current) controllerRef.current.abort();
-    };
-  }, [debouncedSearch]);
-
-  const handleChange = (e) => {
+  const handleSearchChange = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
     setSearchLoader(true);
-    debouncedSearch(term);
+    debouncedSearch(term, dateFrom, dateTo);
+  };
+
+  const handleDateFromChange = (e) => {
+    const value = e.target.value;
+    setDateFrom(value);
+    setSearchLoader(true);
+    debouncedSearch(searchTerm, value, dateTo);
+  };
+
+  const handleDateToChange = (e) => {
+    const value = e.target.value;
+    setDateTo(value);
+    setSearchLoader(true);
+    debouncedSearch(searchTerm, dateFrom, value);
   };
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
-      getAllBudgetsToSet(searchTerm, currentPage - 1, { showMainLoader: true });
+      fetchData(searchTerm, dateFrom, dateTo, currentPage - 1, {
+        showMainLoader: true,
+      });
       setCurrentPage((p) => p - 1);
     }
   };
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      getAllBudgetsToSet(searchTerm, currentPage + 1, { showMainLoader: true });
+      fetchData(searchTerm, dateFrom, dateTo, currentPage + 1, {
+        showMainLoader: true,
+      });
       setCurrentPage((p) => p + 1);
     }
   };
 
-  // Eliminar presupuesto
+  /* FUNCIONES ELIMINAR */
   function handleDeleteBudget(budgetId) {
     setOpenModalToDelete(true);
     setBudgetToDelete(budgetId);
   }
 
-  function deleteSingleBudget(budgetId) {
-    deleteBudget(budgetId)
-      .then(() => {
-        getAllBudgetsToSet(searchTerm, currentPage, { showMainLoader: true });
-      })
-      .catch((error) => {
-        console.error(error);
+  async function deleteSingleBudget() {
+    if (!budgetToDelete) return;
+    try {
+      await deleteBudget(budgetToDelete);
+      await fetchData(searchTerm, dateFrom, dateTo, currentPage, {
+        showMainLoader: true,
       });
-
-    setOpenModalToDelete(false);
-    setBudgetToDelete(null);
+    } catch (error) {
+      console.error("Error eliminando presupuesto:", error);
+    } finally {
+      setOpenModalToDelete(false);
+      setBudgetToDelete(null);
+    }
   }
 
-  // ---------- HISTORIAL: abrir / cerrar ----------
+  /* FUNCIONES HISTORIAL */
   const handleOpenHistory = async (budget) => {
     try {
       setHistoryBudgetNumber(budget.budget_number);
@@ -167,38 +176,38 @@ function Budgets() {
     setHistoryBudgetId(null);
   };
 
-  // --------- CONFIRMAR PRESUPUESTOS ----------
-  function handleOpenConfirmBudget(budget) {
-    setBudgetToConfirm(budget._id);
-    setBudgetToConfirmNumber(budget.budget_number);
-    setOpenModalToConfirm(true);
+  /* FUNCIONES DESCONFIRMAR */
+  function handleOpenUnconfirmBudget(budget) {
+    setBudgetToUnconfirm(budget._id);
+    setBudgetToUnconfirmNumber(budget.budget_number);
+    setOpenModalToUnconfirm(true);
   }
 
-  function handleCloseConfirmModal() {
-    setOpenModalToConfirm(false);
-    setBudgetToConfirm(null);
-    setBudgetToConfirmNumber(null);
-    setConfirmLoader(false);
+  function handleCloseUnconfirmModal() {
+    setOpenModalToUnconfirm(false);
+    setBudgetToUnconfirm(null);
+    setBudgetToUnconfirmNumber(null);
+    setUnconfirmLoader(false);
   }
 
-  async function confirmSingleBudget() {
-    if (!budgetToConfirm) return;
+  async function unconfirmSingleBudget() {
+    if (!budgetToUnconfirm) return;
 
     try {
-      setConfirmLoader(true);
+      setUnconfirmLoader(true);
 
-      await confirmBudget(budgetToConfirm);
+      await unconfirmBudget(budgetToUnconfirm);
 
-      // recargo la lista; el presupuesto confirmado ya no se trae
-      await getAllBudgetsToSet(searchTerm, currentPage, {
+      // recargo lista de confirmados; este presupuesto ya no va a aparecer aquí
+      await fetchData(searchTerm, dateFrom, dateTo, currentPage, {
         showMainLoader: true,
       });
 
-      handleCloseConfirmModal();
+      handleCloseUnconfirmModal();
     } catch (error) {
-      console.error("Error confirmando presupuesto:", error);
-      alert("Ocurrió un error al confirmar el presupuesto.");
-      setConfirmLoader(false);
+      console.error("Error desconfirmando presupuesto:", error);
+      alert("Ocurrió un error al desconfirmar el presupuesto.");
+      setUnconfirmLoader(false);
     }
   }
 
@@ -206,82 +215,130 @@ function Budgets() {
     <>
       <div className="pb-8 px-16 bg-gray-100 min-h-screen">
         <div className="flex gap-4 justify-between items-center mb-8 bg-gray-800 p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
-          <h1 className="text-4xl font-semibold text-white">Presupuestos</h1>
+          <h1 className="text-3xl font-semibold text-white">
+            Presupuestos confirmados
+          </h1>
 
-          {/* Búsqueda */}
-          <div className="flex items-center gap-4">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={handleChange}
-              placeholder="Buscar por nombre de cliente"
-              className="border border-gray-300 p-2 rounded-lg ml-auto shadow-md w-[400px]"
-            />
-            <Oval
-              visible={searchLoader}
-              height="30"
-              width="30"
-              color="rgb(92, 92, 92)"
-              secondaryColor="rgb(92, 92, 92)"
-              strokeWidth="6"
-              ariaLabel="oval-loading"
-            />
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center gap-2"
-            >
-              <img
-                src="./icon_back.svg"
-                alt="Icono de budgets"
-                className="w-[20px]"
+          {/* Filtros */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                placeholder="Buscar por nombre de cliente"
+                className="border border-gray-300 p-2 rounded-lg shadow-md w-[260px]"
               />
-              <p className="m-0 leading-loose">Volver al Inicio</p>
-            </Link>
+              <Oval
+                visible={searchLoader}
+                height="28"
+                width="28"
+                color="rgb(92, 92, 92)"
+                secondaryColor="rgb(92, 92, 92)"
+                strokeWidth="6"
+                ariaLabel="oval-loading"
+              />
+            </div>
+            <div className="flex items-center gap-2 text-white text-sm">
+              <div className="flex flex-col">
+                <span>Desde</span>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={handleDateFromChange}
+                  className="border border-gray-300 p-1 rounded-lg text-black"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span>Hasta</span>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={handleDateToChange}
+                  className="border border-gray-300 p-1 rounded-lg text-black"
+                />
+              </div>
+            </div>
           </div>
+
+          <Link
+            to="/"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center gap-2"
+          >
+            <img
+              src="./icon_back.svg"
+              alt="Icono de budgets"
+              className="w-[20px]"
+            />
+            <p className="m-0 leading-loose">Volver al Inicio</p>
+          </Link>
         </div>
 
-        {ENV === "TEST" && (
-          <div className="bg-red-600 text-white px-4 py-2 rounded-md mb-4 text-sm font-semibold">
-            ⚠️ Estás en entorno de pruebas (TEST)
-          </div>
-        )}
+        <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white">
+          <table className="min-w-full divide-y divide-gray-700">
+            <thead className="bg-gray-700">
+              <tr>
+                <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
+                  Número
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
+                  Fecha
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
+                  Cliente
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
+                  Nombre del mueble
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
+                  Acciones
+                </th>
+              </tr>
+            </thead>
 
-        <div className="overflow-x-auto mt-4">
-          <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white">
-            <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-gray-700">
+            <tbody className="bg-white divide-y divide-gray-200">
+              {/* Caso: loader */}
+              {loader && (
                 <tr>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
-                    Número
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
-                    Fecha
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
-                    Cliente
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
-                    Nombre del mueble
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
-                    Acciones
-                  </th>
+                  <td colSpan={4} className="text-center py-10">
+                    <Grid
+                      visible={true}
+                      height="60"
+                      width="60"
+                      color="rgb(92, 92, 92)"
+                      ariaLabel="grid-loading"
+                    />
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {budgets.map((budget) => (
+              )}
+
+              {/* Caso: no hay resultados */}
+              {!loader && budgets.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="text-center py-6 text-gray-500 text-sm"
+                  >
+                    No hay presupuestos confirmados aún.
+                  </td>
+                </tr>
+              )}
+
+              {/* Caso: lista con datos */}
+              {!loader &&
+                budgets.length > 0 &&
+                budgets.map((budget) => (
                   <tr key={budget._id} className="text-center">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {budget.budget_number}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(budget.date).toLocaleDateString("es-AR")}
+                      {budget.date
+                        ? new Date(budget.date).toLocaleDateString("es-AR")
+                        : "—"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {budget.client.map((client) => (
+                      {budget.client?.map((client) => (
                         <div key={client._id}>
                           {client.name} {client.lastname}
                         </div>
@@ -294,7 +351,7 @@ function Budgets() {
                       <div className="flex justify-center align-middle gap-2">
                         <Link
                           className="text-white bg-blue-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
-                          to={`/ver-presupuestos/${budget._id}?from=general`}
+                          to={`/ver-presupuestos/${budget._id}?from=confirmed`}
                         >
                           <img
                             src="./../icon_search.svg"
@@ -305,7 +362,7 @@ function Budgets() {
                         </Link>
 
                         <Link
-                          to={`/editar-presupuestos/${budget._id}?from=general`}
+                          to={`/editar-presupuestos/${budget._id}?from=confirmed`}
                           className="text-white bg-orange rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
                         >
                           <img
@@ -315,18 +372,23 @@ function Budgets() {
                           />
                           <p className="m-0 leading-loose">Editar</p>
                         </Link>
+
+                        {/* DESCONFIRMAR */}
                         <button
-                          onClick={() => handleOpenConfirmBudget(budget)}
-                          className="text-white bg-emerald-700 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          onClick={() => handleOpenUnconfirmBudget(budget)}
+                          className="text-white bg-red-800 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
                         >
                           <img
-                            src="./../icon_check.svg" // poné el ícono que tengas
-                            alt="Confirmar"
-                            className="w-[16px]"
+                            src="./../icon_cancel.svg"
+                            alt="Desconfirmar"
+                            className="w-[18px]"
                           />
-                          <p className="m-0 leading-loose text-sm">Confirmar</p>
+                          <p className="m-0 leading-loose text-sm">
+                            Desconfirmar
+                          </p>
                         </button>
 
+                        {/* ELIMINAR */}
                         <button
                           onClick={() => handleDeleteBudget(budget._id)}
                           className="text-white bg-red-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
@@ -338,7 +400,8 @@ function Budgets() {
                           />
                           <p className="m-0 leading-loose">Eliminar</p>
                         </button>
-                        {/* BOTÓN HISTORIAL */}
+
+                        {/* HISTORIAL */}
                         <button
                           onClick={() => handleOpenHistory(budget)}
                           className="text-white bg-gray-900 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
@@ -354,20 +417,19 @@ function Budgets() {
                     </td>
                   </tr>
                 ))}
-              </tbody>
-            </table>
+            </tbody>
+          </table>
 
-            <div className="overflow-x-auto my-8 flex justify-center items-center h-[100px]">
-              <Grid
-                visible={loader}
-                height="80"
-                width="80"
-                color="rgb(92, 92, 92)"
-                ariaLabel="grid-loading"
-                radius="12.5"
-                wrapperClass="grid-wrapper"
-              />
-            </div>
+          <div className="overflow-x-auto my-8 flex justify-center items-center h-[100px]">
+            <Grid
+              visible={loader}
+              height="80"
+              width="80"
+              color="rgb(92, 92, 92)"
+              ariaLabel="grid-loading"
+              radius="12.5"
+              wrapperClass="grid-wrapper"
+            />
           </div>
         </div>
 
@@ -399,8 +461,6 @@ function Budgets() {
           </button>
         </div>
       </div>
-
-      {/* Modal eliminar */}
       {openModalToDelete && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white p-10 rounded-lg shadow-lg flex justify-center items-center flex-col">
@@ -410,7 +470,7 @@ function Budgets() {
             <div className="flex gap-4">
               <button
                 className="bg-red-500 text-white py-2 px-4 rounded"
-                onClick={() => deleteSingleBudget(budgetToDelete)}
+                onClick={deleteSingleBudget}
               >
                 Eliminar
               </button>
@@ -424,8 +484,6 @@ function Budgets() {
           </div>
         </div>
       )}
-
-      {/* Modal historial de presupuesto */}
       {historyModalOpen && (
         <div
           onClick={handleCloseHistoryModal}
@@ -515,6 +573,12 @@ function Budgets() {
                             Presupuesto editado en el sistema.
                           </p>
                         )}
+                        {log.meta.changeType === "budget_unconfirmed" && (
+                          <p className="m-0">Presupuesto desconfirmado.</p>
+                        )}
+                        {log.meta.changeType === "budget_confirmed" && (
+                          <p className="m-0">Presupuesto confirmado.</p>
+                        )}
                       </div>
                     )}
                   </li>
@@ -533,26 +597,25 @@ function Budgets() {
           </div>
         </div>
       )}
-      {/* Modal confirmar presupuesto */}
-      {openModalToConfirm && (
+      {openModalToUnconfirm && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white p-10 rounded-lg shadow-lg flex justify-center items-center flex-col text-black max-w-md w-full">
             <h2 className="text-xl mb-4 text-center font-semibold">
-              ¿Seguro que deseas marcar como confirmado el presupuesto
-              {budgetToConfirmNumber ? ` Nº ${budgetToConfirmNumber}` : ""}?
+              ¿Seguro que deseas desconfirmar el presupuesto
+              {budgetToUnconfirmNumber ? ` Nº ${budgetToUnconfirmNumber}` : ""}?
             </h2>
             <p className="text-sm text-gray-600 mb-6 text-center">
-              Una vez confirmado, este presupuesto dejará de mostrarse en esta
-              lista y aparecerá en el reporte de presupuestos confirmados.
+              Este presupuesto dejará de estar en la lista de confirmados y
+              volverá a la vista general de presupuestos.
             </p>
 
             <div className="flex gap-4 items-center">
               <button
                 className="bg-emerald-600 hover:bg-emerald-500 text-white py-2 px-4 rounded font-semibold disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
-                onClick={confirmSingleBudget}
-                disabled={confirmLoader}
+                onClick={unconfirmSingleBudget}
+                disabled={unconfirmLoader}
               >
-                {confirmLoader && (
+                {unconfirmLoader && (
                   <Oval
                     visible={true}
                     height="20"
@@ -563,12 +626,12 @@ function Budgets() {
                     ariaLabel="oval-loading"
                   />
                 )}
-                <span>Confirmar</span>
+                <span>Desconfirmar</span>
               </button>
               <button
                 className="bg-gray-300 hover:bg-gray-200 text-black py-2 px-4 rounded"
-                onClick={handleCloseConfirmModal}
-                disabled={confirmLoader}
+                onClick={handleCloseUnconfirmModal}
+                disabled={unconfirmLoader}
               >
                 Cancelar
               </button>
@@ -580,4 +643,4 @@ function Budgets() {
   );
 }
 
-export { Budgets };
+export { ConfirmedBudgetsReport };

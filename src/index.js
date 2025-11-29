@@ -81,6 +81,10 @@ export { getBudgetById } from "./services/Budgets/getBudgetById.js";
 export { filterBudgetByClientName } from "./services/Budgets/filterBudgetByClientName.js";
 export { deleteBudget } from "./services/Budgets/deleteBudget.js";
 export { editBudget } from "./services/Budgets/editBudget.js";
+export { getBudgetHistory } from "./services/Budgets/getBudgetHistory.js";
+export { getConfirmedBudgets } from "./services/Budgets/getConfirmedBudgets.js";
+export { confirmBudget } from "./services/Budgets/confirmBudget.js";
+export { unconfirmBudget } from "./services/Budgets/unconfirmBudget.js";
 
 //USERS
 export { createUser } from "./services/Users/createUser.js";
@@ -139,6 +143,7 @@ export { CreateBudget } from "./views/Budgets/CreateBudget";
 export { Budgets } from "./views/Budgets/Budgets";
 export { BudgetDetails } from "./views/Budgets/BudgetDetails";
 export { EditBudget } from "./views/Budgets/EditBudget";
+export { ConfirmedBudgetsReport } from "./views/Budgets/ConfirmedBudgetsReport";
 
 //CLIENTS
 export { Clients } from "./views/Clients/Clients";
