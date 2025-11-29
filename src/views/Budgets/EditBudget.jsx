@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Grid, Oval } from "react-loader-spinner";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+
 import {
   getBudgetById,
   getAllServices,
@@ -68,6 +71,26 @@ function EditBudget() {
   const [totalPrice, setTotalPrice] = useState(0);
   const navigate = useNavigate();
 
+  //Editar comentario
+  const [commentsValue, setCommentsValue] = useState("");
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ["bold", "italic", "underline"], // dejamos solo B, I, U
+      [{ list: "ordered" }, { list: "bullet" }], // listas numeradas y con bullets
+    ],
+  };
+
+  const quillFormats = [
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "list",
+    "bullet",
+  ];
+
+  //Volver a presupuestos o presupuestos confirmados según corresponda
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const from = params.get("from");
@@ -264,6 +287,7 @@ function EditBudget() {
         }
         //COMENTARIOS
         setValue("comments", budgetData.data.comments || "");
+        setCommentsValue(budgetData.data.comments || "");
         //FECHA DE ENTREGA
         setValue("deliver_date", budgetData.data.deliver_date || "");
         //COLOCACIÓN
@@ -1849,22 +1873,30 @@ function EditBudget() {
               )}
               {/* fin carga cliente */}
               <div className="flex flex-col gap-4">
-                <div className="flex flex-col w-full  ">
-                  {" "}
-                  <label htmlFor={`comments`}>Comentarios</label>
-                  <textarea
-                    name={`comments`}
-                    type="text"
-                    className="border border-gray-300 rounded-md p-2 resize-none"
-                    rows={6}
-                    {...register(`comments`)}
+                <div className="flex flex-col w-full">
+                  <label htmlFor="comments" className="mb-2">
+                    Comentarios
+                  </label>
+
+                  <ReactQuill
+                    theme="snow"
+                    value={commentsValue}
+                    onChange={(value) => {
+                      setCommentsValue(value);
+                      setValue("comments", value, { shouldValidate: true });
+                    }}
+                    className="bg-white"
+                    modules={quillModules}
+                    formats={quillFormats}
                   />
-                  {errors[`comments`] && (
+
+                  {errors.comments && (
                     <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                      {errors[`comments`].message}
+                      {errors.comments.message}
                     </span>
                   )}
                 </div>
+
                 <div className="flex flex-col w-full   ">
                   {" "}
                   <label htmlFor={`deliver_date`}>Fecha de entrega</label>

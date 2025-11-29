@@ -6,6 +6,8 @@ import { generatePDF } from "../../helpers/Budgets/budgetDetailPdf.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { useLocation } from "react-router-dom";
+import parse from "html-react-parser";
+import { formatComments } from "../../helpers/Budgets/formatComments.js";
 
 function BudgetDetails() {
   const [budget, setBudget] = useState({});
@@ -181,15 +183,20 @@ function BudgetDetails() {
                     <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700 ">
                       {budget.category}
                     </td>
-                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top text-gray-700 border-r-2 border-r-black border-l-2 border-l-black">
-                      <div className="w-fit max-w-[700px] m-auto text-left">
-                        <p className="mb-2 break-words whitespace-pre-line">
-                          {budget.comments
-                            ? budget.comments
-                            : "- No hay comentarios -"}
-                        </p>
+                    <td className="px-2 py-4 text-left text-sm align-top text-gray-700 border-r-2 border-r-black border-l-2 border-l-black">
+                      <div className="w-full max-w-[700px] text-left">
+                        {budget.comments ? (
+                          <div className="mb-2 break-words comments-html text-left">
+                            {parse(formatComments(budget.comments || ""))}
+                          </div>
+                        ) : (
+                          <p className="mb-2 break-words whitespace-pre-line">
+                            - No hay comentarios -
+                          </p>
+                        )}
                       </div>
                     </td>
+
                     <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700 ">
                       {formatCurrency(totalPriceInUnits)}
                     </td>

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Grid, Oval } from "react-loader-spinner";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import {
   getFurnitureById,
   getAllTables,
@@ -51,6 +53,25 @@ function CreateBudget() {
   const [subtotalAdjustmentPrice, setSubtotalAdjustmentPrice] = useState(0);
   const [subtotalPlacement, setSubtotalPlacement] = useState(0);
   const [subtotalShipmentPrice, setSubtotalShipmentPrice] = useState(0);
+
+  //Editor de texto
+  const [commentValue, setCommentValue] = useState("");
+
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ["bold", "italic", "underline"], // dejamos solo B, I, U
+      [{ list: "ordered" }, { list: "bullet" }],
+    ],
+  };
+  const quillFormats = [
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "list",
+    "bullet",
+  ];
 
   const navigate = useNavigate();
 
@@ -1857,19 +1878,34 @@ function CreateBudget() {
               )}
               {/* fin carga cliente */}
               <div className="flex flex-col gap-4">
-                <div className="flex flex-col w-full  ">
-                  {" "}
-                  <label htmlFor={`comments`}>Comentarios</label>
-                  <textarea
-                    name={`comments`}
-                    type="text"
-                    className="border border-gray-300 rounded-md p-2 resize-none"
-                    rows={6}
-                    {...register(`comments`)}
+                <div className="flex flex-col w-full">
+                  <label htmlFor="comments" className="mb-2">
+                    Comentarios
+                  </label>
+
+                  {/* Campo real de React Hook Form (oculto), donde se guarda el HTML */}
+                  <input
+                    type="hidden"
+                    id="comments"
+                    {...register("comments")}
                   />
-                  {errors[`comments`] && (
-                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                      {errors[`comments`].message}
+
+                  {/* Editor visual */}
+                  <ReactQuill
+                    theme="snow"
+                    value={commentValue}
+                    onChange={(value) => {
+                      setCommentValue(value);
+                      setValue("comments", value, { shouldValidate: true });
+                    }}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    className="bg-white border border-gray-300 rounded-md"
+                  />
+
+                  {errors.comments && (
+                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left">
+                      {errors.comments.message}
                     </span>
                   )}
                 </div>

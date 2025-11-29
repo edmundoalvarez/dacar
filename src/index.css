@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-    @apply bg-gray-200 text-white; /* Ejemplo de Tailwind */
+  @apply bg-gray-200 text-white; /* Ejemplo de Tailwind */
 }
 input,
 select,
@@ -14,5 +14,5 @@ h3,
 h4,
 h5,
 textarea {
-    color: black;
+  color: black;
 }

@@ -12,8 +12,10 @@
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
-    "axios": "^1.7.2",
+    "axios": "^1.13.2",
+    "dompurify": "^3.3.0",
     "exceljs": "^4.4.0",
+    "html-react-parser": "^5.2.10",
     "html2canvas": "^1.4.1",
     "js-cookie": "^3.0.5",
     "jspdf": "^3.0.1",
@@ -24,6 +26,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.52.0",
     "react-loader-spinner": "^6.1.6",
+    "react-quill": "^2.0.0",
     "react-router-dom": "^6.23.1"
   },
   "devDependencies": {
