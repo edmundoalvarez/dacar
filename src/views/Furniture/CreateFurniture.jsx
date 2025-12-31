@@ -1,3 +1,4 @@
+// views/Furniture/CreateFurniture.jsx
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -7,11 +8,34 @@ import {
   getAllModules,
   getPiecesByModuleId,
   ViewModulesFurniture,
+  getFurnitureCategories,
 } from "../../index.js";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+
+// Configuración de ReactQuill
+const quillModules = {
+  toolbar: [
+    [{ header: [1, 2, false] }],
+    ["bold", "italic", "underline"],
+    [{ list: "ordered" }, { list: "bullet" }],
+  ],
+};
+
+const quillFormats = [
+  "header",
+  "bold",
+  "italic",
+  "underline",
+  "list",
+  "bullet",
+];
 
 function CreateFurniture() {
   const [modules, setModules] = useState([]);
   const [selectedModules, setSelectedModules] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [formData, setFormData] = useState({});
   const [originalData, setOriginalData] = useState({});
   const [selectedModule, setSelectedModule] = useState(null);
@@ -20,6 +44,9 @@ function CreateFurniture() {
   const [moduleQuantities, setModuleQuantities] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false); // loader del submit
+
+  // Editor de texto de parámetros
+  const [parameterValue, setParameterValue] = useState("");
 
   const navigate = useNavigate();
 
@@ -36,7 +63,7 @@ function CreateFurniture() {
     return diff;
   };
 
-  // Modal "Ver" (sigue igual, solo lee piezas para mostrar)
+  // Modal "Ver" (solo lee piezas para mostrar)
   const handleOpenModal = async (module) => {
     try {
       const pieces = await getPiecesByModuleId(module._id);
@@ -47,6 +74,7 @@ function CreateFurniture() {
       console.error("Error al obtener las piezas del módulo:", error);
     }
   };
+
   const handleCloseModal = () => {
     setSelectedModule(null);
     setIsModalOpen(false);
@@ -64,6 +92,7 @@ function CreateFurniture() {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm();
 
   const handleModuleChange = (e) => {
@@ -87,7 +116,7 @@ function CreateFurniture() {
         ...prev,
         [selectedModule._id]: { ...selectedModule },
       }));
-      // 👇 default de cantidad = 1
+      // default de cantidad = 1
       setModuleQuantities((prev) => ({
         ...prev,
         [selectedModule._id]: prev[selectedModule._id] || 1,
@@ -147,6 +176,19 @@ function CreateFurniture() {
 
   useEffect(() => {
     getAllModulesToSet();
+
+    setCategoriesLoading(true);
+    getFurnitureCategories()
+      .then((res) => {
+        const cats = Array.isArray(res) ? res : [];
+        setCategories(cats || []);
+      })
+      .catch((error) => {
+        console.error("Error al traer categorías de muebles:", error);
+      })
+      .finally(() => {
+        setCategoriesLoading(false);
+      });
   }, []);
 
   const fields = [
@@ -154,10 +196,10 @@ function CreateFurniture() {
     { name: "length", label: "Largo" },
     { name: "height", label: "Alto" },
     { name: "width", label: "Profundidad" },
-    { name: "category", label: "Categoría" },
   ];
 
   const handleSearchChange = (e) => setSearchTerm(e.target.value);
+
   const filteredModules = modules.filter((module) => {
     const term = searchTerm.toLowerCase();
     return (
@@ -165,6 +207,20 @@ function CreateFurniture() {
       module.description.toLowerCase().includes(term)
     );
   });
+
+  // Cuando cambia la categoría, prelleno el editor con los parámetros de esa categoría
+  const handleCategoryChange = (event) => {
+    const categoryId = event.target.value;
+
+    // React Hook Form ya setea categoryId por el register, no hace falta setValue aquí
+    const selectedCategory = categories.find((c) => c._id === categoryId);
+    const paramHtml = selectedCategory?.parameter || "";
+
+    // Editor controlado
+    setParameterValue(paramHtml);
+    // Campo real del formulario (hidden)
+    setValue("parameter", paramHtml, { shouldValidate: true });
+  };
 
   return (
     <div className="pb-8 px-16 bg-gray-100 min-h-screen">
@@ -233,7 +289,74 @@ function CreateFurniture() {
                 )}
               </div>
             ))}
+
+            {/* Select de categoría */}
+            <div className="flex flex-col w-11/12 my-2">
+              <label htmlFor="categoryId" className="text-gray-700 font-medium">
+                Categoría
+              </label>
+
+              <select
+                id="categoryId"
+                className="border border-gray-300 rounded-md px-4 py-2 mt-1 focus:border-emerald-500 w-full bg-white"
+                {...register("categoryId", {
+                  onChange: handleCategoryChange,
+                  // si querés que sea obligatorio:
+                  // required: "La categoría es obligatoria",
+                })}
+                defaultValue=""
+                disabled={categoriesLoading || categories.length === 0}
+              >
+                <option value="">Selecciona una categoría</option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+
+              {errors.categoryId && (
+                <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                  {errors.categoryId.message}
+                </span>
+              )}
+            </div>
+
+            {/* Parámetros con ReactQuill */}
+            <div className="flex flex-col w-11/12 my-2 mb-6">
+              <label htmlFor="parameter" className="text-gray-700 font-medium">
+                Parámetros
+              </label>
+
+              {/* Campo real para RHF (oculto) */}
+              <input type="hidden" id="parameter" {...register("parameter")} />
+
+              <ReactQuill
+                theme="snow"
+                value={parameterValue}
+                onChange={(value) => {
+                  setParameterValue(value);
+                  setValue("parameter", value, { shouldValidate: true });
+                }}
+                modules={quillModules}
+                formats={quillFormats}
+                className="
+      w-full bg-white border border-gray-300 rounded-md overflow-hidden
+      [&_.ql-toolbar]:border-0 [&_.ql-toolbar]:border-b [&_.ql-toolbar]:border-gray-300
+      [&_.ql-container]:border-0
+      [&_.ql-container]:min-h-[220px]
+      [&_.ql-editor]:min-h-[220px]
+      [&_.ql-editor]:text-gray-800
+    "
+              />
+
+              <p className="text-xs text-gray-500 mt-2">
+                Este texto se puede usar como descripción ampliada o base para
+                comentarios futuros del mueble.
+              </p>
+            </div>
           </div>
+
           {/* Tabla de módulos disponibles */}
           <div className="mb-6 w-1/2">
             <label
@@ -314,6 +437,7 @@ function CreateFurniture() {
             )}
           </div>
         </div>
+
         {/* Módulos Seleccionados */}
         <div className="mb-6">
           <h2 className="text-2xl font-semibold text-gray-800">

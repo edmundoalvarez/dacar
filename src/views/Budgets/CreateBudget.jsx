@@ -24,8 +24,19 @@ import {
 import { calculateTotalVeneer } from "../../helpers/Budgets/calculateTotalVeneer.js"; //calcular enchapados
 import { calculateTotalMelamine } from "../../helpers/Budgets/calculateTotalMelamine.js";
 import { calculateTotalEdges } from "../../helpers/Budgets/calculateTotalEdges.js";
+import { formatComments } from "../../helpers/Budgets/formatComments.js";
 
 function CreateBudget() {
+  const {
+    register,
+    unregister,
+    handleSubmit,
+    setValue,
+    getValues,
+    watch,
+    formState: { errors },
+  } = useForm();
+
   const { idFurniture } = useParams();
   const [submitLoader, setSubmitLoader] = useState(false);
   const [singleFurniture, setSingleFurniture] = useState(null);
@@ -53,6 +64,8 @@ function CreateBudget() {
   const [subtotalAdjustmentPrice, setSubtotalAdjustmentPrice] = useState(0);
   const [subtotalPlacement, setSubtotalPlacement] = useState(0);
   const [subtotalShipmentPrice, setSubtotalShipmentPrice] = useState(0);
+  const [hasUserEditedComments, setHasUserEditedComments] = useState(false);
+  const commentsValue = watch("comments"); // opcional, útil para detectar cambios
 
   //Editor de texto
   const [commentValue, setCommentValue] = useState("");
@@ -73,35 +86,49 @@ function CreateBudget() {
     "bullet",
   ];
 
-  const navigate = useNavigate();
+  const normalizeHtml = (html) => (typeof html === "string" ? html.trim() : "");
 
-  const {
-    register,
-    unregister,
-    handleSubmit,
-    setValue,
-    getValues,
-    watch,
-    formState: { errors },
-  } = useForm();
+  const buildInitialComments = (parameterHtml, existingCommentHtml = "") => {
+    const param = normalizeHtml(parameterHtml);
+    const existing = normalizeHtml(existingCommentHtml);
+
+    if (!param) return existing; // no hay parámetros -> no tocamos
+    if (existing) return existing; // si ya había comentarios guardados, respetarlos
+
+    // Comentario preescrito (solo parámetros)
+    return param;
+  };
+
+  const navigate = useNavigate();
 
   const getFurnituresToSet = () => {
     getFurnitureById(idFurniture)
       .then((furnituresData) => {
-        // Establecer los datos de muebles
-        setSingleFurniture(furnituresData?.data);
-        // console.log(furnituresData.data);
-        const modules = furnituresData.data.modules_furniture;
-        // Verifica si todos los módulos tienen supplies_module vacío
-        const allModulesEmpty = modules.every(
-          (module) => module.supplies_module.length === 0
-        );
+        const furniture = furnituresData?.data;
+        setSingleFurniture(furniture);
 
+        const modules = furniture?.modules_furniture || [];
+        const allModulesEmpty = modules.every(
+          (module) => (module.supplies_module || []).length === 0
+        );
         setShowSupplies(!allModulesEmpty);
+
+        // 1) De dónde sale el parámetro de categoria:
+        // Si guardás parameter en mueble, usá furniture.parameter
+        // Si viene de la categoría populada, usá furniture.category?.parameter
+        const parameterHtml =
+          furniture?.parameter || furniture?.category?.parameter || "";
+        // 2) Solo precargar si el usuario todavía no tocó comentarios
+        // y si el form todavía no tiene comentarios seteados
+        const currentComments = normalizeHtml(getValues("comments"));
+        if (!hasUserEditedComments && !currentComments) {
+          const initial = buildInitialComments(parameterHtml, currentComments);
+
+          setCommentValue(initial);
+          setValue("comments", initial, { shouldValidate: true });
+        }
       })
-      .catch((error) => {
-        console.error("Este es el error:", error);
-      });
+      .catch((error) => console.error("Este es el error:", error));
   };
 
   // TRAER PLACAS: para select de materiales
@@ -980,7 +1007,7 @@ function CreateBudget() {
               />
               <p className="mb-1">
                 <span className="font-bold">Categoría:</span>{" "}
-                {singleFurniture?.category}
+                {singleFurniture?.category?.name}
               </p>{" "}
               <input
                 name={`category`}
@@ -1853,7 +1880,7 @@ function CreateBudget() {
                       className="border border-emerald-600 rounded-md p-2 w-1/2"
                     />
                     {filteredClients.length > 0 && (
-                      <ul className="absolute border bg-white w-full max-h-40 overflow-y-auto">
+                      <ul className="absolute z-20 border bg-white w-full max-h-40 overflow-y-auto shadow-lg">
                         {filteredClients.map((client) => (
                           <li
                             key={client._id}
@@ -1895,6 +1922,9 @@ function CreateBudget() {
                     theme="snow"
                     value={commentValue}
                     onChange={(value) => {
+                      if (!hasUserEditedComments)
+                        setHasUserEditedComments(true);
+
                       setCommentValue(value);
                       setValue("comments", value, { shouldValidate: true });
                     }}

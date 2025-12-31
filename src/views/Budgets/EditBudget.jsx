@@ -16,6 +16,7 @@ import {
   getClientById,
   createClient,
   editBudget,
+  getFurnitureCategories,
 } from "../../index.js";
 import { useLocation } from "react-router-dom";
 
@@ -25,6 +26,10 @@ function EditBudget() {
   const [submitLoader, setSubmitLoader] = useState(false);
   const [loader, setLoader] = useState(true);
   const [singleFurniture, setSingleFurniture] = useState(null);
+  //categoria mueble
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
   const [totalVeneer, setTotalVeneer] = useState(0);
   const [totalVeneerPolished, setTotalVeneerPolished] = useState(0);
   const [totalVeneerLacqueredOpen, setTotalVeneerLacqueredOpen] = useState(0);
@@ -115,7 +120,9 @@ function EditBudget() {
       .then((budgetData) => {
         // console.log(budgetData.data);
         setBudget(budgetData.data);
-        setSingleFurniture(budgetData.data.furniture[0]);
+        const furn = budgetData.data.furniture?.[0] || null;
+        setSingleFurniture(furn);
+
         setTotalVeneer(Number(budgetData.data.veneer[0].veneerM2));
         setTotalVeneerPolished(
           Number(budgetData.data.veneerPolished[0].veneerPolishedM2)
@@ -138,7 +145,8 @@ function EditBudget() {
         //length
         setValue("length", budgetData.data.length);
         //category
-        setValue("category", budgetData.data.category);
+        setValue("category_id", furn?.category?._id || "");
+        setValue("category_name", furn?.category?.name || "");
 
         //FILO LAQUEADO
         setValue(
@@ -357,6 +365,19 @@ function EditBudget() {
         console.error("Este es el error:", error);
       });
   };
+  const getAllCategoriesToSet = () => {
+    getFurnitureCategories()
+      .then((res) => {
+        const cats = Array.isArray(res) ? res : [];
+        setCategories(cats || []);
+      })
+      .catch((error) => {
+        console.error("Error al traer categorías de muebles:", error);
+      })
+      .finally(() => {
+        setCategoriesLoading(false);
+      });
+  };
 
   useEffect(() => {
     getBudgetToSet();
@@ -365,6 +386,7 @@ function EditBudget() {
     getAllEdgesToSet();
     getAllVeneerToSet();
     getAllClientsToSet();
+    getAllCategoriesToSet();
   }, [budgetId, edgeSelect]);
 
   //Servicios: obetener valores
@@ -760,6 +782,65 @@ function EditBudget() {
     return obj;
   }
 
+  //Helper cambio de categoria
+
+  const heightWatch = watch("height");
+  const lengthWatch = watch("length");
+  const widthWatch = watch("width");
+  const categoryNameWatch = watch("category_name");
+  const categoryIdWatch = watch("category_id");
+
+  function appendCategoryParameter(
+    commentsHtml,
+    categoryId,
+    categoryName,
+    parameterHtml
+  ) {
+    if (!parameterHtml) return commentsHtml || "";
+
+    const markerStart = `<!--cat-params:${categoryId}-->`;
+    const markerEnd = `<!--/cat-params:${categoryId}-->`;
+
+    // si ya fue insertado para esa categoría, no repetir
+    if ((commentsHtml || "").includes(markerStart)) return commentsHtml || "";
+
+    const block = `
+    <p><br/></p>
+    <hr/>
+    <p><strong>Parámetros (${categoryName || "Categoría"}):</strong></p>
+    ${markerStart}
+    ${parameterHtml}
+    ${markerEnd}
+  `;
+
+    const base = commentsHtml || "";
+    return base + block;
+  }
+
+  const handleCategoryChange = (categoryId) => {
+    const cat = categories.find((c) => c._id === categoryId);
+
+    // 1) setear fields del form
+    setValue("category_id", categoryId, { shouldValidate: true });
+    setValue("category_name", cat?.name || "", { shouldValidate: true });
+
+    // 2) actualizar singleFurniture si querés que el "mueble" refleje categoría nueva
+    setSingleFurniture((prev) =>
+      prev ? { ...prev, category: cat || prev.category } : prev
+    );
+
+    // 3) append parámetros al comentario SIN borrar lo anterior
+    const nextComments = appendCategoryParameter(
+      commentsValue,
+      cat?._id,
+      cat?.name,
+      cat?.parameter
+    );
+
+    setCommentsValue(nextComments);
+    setValue("comments", nextComments, { shouldValidate: true });
+  };
+
   //FORMULARIO EDITAR PRESUPUESTO
   const onSubmit = async (data, event) => {
     event.preventDefault();
@@ -1052,57 +1133,60 @@ function EditBudget() {
             <h2 className="text-2xl font-semibold mb-2">Datos del Mueble</h2>
             <div className="flex gap-8 bg-emerald-600 text-white w-fit pt-1 pb-2 px-4 my-4 rounded">
               <div className="flex flex-col">
-                {" "}
                 <p className="mb-1">
-                  <span className="font-bold">Alto:</span>{" "}
-                  {singleFurniture?.height}
+                  <span className="font-bold">Alto:</span> {heightWatch}
                 </p>
                 <input
-                  name={`height`}
                   type="text"
-                  className="border border-gray-300 rounded-md p-1"
-                  value={singleFurniture?.height}
-                  {...register(`height`)}
+                  className="border border-gray-300 rounded-md p-1 text-black"
+                  {...register("height")}
                 />
               </div>
+
               <div className="flex flex-col">
                 <p className="mb-1">
-                  <span className="font-bold">Largo:</span>{" "}
-                  {singleFurniture?.length}
+                  <span className="font-bold">Largo:</span>
                 </p>
                 <input
-                  name={`length`}
                   type="text"
-                  className="border border-gray-300 rounded-md p-1"
-                  value={singleFurniture?.length}
-                  {...register(`length`)}
+                  className="border border-gray-300 rounded-md p-1 text-black"
+                  {...register("length")}
                 />
               </div>
+
               <div className="flex flex-col">
                 <p className="mb-1">
-                  <span className="font-bold">Profundidad:</span>{" "}
-                  {singleFurniture?.width}
+                  <span className="font-bold">Profundidad:</span>
                 </p>
                 <input
-                  name={`width`}
                   type="text"
-                  className="border border-gray-300 rounded-md p-1"
-                  value={singleFurniture?.width}
-                  {...register(`width`)}
+                  className="border border-gray-300 rounded-md p-1 text-black"
+                  {...register("width")}
                 />
               </div>
+
               <div className="flex flex-col">
                 <p className="mb-1">
                   <span className="font-bold">Categoría:</span>{" "}
-                  {singleFurniture?.category}
-                </p>{" "}
-                <input
-                  name={`category`}
-                  type="text"
-                  className="border border-gray-300 rounded-md p-1"
-                  value={singleFurniture?.category}
-                  {...register(`category`)}
-                />
+                </p>
+                <select
+                  className="border border-gray-300 rounded-md p-1 text-black"
+                  value={categoryIdWatch || ""}
+                  disabled={categoriesLoading}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                >
+                  <option value="">
+                    {categoriesLoading ? "Cargando..." : "Elegir categoría"}
+                  </option>
+                  {categories.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+
+                <input type="hidden" {...register("category_id")} />
+                <input type="hidden" {...register("category_name")} />
               </div>
             </div>
             <div className="flex gap-16 w-full">

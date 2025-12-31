@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Grid } from "react-loader-spinner";
 import {
@@ -16,6 +16,8 @@ function EditFurnitureMultipleModules() {
   const [selectedModule, setSelectedModule] = useState(null);
   const [furnitureToEdit, setFurnitureToEdit] = useState(null);
   const [moduleToEdit, setModuleToEdit] = useState(null);
+  const editFurnitureRef = useRef(null);
+  const editModuleRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   //eliminar modulo
   const [openModalToDeleteModule, setOpenModalToDeleteModule] = useState(false);
@@ -61,12 +63,32 @@ function EditFurnitureMultipleModules() {
   const handleEditModule = (singleFurniture, module) => {
     setFurnitureToEdit(singleFurniture);
     setModuleToEdit(module);
+
+    // Esperamos a que React renderice el editor
+    setTimeout(() => {
+      if (editModuleRef.current) {
+        window.scrollTo({
+          top: editModuleRef.current.offsetTop - 50,
+          behavior: "smooth",
+        });
+      }
+    }, 100);
   };
 
   // Handle editing a furniture
   const handleEditFurniture = (singleFurniture) => {
     setModuleToEdit(null);
     setFurnitureToEdit(singleFurniture);
+
+    // Hacer scroll suave luego de que React renderice el formulario
+    setTimeout(() => {
+      if (editFurnitureRef.current) {
+        window.scrollTo({
+          top: editFurnitureRef.current.offsetTop - 50, // desplazamiento opcional
+          behavior: "smooth",
+        });
+      }
+    }, 100);
   };
 
   //Cuando el modulo es modificado y se desrenderice
@@ -196,7 +218,7 @@ function EditFurnitureMultipleModules() {
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {singleFurniture.category}
+                    {singleFurniture.category?.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <button
@@ -353,20 +375,24 @@ function EditFurnitureMultipleModules() {
         </div>
       )}
       {moduleToEdit && (
-        <EditFurnitureSingleModuleComponent
-          idFurniture={furnitureToEdit}
-          idModule={moduleToEdit}
-          onModified={handleModification}
-          notModified={closeComponentEdit}
-        />
+        <div ref={editModuleRef}>
+          <EditFurnitureSingleModuleComponent
+            idFurniture={furnitureToEdit}
+            idModule={moduleToEdit}
+            onModified={handleModification}
+            notModified={closeComponentEdit}
+          />
+        </div>
       )}
 
       {furnitureToEdit && !moduleToEdit && (
-        <EditFurnitureComponent
-          idFurniture={furnitureToEdit}
-          onModified={handleModification}
-          notModified={closeComponentEdit}
-        />
+        <div ref={editFurnitureRef}>
+          <EditFurnitureComponent
+            idFurniture={furnitureToEdit}
+            onModified={handleModification}
+            notModified={closeComponentEdit}
+          />
+        </div>
       )}
     </div>
   );

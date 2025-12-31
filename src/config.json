@@ -6,6 +6,7 @@
   "apiSuppliesCategory": "http://localhost:3000/supplies-categories",
   "apiServices": "http://localhost:3000/services",
   "apiFurnitures": "http://localhost:3000/furnitures",
+  "apiFurnitureCategories": "http://localhost:3000/furniture-categories",
   "apiModules": "http://localhost:3000/modules",
   "apiPieces": "http://localhost:3000/pieces",
   "apiMainTable": "http://localhost:3000/main-table",

@@ -15,6 +15,7 @@ import {
   deleteFurniture,
   ViewModulesFurniture,
   getFurnitureHistory,
+  getFurnitureCategories,
 } from "../../index.js";
 
 function Furniture() {
@@ -27,6 +28,9 @@ function Furniture() {
   const [loader, setLoader] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
+
+  //categorias muebles
+  const [categoriesMap, setCategoriesMap] = useState({});
 
   // Historial de edicion
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
@@ -82,6 +86,31 @@ function Furniture() {
   useEffect(() => {
     getAllFurnituresToSet(searchTerm, currentPage, { showMainLoader: true });
   }, [currentPage, getAllFurnituresToSet]);
+
+  // Cargar categorías de muebles una sola vez
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const controller = new AbortController();
+        const res = await getFurnitureCategories(controller.signal);
+
+        const cats = Array.isArray(res) ? res : [];
+
+        const map = {};
+        cats.forEach((cat) => {
+          map[cat._id] = cat.name;
+        });
+
+        setCategoriesMap(map);
+
+        return () => controller.abort();
+      } catch (err) {
+        console.error("Error cargando categorías de muebles:", err);
+      }
+    }
+
+    fetchCategories();
+  }, []);
 
   // Manejar la búsqueda de muebles
   // Debounce estable (se crea 1 sola vez)
@@ -509,8 +538,11 @@ function Furniture() {
                     </td>
 
                     <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
-                      {furniture.category}
+                      {categoriesMap[furniture.category]
+                        ? categoriesMap[furniture.category]
+                        : "(Categoría eliminada)"}
                     </td>
+
                     <td className="px-2 py-4 text-center text-sm whitespace-nowrap max-w-[140px] text-gray-500">
                       {Array.isArray(furniture.modules_furniture) &&
                       furniture.modules_furniture.length > 0 ? (

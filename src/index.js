@@ -20,6 +20,14 @@ export { getPiecesByFurnitureId } from "./services/Furniture/getPiecesByFurnitur
 export { deleteFurniture } from "./services/Furniture/deleteFurniture.js";
 export { getFurnitureHistory } from "./services/Furniture/getFurnitureHistory.js";
 
+//FURNITURE-CATEGORIES
+export { getFurnitureCategories } from "./services/FurnitureCategories/getFurnitureCategories.js";
+export { getFurnitureCategoryById } from "./services/FurnitureCategories/getFurnitureCategoryById.js";
+export { getFurnitureCategoriesForEdit } from "./services/FurnitureCategories/getFurnitureCategoriesForEdit.js";
+export { createFurnitureCategory } from "./services/FurnitureCategories/createFurnitureCategory.js";
+export { updateFurnitureCategory } from "./services/FurnitureCategories/updateFurnitureCategory.js";
+export { softDeleteFurnitureCategory } from "./services/FurnitureCategories/softDeleteFurnitureCategory.js";
+
 //MODULES
 export { createModule } from "./services/ModulesForFurniture/createModule.js";
 export { getAllModules } from "./services/ModulesForFurniture/getAllModules.js";
@@ -121,6 +129,11 @@ export { Login } from "./views/Login/Login.jsx";
 export { Furniture } from "./views/Furniture/Furniture";
 export { CreateFurniture } from "./views/Furniture/CreateFurniture";
 export { EditFurnitureMultipleModules } from "./views/Furniture/EditFurnitureMultipleModules";
+
+//FURNITURE-CATEGORIES
+export { FurnitureCategories } from "./views/FurnitureCategories/FurnitureCategories";
+export { CreateFurnitureCategory } from "./views/FurnitureCategories/CreateFurnitureCategory";
+export { EditFurnitureCategory } from "./views/FurnitureCategories/EditFurnitureCategory";
 
 //MODULES
 export { Modules } from "./views/ModulesForFurniture/Modules";

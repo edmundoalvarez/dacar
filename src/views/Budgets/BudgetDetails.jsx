@@ -13,6 +13,9 @@ function BudgetDetails() {
   const [budget, setBudget] = useState({});
   const [loader, setLoader] = useState(true);
   const { idBudget } = useParams();
+  const furn = budget?.furniture?.[0];
+  const categoryName = furn?.category?.name || "-";
+  const parameterHtml = furn?.parameter || furn?.category?.parameter || "";
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -26,6 +29,7 @@ function BudgetDetails() {
     getBudgetById(idBudget)
       .then((budgetData) => {
         setBudget(budgetData.data);
+        console.log(budgetData.data);
         setLoader(false);
       })
       .catch((error) => {
@@ -181,7 +185,7 @@ function BudgetDetails() {
                     className=" text-left border-b-2 border-gray-700"
                   >
                     <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700 ">
-                      {budget.category}
+                      {categoryName}
                     </td>
                     <td className="px-2 py-4 text-left text-sm align-top text-gray-700 border-r-2 border-r-black border-l-2 border-l-black">
                       <div className="w-full max-w-[700px] text-left">
@@ -211,11 +215,13 @@ function BudgetDetails() {
                       DETALLES DE MÓDULOS
                     </td>
                     <td colSpan={3} className="px-6 py-4">
-                      {furn.category ||
+                      {categoryName ||
                       (furn.width && furn.height && furn.length) ? (
                         <p className="mb-0">
                           <span className="font-bold">
-                            {furn.category ? furn.category.toUpperCase() : ""}
+                            {furn?.category?.name
+                              ? furn.category.name.toUpperCase()
+                              : ""}
                           </span>{" "}
                           {furn.width && furn.height && furn.length ? (
                             <>

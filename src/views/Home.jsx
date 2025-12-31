@@ -69,6 +69,17 @@ function Home() {
             <p className="m-0 leading-loose">Muebles</p>
           </Link>
           <Link
+            to={`/ver-categorias-muebles`}
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[180px] text-center flex flex-row justify-center gap-4"
+          >
+            <img
+              src="./icon_furnitures.svg" // o el icono que quieras crear, por ej. icon_furniture_categories.svg
+              alt="Icono categorías de muebles"
+              className="w-[24px]"
+            />
+            <p className="m-0 leading-loose">Cat. Muebles</p>
+          </Link>
+          <Link
             to={`/ver-insumos`}
             className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
           >
