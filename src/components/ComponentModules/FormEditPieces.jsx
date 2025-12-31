@@ -259,6 +259,29 @@ function FormEditPieces({
             {...register(`widthPieceHidden${index}`)}
             defaultValue={piece?.width.toString() || ""}
           />
+          <div className="flex items-center gap-2 mt-2">
+            <input
+              type="checkbox"
+              id={`lockWidth${index}`}
+              defaultChecked={piece?.lockWidth || false}
+              {...register(`lockWidth${index}`)}
+            />
+            <label
+              htmlFor={`lockWidth${index}`}
+              className="text-sm text-gray-600"
+            >
+              Bloquear{" "}
+              {widthLabel ||
+                (piece.orientation === "cross-vertical"
+                  ? "Largo"
+                  : piece.orientation === "cross-horizontal"
+                  ? "Profundidad"
+                  : piece.orientation === "side"
+                  ? "Profundidad"
+                  : "")}{" "}
+              (no se modificará automáticamente)
+            </label>
+          </div>
         </div>
         {/* length */}
 
@@ -300,6 +323,29 @@ function FormEditPieces({
             {...register(`lengthPieceHidden${index}`)}
             defaultValue={piece?.length.toString() || ""}
           />
+          <div className="flex items-center gap-2 mt-2">
+            <input
+              type="checkbox"
+              id={`lockLength${index}`}
+              defaultChecked={piece?.lockLength || false}
+              {...register(`lockLength${index}`)}
+            />
+            <label
+              htmlFor={`lockLength${index}`}
+              className="text-sm text-gray-600"
+            >
+              Bloquear{" "}
+              {lengthLabel ||
+                (piece.orientation === "cross-vertical"
+                  ? "Alto"
+                  : piece.orientation === "cross-horizontal"
+                  ? "Largo"
+                  : piece.orientation === "side"
+                  ? "Alto"
+                  : "")}{" "}
+              (no se modificará automáticamente)
+            </label>
+          </div>
         </div>
       </div>
 

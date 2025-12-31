@@ -184,6 +184,8 @@ function Pieces() {
                 lacqueredEdge: lacqueredEdge,
                 polishedEdge: polishedEdge,
                 loose_piece: data[`loose_piece1`],
+                lockLength: data[`lockLength1`] || false,
+                lockWidth: data[`lockWidth1`] || false,
                 moduleId, // Asigna el ID del módulo a cada pieza
             };
             console.log(pieceData);

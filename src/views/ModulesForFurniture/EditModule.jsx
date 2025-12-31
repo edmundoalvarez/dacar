@@ -95,6 +95,8 @@ function EditModule() {
           if (piece.polishedEdge) {
             setValue(`edgeType${index}`, "polished");
           }
+          setValue(`lockLength${index}`, piece.lockLength || false);
+          setValue(`lockWidth${index}`, piece.lockWidth || false);
         });
       })
       .catch((error) => {
@@ -272,6 +274,8 @@ function EditModule() {
           loose_piece: data[`loose_piece${index}`]
             ? Number(data[`loose_piece${index}`])
             : undefined,
+          lockLength: data[`lockLength${index}`] || false,
+          lockWidth: data[`lockWidth${index}`] || false,
           module_id: idModule,
         };
       });
@@ -319,6 +323,8 @@ function EditModule() {
 
     currentModule.pieces.map((piece, index) => {
       const orientation = getValues(`orientation${index}`);
+      const lockLength = getValues(`lockLength${index}`) || false;
+      const lockWidth = getValues(`lockWidth${index}`) || false;
 
       const formattedModuleNewHeight = moduleNewHeight ?? moduleOriginalHeight;
       const formattedModuleNewLength = moduleNewLength ?? moduleOriginalLength;
@@ -334,85 +340,97 @@ function EditModule() {
 
       /* transversal vertical */
       if (orientation === "cross-vertical") {
-        if (formattedModuleNewHeight >= moduleOriginalHeight) {
-          pieceLength =
-            pieceLength +
-            (formattedModuleNewHeight - moduleOriginalHeight) *
-              (pieceLength / moduleOriginalHeight);
-        }
-        if (formattedModuleNewHeight < moduleOriginalHeight) {
-          pieceLength =
-            pieceLength -
-            (moduleOriginalHeight - formattedModuleNewHeight) *
-              (pieceLength / moduleOriginalHeight);
+        if (!lockLength) {
+          if (formattedModuleNewHeight >= moduleOriginalHeight) {
+            pieceLength =
+              pieceLength +
+              (formattedModuleNewHeight - moduleOriginalHeight) *
+                (pieceLength / moduleOriginalHeight);
+          }
+          if (formattedModuleNewHeight < moduleOriginalHeight) {
+            pieceLength =
+              pieceLength -
+              (moduleOriginalHeight - formattedModuleNewHeight) *
+                (pieceLength / moduleOriginalHeight);
+          }
         }
 
-        if (formattedModuleNewLength >= moduleOriginalLength) {
-          pieceWidth =
-            pieceWidth +
-            (formattedModuleNewLength - moduleOriginalLength) *
-              (pieceWidth / moduleOriginalLength);
-        }
-        if (formattedModuleNewLength < moduleOriginalLength) {
-          pieceWidth =
-            pieceWidth -
-            (moduleOriginalLength - formattedModuleNewLength) *
-              (pieceWidth / moduleOriginalLength);
+        if (!lockWidth) {
+          if (formattedModuleNewLength >= moduleOriginalLength) {
+            pieceWidth =
+              pieceWidth +
+              (formattedModuleNewLength - moduleOriginalLength) *
+                (pieceWidth / moduleOriginalLength);
+          }
+          if (formattedModuleNewLength < moduleOriginalLength) {
+            pieceWidth =
+              pieceWidth -
+              (moduleOriginalLength - formattedModuleNewLength) *
+                (pieceWidth / moduleOriginalLength);
+          }
         }
       }
       /* tranversal horizontal */
       if (orientation === "cross-horizontal") {
-        if (formattedModuleNewLength >= moduleOriginalLength) {
-          pieceLength =
-            pieceLength +
-            (formattedModuleNewLength - moduleOriginalLength) *
-              (pieceLength / moduleOriginalLength);
+        if (!lockLength) {
+          if (formattedModuleNewLength >= moduleOriginalLength) {
+            pieceLength =
+              pieceLength +
+              (formattedModuleNewLength - moduleOriginalLength) *
+                (pieceLength / moduleOriginalLength);
+          }
+          if (formattedModuleNewLength < moduleOriginalLength) {
+            pieceLength =
+              pieceLength -
+              (moduleOriginalLength - formattedModuleNewLength) *
+                (pieceLength / moduleOriginalLength);
+          }
         }
-        if (formattedModuleNewLength < moduleOriginalLength) {
-          pieceLength =
-            pieceLength -
-            (moduleOriginalLength - formattedModuleNewLength) *
-              (pieceLength / moduleOriginalLength);
-        }
-        if (formattedModuleNewWidth >= moduleOriginalWidth) {
-          pieceWidth =
-            pieceWidth +
-            (formattedModuleNewWidth - moduleOriginalWidth) *
-              (pieceWidth / moduleOriginalWidth);
-        }
-        if (formattedModuleNewWidth < moduleOriginalWidth) {
-          pieceWidth =
-            pieceWidth -
-            (moduleOriginalWidth - formattedModuleNewWidth) *
-              (pieceWidth / moduleOriginalWidth);
+        if (!lockWidth) {
+          if (formattedModuleNewWidth >= moduleOriginalWidth) {
+            pieceWidth =
+              pieceWidth +
+              (formattedModuleNewWidth - moduleOriginalWidth) *
+                (pieceWidth / moduleOriginalWidth);
+          }
+          if (formattedModuleNewWidth < moduleOriginalWidth) {
+            pieceWidth =
+              pieceWidth -
+              (moduleOriginalWidth - formattedModuleNewWidth) *
+                (pieceWidth / moduleOriginalWidth);
+          }
         }
       }
 
       /* lateral */
       if (orientation === "side") {
-        if (formattedModuleNewHeight >= moduleOriginalHeight) {
-          pieceLength =
-            pieceLength +
-            (formattedModuleNewHeight - moduleOriginalHeight) *
-              (pieceLength / moduleOriginalHeight);
+        if (!lockLength) {
+          if (formattedModuleNewHeight >= moduleOriginalHeight) {
+            pieceLength =
+              pieceLength +
+              (formattedModuleNewHeight - moduleOriginalHeight) *
+                (pieceLength / moduleOriginalHeight);
+          }
+          if (formattedModuleNewHeight < moduleOriginalHeight) {
+            pieceLength =
+              pieceLength -
+              (moduleOriginalHeight - formattedModuleNewHeight) *
+                (pieceLength / moduleOriginalHeight);
+          }
         }
-        if (formattedModuleNewHeight < moduleOriginalHeight) {
-          pieceLength =
-            pieceLength -
-            (moduleOriginalHeight - formattedModuleNewHeight) *
-              (pieceLength / moduleOriginalHeight);
-        }
-        if (formattedModuleNewWidth >= moduleOriginalWidth) {
-          pieceWidth =
-            pieceWidth +
-            (formattedModuleNewWidth - moduleOriginalWidth) *
-              (pieceWidth / moduleOriginalWidth);
-        }
-        if (formattedModuleNewWidth < moduleOriginalWidth) {
-          pieceWidth =
-            pieceWidth -
-            (moduleOriginalWidth - formattedModuleNewWidth) *
-              (pieceWidth / moduleOriginalWidth);
+        if (!lockWidth) {
+          if (formattedModuleNewWidth >= moduleOriginalWidth) {
+            pieceWidth =
+              pieceWidth +
+              (formattedModuleNewWidth - moduleOriginalWidth) *
+                (pieceWidth / moduleOriginalWidth);
+          }
+          if (formattedModuleNewWidth < moduleOriginalWidth) {
+            pieceWidth =
+              pieceWidth -
+              (moduleOriginalWidth - formattedModuleNewWidth) *
+                (pieceWidth / moduleOriginalWidth);
+          }
         }
       }
       const formatNumber = (num) => {
@@ -429,8 +447,15 @@ function EditModule() {
 
         return rounded; // Si no es redondo, devolver con 2 decimales
       };
-      setValue(`lengthPiece${index}`, formatNumber(pieceLength));
-      setValue(`widthPiece${index}`, formatNumber(pieceWidth));
+      // Solo actualizar si no está bloqueado
+      if (!lockLength) {
+        setValue(`lengthPiece${index}`, formatNumber(pieceLength));
+        setValue(`lengthPieceHidden${index}`, pieceLength);
+      }
+      if (!lockWidth) {
+        setValue(`widthPiece${index}`, formatNumber(pieceWidth));
+        setValue(`widthPieceHidden${index}`, pieceWidth);
+      }
     });
   };
 

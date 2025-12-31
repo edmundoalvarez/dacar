@@ -199,6 +199,19 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
                                 {errors[`widthPiece${index}`].message}
                             </span>
                         )}
+                        <div className="flex items-center gap-2 mt-2">
+                            <input
+                                type="checkbox"
+                                id={`lockWidth${index}`}
+                                {...register(`lockWidth${index}`)}
+                            />
+                            <label
+                                htmlFor={`lockWidth${index}`}
+                                className="text-sm text-gray-600"
+                            >
+                                Bloquear {widthLabel} (no se modificará automáticamente)
+                            </label>
+                        </div>
                     </div>
                     {/* Length de la pieza */}
                     <div className="flex flex-col w-1/2">
@@ -222,6 +235,19 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
                                 {errors[`lengthPiece${index}`].message}
                             </span>
                         )}
+                        <div className="flex items-center gap-2 mt-2">
+                            <input
+                                type="checkbox"
+                                id={`lockLength${index}`}
+                                {...register(`lockLength${index}`)}
+                            />
+                            <label
+                                htmlFor={`lockLength${index}`}
+                                className="text-sm text-gray-600"
+                            >
+                                Bloquear {lengthLabel} (no se modificará automáticamente)
+                            </label>
+                        </div>
                     </div>
                 </div>
             )}

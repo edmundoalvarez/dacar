@@ -180,6 +180,8 @@ function CreateModule() {
           lacqueredEdge: lacqueredEdge,
           polishedEdge: polishedEdge,
           loose_piece: data[`loose_piece${i}`],
+          lockLength: data[`lockLength${i}`] || false,
+          lockWidth: data[`lockWidth${i}`] || false,
           moduleId, // Asigna el ID del módulo a cada pieza
         };
         await createPieces(pieceData);
