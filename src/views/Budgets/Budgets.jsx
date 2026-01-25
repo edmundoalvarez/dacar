@@ -2,11 +2,16 @@ import { Link } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import debounce from "lodash.debounce";
 import { Grid, Oval } from "react-loader-spinner";
+import ExcelJS from "exceljs";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import {
   getAllBudgets,
   deleteBudget,
   getBudgetHistory,
   confirmBudget,
+  getAllEdgesSupplies,
+  getAllVeneerSupplies,
 } from "../../index.js";
 
 function Budgets() {
@@ -28,6 +33,9 @@ function Budgets() {
   // AbortController de la request en curso
   const controllerRef = useRef(null);
   const reqSeqRef = useRef(0);
+  const edgesMapRef = useRef({});
+  const veneersMapRef = useRef({});
+  const catalogsLoadedRef = useRef(false);
 
   // --------- CONFIRMAR PRESUPUESTOS ----------
   const [openModalToConfirm, setOpenModalToConfirm] = useState(false);
@@ -120,6 +128,324 @@ function Budgets() {
     if (currentPage < totalPages) {
       getAllBudgetsToSet(searchTerm, currentPage + 1, { showMainLoader: true });
       setCurrentPage((p) => p + 1);
+    }
+  };
+
+  const normalizeBudgetSection = (section) => {
+    if (Array.isArray(section)) return section[0] || {};
+    if (section && typeof section === "object") return section;
+    return {};
+  };
+
+  const ensureMaterialsCatalogs = async () => {
+    if (catalogsLoadedRef.current) {
+      return {
+        edgesMap: edgesMapRef.current,
+        veneersMap: veneersMapRef.current,
+      };
+    }
+
+    try {
+      const [edgesRes, veneersRes] = await Promise.all([
+        getAllEdgesSupplies(),
+        getAllVeneerSupplies(),
+      ]);
+
+      const edgesMap = (edgesRes?.data || []).reduce((acc, edge) => {
+        acc[edge._id] = edge.name;
+        return acc;
+      }, {});
+      const veneersMap = (veneersRes?.data || []).reduce((acc, veneer) => {
+        acc[veneer._id] = veneer.name;
+        return acc;
+      }, {});
+
+      edgesMapRef.current = edgesMap;
+      veneersMapRef.current = veneersMap;
+      catalogsLoadedRef.current = true;
+
+      return { edgesMap, veneersMap };
+    } catch (error) {
+      console.error("Error cargando catálogos de materiales:", error);
+      return {
+        edgesMap: edgesMapRef.current,
+        veneersMap: veneersMapRef.current,
+      };
+    }
+  };
+
+  const generateMaterialOrderExcel = async (budget, catalogs) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Lista de materiales");
+
+    const client = budget?.client?.[0];
+    const clientName = client
+      ? `${client.name || ""} ${client.lastname || ""}`.trim()
+      : "—";
+    const furnitureName =
+      budget?.furniture_name ||
+      budget?.furniture?.[0]?.name ||
+      "Mueble";
+
+    const address = client?.address || "";
+    const orderNumber = budget?.budget_number
+      ? String(budget.budget_number).padStart(6, "0")
+      : "";
+    const requestDate = budget?.date
+      ? new Date(budget.date).toLocaleDateString("es-AR")
+      : "";
+
+    worksheet.properties.defaultRowHeight = 18;
+    worksheet.views = [{ showGridLines: false }];
+
+    // Ajuste de anchos para que entren labels largos (ej: "UBICACIÓN DE OBRA", "FECHA DE SOLICITUD")
+    worksheet.columns = [
+      { width: 2.5 }, // A (margen)
+      { width: 22 }, // B (labels)
+      { width: 34 }, // C
+      { width: 12 }, // D
+      { width: 24 }, // E (labels largos)
+      { width: 18 }, // F (valores)
+    ];
+
+    const setBorder = (cell) => {
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+    };
+
+    // ExcelJS requiere color en ARGB (8 dígitos)
+    const fillGray = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFD9D9D9" },
+    };
+
+    worksheet.mergeCells("B2", "D3");
+    const titleCell = worksheet.getCell("B2");
+    titleCell.value = "ORDEN DE PEDIDO MATERIAL";
+    titleCell.font = { bold: true, size: 12 };
+    titleCell.alignment = { vertical: "middle" };
+    setBorder(titleCell);
+    setBorder(worksheet.getCell("D3"));
+
+    worksheet.mergeCells("E2", "F3");
+    const orderNumberCell = worksheet.getCell("E2");
+    orderNumberCell.value = budget?.budget_number || "";
+    orderNumberCell.font = { bold: true, size: 16, color: { argb: "1F4E79" } };
+    orderNumberCell.alignment = {
+      vertical: "middle",
+      horizontal: "right",
+    };
+    setBorder(orderNumberCell);
+    setBorder(worksheet.getCell("F3"));
+
+    worksheet.getRow(4).height = 4;
+
+    worksheet.getCell("B5").value = "CLIENTE:";
+    worksheet.getCell("B5").fill = fillGray;
+    worksheet.getCell("B5").font = { bold: true };
+    worksheet.getCell("B5").alignment = { vertical: "middle", wrapText: true };
+    worksheet.mergeCells("C5", "F5");
+    worksheet.getCell("C5").value = clientName;
+    worksheet.getCell("C5").alignment = { vertical: "middle" };
+    ["B5", "C5", "F5"].forEach((cell) => setBorder(worksheet.getCell(cell)));
+
+    worksheet.getCell("B6").value = "DIRECCIÓN:";
+    worksheet.getCell("B6").fill = fillGray;
+    worksheet.getCell("B6").font = { bold: true };
+    worksheet.getCell("B6").alignment = { vertical: "middle", wrapText: true };
+    worksheet.mergeCells("C6", "F6");
+    worksheet.getCell("C6").value = address;
+    worksheet.getCell("C6").alignment = { vertical: "middle" };
+    ["B6", "C6", "F6"].forEach((cell) => setBorder(worksheet.getCell(cell)));
+
+    worksheet.getRow(7).height = 6;
+
+    worksheet.getRow(8).height = 20;
+    worksheet.getCell("B8").value = "OBRA:";
+    worksheet.getCell("B8").fill = fillGray;
+    worksheet.getCell("B8").font = { bold: true };
+    worksheet.getCell("B8").alignment = { vertical: "middle", wrapText: true };
+    worksheet.mergeCells("C8", "D8");
+    worksheet.getCell("C8").value = furnitureName;
+    worksheet.getCell("C8").alignment = { vertical: "middle" };
+    worksheet.getCell("E8").value = "NUMERO DE ORDEN:";
+    worksheet.getCell("E8").fill = fillGray;
+    worksheet.getCell("E8").font = { bold: true };
+    worksheet.getCell("E8").alignment = { vertical: "middle", wrapText: true };
+    worksheet.getCell("F8").value = orderNumber;
+    worksheet.getCell("F8").alignment = { vertical: "middle", horizontal: "right" };
+    ["B8", "C8", "D8", "E8", "F8"].forEach((cell) =>
+      setBorder(worksheet.getCell(cell))
+    );
+
+    worksheet.getCell("B9").value = "UBICACIÓN DE OBRA";
+    worksheet.getCell("B9").fill = fillGray;
+    worksheet.getCell("B9").font = { bold: true };
+    worksheet.getCell("B9").alignment = { vertical: "middle", wrapText: true };
+    worksheet.mergeCells("C9", "D9");
+    worksheet.getCell("E9").value = "FECHA DE SOLICITUD:";
+    worksheet.getCell("E9").fill = fillGray;
+    worksheet.getCell("E9").font = { bold: true };
+    worksheet.getCell("E9").alignment = { vertical: "middle", wrapText: true };
+    worksheet.getCell("F9").value = requestDate;
+    worksheet.getCell("F9").alignment = { vertical: "middle", horizontal: "right" };
+    ["B9", "C9", "D9", "E9", "F9"].forEach((cell) =>
+      setBorder(worksheet.getCell(cell))
+    );
+
+    // Para que "FECHA ESTIMADA DE LLEGADA DE MATERIAL:" quede en 2 líneas como el ejemplo
+    worksheet.getRow(10).height = 34;
+    worksheet.getCell("B10").value = "ORDEN SOLICITADA POR:";
+    worksheet.getCell("B10").fill = fillGray;
+    worksheet.getCell("B10").font = { bold: true };
+    worksheet.getCell("B10").alignment = { vertical: "middle", wrapText: true };
+    worksheet.mergeCells("C10", "D10");
+    worksheet.getCell("C10").value = budget?.username || "";
+    worksheet.getCell("C10").alignment = { vertical: "middle" };
+    worksheet.getCell("E10").value = "FECHA ESTIMADA DE LLEGADA DE MATERIAL:";
+    worksheet.getCell("E10").fill = fillGray;
+    worksheet.getCell("E10").font = { bold: true };
+    worksheet.getCell("E10").alignment = { vertical: "middle", wrapText: true };
+    worksheet.getCell("F10").value = budget?.deliver_date || "";
+    worksheet.getCell("F10").alignment = { vertical: "middle" };
+    ["B10", "C10", "D10", "E10", "F10"].forEach((cell) =>
+      setBorder(worksheet.getCell(cell))
+    );
+
+    worksheet.getRow(11).height = 28;
+    worksheet.getCell("B11").value = "RECIBIDO Y CONTROLADO POR:";
+    worksheet.getCell("B11").fill = fillGray;
+    worksheet.getCell("B11").font = { bold: true };
+    worksheet.getCell("B11").alignment = { vertical: "middle", wrapText: true };
+    worksheet.mergeCells("C11", "D11");
+    worksheet.getCell("E11").value = "FECHA DE CONTROL:";
+    worksheet.getCell("E11").fill = fillGray;
+    worksheet.getCell("E11").font = { bold: true };
+    worksheet.getCell("E11").alignment = { vertical: "middle", wrapText: true };
+    ["B11", "C11", "D11", "E11", "F11"].forEach((cell) =>
+      setBorder(worksheet.getCell(cell))
+    );
+
+    worksheet.getRow(12).height = 6;
+
+    worksheet.mergeCells("B13", "C13");
+    worksheet.mergeCells("D13", "E13");
+    worksheet.getCell("B13").value = "MATERIAL";
+    worksheet.getCell("D13").value = "INFORMACION DEL MATERIAL";
+    worksheet.getCell("F13").value = "UNIDADES";
+    ["B13", "D13", "F13"].forEach((cell) => {
+      const current = worksheet.getCell(cell);
+      current.font = { bold: true };
+      current.alignment = { horizontal: "center" };
+      current.fill = fillGray;
+      setBorder(current);
+    });
+    setBorder(worksheet.getCell("C13"));
+    setBorder(worksheet.getCell("E13"));
+
+    const addItem = (tipo, descripcion, unidades) => {
+      const rowIndex = worksheet.lastRow.number + 1;
+      worksheet.mergeCells(`B${rowIndex}`, `C${rowIndex}`);
+      worksheet.mergeCells(`D${rowIndex}`, `E${rowIndex}`);
+      worksheet.getCell(`B${rowIndex}`).value = tipo;
+      worksheet.getCell(`D${rowIndex}`).value = descripcion || "—";
+      worksheet.getCell(`F${rowIndex}`).value = unidades ?? "";
+      ["B", "C", "D", "E", "F"].forEach((col) =>
+        setBorder(worksheet.getCell(`${col}${rowIndex}`))
+      );
+    };
+
+    const materials = Array.isArray(budget?.materials) ? budget.materials : [];
+    materials.forEach((material) => {
+      addItem("Placas", material.table || "—", material.qty ?? "");
+    });
+
+    const supplies = Array.isArray(budget?.supplies) ? budget.supplies : [];
+    supplies.forEach((supplie) => {
+      const lengthValue =
+        supplie.length !== undefined && supplie.length !== null
+          ? `${supplie.length}m`
+          : "";
+      const units =
+        lengthValue ||
+        (supplie.qty !== undefined && supplie.qty !== null
+          ? supplie.qty
+          : "");
+      addItem("Insumo", supplie.name || "—", units);
+    });
+
+    const edgeLacquered = normalizeBudgetSection(budget?.edge_lacquered);
+    const edgePolished = normalizeBudgetSection(budget?.edge_polished);
+    const edgeRegular = normalizeBudgetSection(budget?.edge_no_lacquered);
+
+    if (edgeLacquered?.edgeLaqueredM2) {
+      addItem(
+        "Filo",
+        "Filo laqueado",
+        `${edgeLacquered.edgeLaqueredM2}m2`
+      );
+    }
+
+    if (edgePolished?.edgePolishedM2) {
+      addItem(
+        "Filo",
+        "Filo pulido",
+        `${edgePolished.edgePolishedM2}m2`
+      );
+    }
+
+    if (edgeRegular?.edgeM2) {
+      const edgeName =
+        catalogs?.edgesMap?.[edgeRegular.edgeSelect] ||
+        edgeRegular.edgeSelect ||
+        "Filo";
+      addItem("Filo", edgeName, `${edgeRegular.edgeM2}m`);
+    }
+
+    const chapa = normalizeBudgetSection(budget?.chapa);
+    const veneer = normalizeBudgetSection(budget?.veneer);
+    if (chapa?.veneerSelect || veneer?.veneerM2) {
+      const veneerName =
+        catalogs?.veneersMap?.[chapa.veneerSelect] ||
+        chapa.veneerSelect ||
+        "Chapa";
+      const veneerMeasure = veneer?.veneerM2 ? `${veneer.veneerM2}m2` : "";
+      addItem("Chapa", veneerName, veneerMeasure);
+    }
+
+    const safeFurnitureName = String(furnitureName).replace(
+      /[\\/:*?"<>|]/g,
+      "-"
+    );
+    const fileName = `Orden-de-Pedido-Material-${budget?.budget_number || ""}-${
+      safeFurnitureName || "Mueble"
+    }.xlsx`;
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadMaterialOrder = async (budget) => {
+    try {
+      const catalogs = await ensureMaterialsCatalogs();
+      await generateMaterialOrderExcel(budget, catalogs);
+    } catch (error) {
+      console.error("Error generando descarga:", error);
+      alert("Ocurrió un error al generar los archivos.");
     }
   };
 
@@ -349,6 +675,19 @@ function Budgets() {
                             className="w-[16px]"
                           />
                           <p className="m-0 leading-loose text-sm">Historial</p>
+                        </button>
+                        <button
+                          onClick={() => handleDownloadMaterialOrder(budget)}
+                          className="text-white bg-gray-700 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                        >
+                          <FontAwesomeIcon
+                            icon={faDownload}
+                            className="w-[14px]"
+                            size="sm"
+                          />
+                          <p className="m-0 leading-loose text-sm">
+                            O. Pedido Material
+                          </p>
                         </button>
                       </div>
                     </td>
