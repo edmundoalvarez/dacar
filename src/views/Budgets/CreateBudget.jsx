@@ -71,6 +71,7 @@ function CreateBudget() {
 
   //Editor de texto
   const [commentValue, setCommentValue] = useState("");
+  const [clientCommentValue, setClientCommentValue] = useState("");
 
   const quillModules = {
     toolbar: [
@@ -942,6 +943,7 @@ function CreateBudget() {
       total_price: totalPrice,
       deliver_date: data.deliver_date,
       comments: data.comments,
+      client_comment: data.client_comment,
       client: clientData,
       placement: data.placement,
       placement_days: data.placementDays,
@@ -2041,6 +2043,31 @@ function CreateBudget() {
                       {errors.comments.message}
                     </span>
                   )}
+                </div>
+                <div className="flex flex-col w-full">
+                  <label htmlFor="client_comment" className="mb-2">
+                    Comentario para el cliente (opcional)
+                  </label>
+
+                  <input
+                    type="hidden"
+                    id="client_comment"
+                    {...register("client_comment")}
+                  />
+
+                  <QuillEditor
+                    theme="snow"
+                    value={clientCommentValue}
+                    onChange={(value) => {
+                      setClientCommentValue(value);
+                      setValue("client_comment", value, {
+                        shouldValidate: true,
+                      });
+                    }}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    className="bg-white border border-gray-300 rounded-md"
+                  />
                 </div>
                 <div className="flex flex-col w-full   ">
                   {" "}

@@ -156,7 +156,9 @@ function BudgetDetails() {
 
               <div className="flex flex-col gap-0">
                 <p className="text-gray-600">
-                  <span className="font-bold">FECHA ESTIMADA DE ENTREGA:</span>{" "}
+                  <span className="font-bold">
+                    FECHA ESTIMADA DE ENTREGA:
+                  </span>{" "}
                 </p>
                 <p className="text-gray-600 uppercase text-right">
                   {budget.deliver_date}
@@ -266,10 +268,10 @@ function BudgetDetails() {
                       {budget.placement && budget.shipment
                         ? "INCLUYE COLOCACIÓN Y ENVÍO"
                         : budget.placement
-                        ? "INCLUYE COLOCACIÓN"
-                        : budget.shipment
-                        ? "INCLUYE ENVÍO"
-                        : "NO INCLUYE COLOCACIÓN NI ENVÍO"}
+                          ? "INCLUYE COLOCACIÓN"
+                          : budget.shipment
+                            ? "INCLUYE ENVÍO"
+                            : "NO INCLUYE COLOCACIÓN NI ENVÍO"}
                     </strong>
                   </td>
                 </tr>
@@ -317,6 +319,28 @@ function BudgetDetails() {
                     </strong>
                   </td>
                 </tr>
+                {budget.client_comment ? (
+                  <>
+                    <tr>
+                      <td colSpan={3} className="p-0 m-0 h-0">
+                        <div className="w-full border-t-2 border-gray-700" />
+                      </td>
+                    </tr>
+                    <tr className=" text-left whitespace-nowrap text-sm align-midd text-gray-700">
+                      <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
+                        COMENTARIOS
+                      </td>
+                      <td
+                        colSpan={2}
+                        className="px-6 py-4 text-left whitespace-normal text-sm align-midd border-r-2 border-r-black border-l-2 border-l-black"
+                      >
+                        <div className="break-words comments-html text-left">
+                          {parse(formatComments(budget.client_comment || ""))}
+                        </div>
+                      </td>
+                    </tr>
+                  </>
+                ) : null}
               </tbody>
             </table>
 

@@ -78,6 +78,7 @@ function EditBudget() {
 
   //Editar comentario
   const [commentsValue, setCommentsValue] = useState("");
+  const [clientCommentValue, setClientCommentValue] = useState("");
   const quillModules = {
     toolbar: [
       [{ header: [1, 2, false] }],
@@ -356,6 +357,8 @@ function EditBudget() {
         //COMENTARIOS
         setValue("comments", budgetData.data.comments || "");
         setCommentsValue(budgetData.data.comments || "");
+        setValue("client_comment", budgetData.data.client_comment || "");
+        setClientCommentValue(budgetData.data.client_comment || "");
         //FECHA DE ENTREGA
         setValue("deliver_date", budgetData.data.deliver_date || "");
         //COLOCACIÓN
@@ -1121,6 +1124,7 @@ function EditBudget() {
       total_price: totalPrice,
       deliver_date: data.deliver_date,
       comments: data.comments,
+      client_comment: data.client_comment,
       client: clientData,
       placement: data.placement,
       placement_days: data.placementDays,
@@ -2099,6 +2103,31 @@ function EditBudget() {
                       {errors.comments.message}
                     </span>
                   )}
+                </div>
+                <div className="flex flex-col w-full">
+                  <label htmlFor="client_comment" className="mb-2">
+                    Comentario para el cliente (opcional)
+                  </label>
+
+                  <input
+                    type="hidden"
+                    id="client_comment"
+                    {...register("client_comment")}
+                  />
+
+                  <QuillEditor
+                    theme="snow"
+                    value={clientCommentValue}
+                    onChange={(value) => {
+                      setClientCommentValue(value);
+                      setValue("client_comment", value, {
+                        shouldValidate: true,
+                      });
+                    }}
+                    className="bg-white"
+                    modules={quillModules}
+                    formats={quillFormats}
+                  />
                 </div>
 
                 <div className="flex flex-col w-full   ">

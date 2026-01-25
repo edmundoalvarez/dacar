@@ -90,6 +90,11 @@ function Budgets() {
     [itemsPerPage]
   );
 
+  // Al entrar/volver a la lista (o al paginar), aseguramos scroll arriba
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [currentPage]);
+
   useEffect(() => {
     getAllBudgetsToSet(searchTerm, currentPage, { showMainLoader: true });
   }, [currentPage, searchTerm, getAllBudgetsToSet]);
