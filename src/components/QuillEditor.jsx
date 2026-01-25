@@ -1,5 +1,4 @@
-import { useEffect, useRef } from "react";
-import { useQuill } from "react-quilljs";
+import { useEffect, useRef, useState } from "react";
 import "quill/dist/quill.snow.css";
 
 const QuillEditor = ({
@@ -11,37 +10,84 @@ const QuillEditor = ({
   placeholder,
   className,
 }) => {
-  const { quill, quillRef } = useQuill({ theme, modules, formats, placeholder });
+  const containerRef = useRef(null);
+  const quillRef = useRef(null);
   const lastValueRef = useRef("");
+  const [isReady, setIsReady] = useState(false);
 
+  // Inicializar Quill dinámicamente
   useEffect(() => {
-    if (!quill) return;
+    let isMounted = true;
 
-    const handleChange = () => {
-      const html = quill.root.innerHTML;
-      lastValueRef.current = html;
-      if (onChange) onChange(html);
+    const initQuill = async () => {
+      if (!containerRef.current || quillRef.current) return;
+
+      // Importación dinámica de Quill
+      const Quill = (await import("quill")).default;
+
+      if (!isMounted || !containerRef.current) return;
+
+      const quill = new Quill(containerRef.current, {
+        theme,
+        modules: modules || {
+          toolbar: [
+            [{ header: [1, 2, false] }],
+            ["bold", "italic", "underline"],
+            [{ list: "ordered" }, { list: "bullet" }],
+          ],
+        },
+        formats: formats || [
+          "header",
+          "bold",
+          "italic",
+          "underline",
+          "list",
+          "bullet",
+        ],
+        placeholder,
+      });
+
+      quillRef.current = quill;
+
+      // Setear valor inicial
+      if (value) {
+        quill.clipboard.dangerouslyPasteHTML(value);
+        lastValueRef.current = value;
+      }
+
+      // Listener de cambios
+      quill.on("text-change", () => {
+        const html = quill.root.innerHTML;
+        lastValueRef.current = html;
+        if (onChange) onChange(html);
+      });
+
+      setIsReady(true);
     };
 
-    quill.on("text-change", handleChange);
-    return () => quill.off("text-change", handleChange);
-  }, [quill, onChange]);
+    initQuill();
 
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Sincronizar valor externo
   useEffect(() => {
-    if (!quill) return;
+    if (!quillRef.current || !isReady) return;
 
     const incoming = value || "";
     if (incoming !== lastValueRef.current) {
-      const selection = quill.getSelection();
-      quill.clipboard.dangerouslyPasteHTML(incoming);
-      if (selection) quill.setSelection(selection);
+      const selection = quillRef.current.getSelection();
+      quillRef.current.clipboard.dangerouslyPasteHTML(incoming);
+      if (selection) quillRef.current.setSelection(selection);
       lastValueRef.current = incoming;
     }
-  }, [quill, value]);
+  }, [value, isReady]);
 
   return (
     <div className={className}>
-      <div ref={quillRef} />
+      <div ref={containerRef} />
     </div>
   );
 };
