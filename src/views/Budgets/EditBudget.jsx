@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { Grid, Oval } from "react-loader-spinner";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import QuillEditor from "../../components/QuillEditor.jsx";
+import Select from "react-select";
 
 import {
   getBudgetById,
@@ -95,6 +95,60 @@ function EditBudget() {
     "bullet",
   ];
 
+  const selectStyles = {
+    control: (base, state) => ({
+      ...base,
+      borderColor: state.isFocused ? "#10b981" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 1px #10b981" : "none",
+      minHeight: "40px",
+      backgroundColor: "#ffffff",
+      color: "#111827",
+    }),
+    menu: (base) => ({ ...base, zIndex: 30 }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#6b7280",
+    }),
+    input: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    menuList: (base) => ({ ...base, backgroundColor: "#ffffff" }),
+    option: (base, state) => ({
+      ...base,
+      color: "#111827",
+      backgroundColor: state.isSelected
+        ? "#d1fae5"
+        : state.isFocused
+          ? "#f3f4f6"
+          : "#ffffff",
+    }),
+  };
+
+  const tableOptions = tables.map((table) => ({
+    value: table.name,
+    label: table.name,
+  }));
+
+  const edgeOptions = edges.map((edge) => ({
+    value: edge._id,
+    label: edge.name,
+  }));
+
+  const veneerOptions = veneer.map((item) => ({
+    value: item._id,
+    label: item.name,
+  }));
+
+  const categoryOptions = categories.map((cat) => ({
+    value: cat._id,
+    label: cat.name,
+  }));
+
   //Volver a presupuestos o presupuestos confirmados según corresponda
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -109,10 +163,12 @@ function EditBudget() {
     register,
     unregister,
     handleSubmit,
+    setError,
     setValue,
     getValues,
     watch,
     formState: { errors },
+    control,
   } = useForm();
 
   const getBudgetToSet = () => {
@@ -125,14 +181,14 @@ function EditBudget() {
 
         setTotalVeneer(Number(budgetData.data.veneer[0].veneerM2));
         setTotalVeneerPolished(
-          Number(budgetData.data.veneerPolished[0].veneerPolishedM2)
+          Number(budgetData.data.veneerPolished[0].veneerPolishedM2),
         );
         setTotalVeneerLacqueredOpen(
-          Number(budgetData.data.lacqueredOpen[0].lacqueredOpenM2)
+          Number(budgetData.data.lacqueredOpen[0].lacqueredOpenM2),
         );
         setTotalLacqueredAll(Number(budgetData.data.lacquered[0].lacqueredM2));
         setTotalPantographed(
-          Number(budgetData.data.pantographed[0].pantographedM2)
+          Number(budgetData.data.pantographed[0].pantographedM2),
         );
 
         //DATA PRINCIPAL DEL MUEBLE
@@ -151,7 +207,7 @@ function EditBudget() {
         //FILO LAQUEADO
         setValue(
           "edgeLaqueredM2",
-          budgetData.data.edge_lacquered[0].edgeLaqueredM2
+          budgetData.data.edge_lacquered[0].edgeLaqueredM2,
         );
         // console.log(
         //   " budgetData.data.edge_lacquered[0].edgeLaqueredPrice",
@@ -159,41 +215,41 @@ function EditBudget() {
         // );
         setValue(
           "edgeLaqueredPrice",
-          budgetData.data.edge_lacquered[0].edgeLaqueredPrice
+          budgetData.data.edge_lacquered[0].edgeLaqueredPrice,
         );
         setTotalLacqueredEdgeLength(
-          Number(budgetData.data.edge_lacquered[0].totalLacqueredEdgeLength)
+          Number(budgetData.data.edge_lacquered[0].totalLacqueredEdgeLength),
         );
         setValue(
           "edgeThickness",
-          budgetData.data.edge_lacquered[0].edgeLaqueredThickness
+          budgetData.data.edge_lacquered[0].edgeLaqueredThickness,
         );
 
         setMaterialEdgeLaquered(
-          budgetData.data.edge_lacquered[0].edgeLaqueredThickness
+          budgetData.data.edge_lacquered[0].edgeLaqueredThickness,
         );
 
         //FILO LUSTRADO
         setValue(
           "edgePolishedM2",
-          budgetData.data.edge_polished[0].edgePolishedM2
+          budgetData.data.edge_polished[0].edgePolishedM2,
         );
 
         setValue(
           "edgePolishedPrice",
-          budgetData.data.edge_polished[0].edgePolishedPrice
+          budgetData.data.edge_polished[0].edgePolishedPrice,
         );
 
         setTotalPolishedEdgeLength(
-          Number(budgetData.data.edge_polished[0].totalPolishedEdgeLength)
+          Number(budgetData.data.edge_polished[0].totalPolishedEdgeLength),
         );
         setValue(
           "edgePolishedThickness",
-          budgetData.data.edge_polished[0].edgePolishedThickness
+          budgetData.data.edge_polished[0].edgePolishedThickness,
         );
 
         setMaterialEdgePolished(
-          budgetData.data.edge_polished[0].edgePolishedThickness
+          budgetData.data.edge_polished[0].edgePolishedThickness,
         );
 
         //FILO SIN NADA
@@ -211,7 +267,7 @@ function EditBudget() {
               (acc, supply) => {
                 return acc + (supply.price || 0);
               },
-              0
+              0,
             );
             // console.log(budgetData.data.supplies);
             setTotalSuppliePrice(totalPrice);
@@ -240,7 +296,7 @@ function EditBudget() {
                 const qty = material.qty || 0;
                 return acc + price * qty;
               },
-              0
+              0,
             );
 
             // Asignar los valores calculados
@@ -279,19 +335,23 @@ function EditBudget() {
         setValue("adjustment_price", budgetData.data.adjustment_price || "");
 
         //CLIENTE
-        setClientOption("existing");
-        setValue("clientOption", "existing");
-        if (budgetData.data?.client) {
-          if (budgetData.data.client.length > 0) {
-            budgetData.data.client.forEach((clientEach, index) => {
-              // Asignar el valor de chapa_price
-              setValue(
-                "clientNameInput",
-                clientEach.lastname + " " + clientEach.name || ""
-              );
-              setValue("clientId", clientEach._id || "");
-            });
-          }
+        const clients = Array.isArray(budgetData.data?.client)
+          ? budgetData.data.client
+          : [];
+        if (clients.length > 0) {
+          const clientEach = clients[0];
+          setClientOption("existing");
+          setValue("clientOption", "existing");
+          setValue(
+            "clientNameInput",
+            `${clientEach.lastname || ""} ${clientEach.name || ""}`.trim(),
+          );
+          setValue("clientId", clientEach._id || "");
+        } else {
+          setClientOption("");
+          setValue("clientOption", "");
+          setValue("clientNameInput", "");
+          setValue("clientId", "");
         }
         //COMENTARIOS
         setValue("comments", budgetData.data.comments || "");
@@ -304,7 +364,7 @@ function EditBudget() {
           setValue("placementDays", budgetData.data.placement_days || "");
           setValue("placementPrice", budgetData.data.placement_price || 0);
           setSubtotalPlacement(
-            budgetData.data.placement_price * budgetData.data.placement_days
+            budgetData.data.placement_price * budgetData.data.placement_days,
           );
         } else {
           setValue("placement", "false" || "");
@@ -391,31 +451,31 @@ function EditBudget() {
 
   //Servicios: obetener valores
   const enchapadoArtesanalService = services.find(
-    (service) => service._id === "66a5bbab218ee6221506c133"
+    (service) => service._id === "66a5bbab218ee6221506c133",
   );
 
   const laqueadoService = services.find(
-    (service) => service._id === "66a5bb29218ee6221506c125"
+    (service) => service._id === "66a5bb29218ee6221506c125",
   );
 
   const laqueadoOpenService = services.find(
-    (service) => service._id === "66eb0ec94bc129b0fcfb3dea"
+    (service) => service._id === "66eb0ec94bc129b0fcfb3dea",
   );
 
   const lustreService = services.find(
-    (service) => service._id === "66a5bb50218ee6221506c12b"
+    (service) => service._id === "66a5bb50218ee6221506c12b",
   );
 
   const pantografiadoService = services.find(
-    (service) => service._id === "66a5bb88218ee6221506c130"
+    (service) => service._id === "66a5bb88218ee6221506c130",
   );
 
   const filoService = services.find(
-    (service) => service._id === "66a5baea218ee6221506c119"
+    (service) => service._id === "66a5baea218ee6221506c119",
   );
 
   const cortePlacaService = services.find(
-    (service) => service._id === "66a5baf9218ee6221506c11c"
+    (service) => service._id === "66a5baf9218ee6221506c11c",
   );
 
   //AL SELECCIONAR EL FILO OBTENER EL VALOR
@@ -431,11 +491,11 @@ function EditBudget() {
       setValue(
         "edgeLaqueredPrice",
         laqueadoService?.price *
-          ((totalLacqueredEdgeLength * thickness) / 1000).toFixed(2)
+          ((totalLacqueredEdgeLength * thickness) / 1000).toFixed(2),
       );
       setValue(
         "edgeLaqueredM2",
-        ((totalLacqueredEdgeLength * thickness) / 1000).toFixed(2)
+        ((totalLacqueredEdgeLength * thickness) / 1000).toFixed(2),
       );
     } else {
       setMaterialEdgeLaquered(0);
@@ -460,11 +520,11 @@ function EditBudget() {
       setValue(
         "edgePolishedPrice",
         lustreService?.price *
-          ((totalPolishedEdgeLength * thickness) / 1000).toFixed(2)
+          ((totalPolishedEdgeLength * thickness) / 1000).toFixed(2),
       );
       setValue(
         "edgePolishedM2",
-        ((totalPolishedEdgeLength * thickness) / 1000).toFixed(2)
+        ((totalPolishedEdgeLength * thickness) / 1000).toFixed(2),
       );
     } else {
       setMaterialEdgePolished(0);
@@ -473,8 +533,7 @@ function EditBudget() {
   };
 
   //filo común
-  const handleMaterialEdgeOption = (event) => {
-    let option = event.target.value;
+  const handleMaterialEdgeOption = (option) => {
     // console.log("handleMaterialEdgeOption");
 
     let selectedEdge = edges.find((edge) => edge._id === option);
@@ -484,7 +543,7 @@ function EditBudget() {
       setValue(
         "edgePrice",
         Math.round((totalEdgeLength / 100) * selectedEdge.price * 3.8) +
-          filoService?.price * (totalEdgeLength / 100)
+          filoService?.price * (totalEdgeLength / 100),
       );
       calculateTotalPrice();
     } else {
@@ -492,7 +551,7 @@ function EditBudget() {
       setValue(
         "edgePrice",
         Math.round((totalEdgeLength / 100) * 1 * 3.8) +
-          filoService?.price * (totalEdgeLength / 100)
+          filoService?.price * (totalEdgeLength / 100),
       );
       calculateTotalPrice();
     }
@@ -520,8 +579,7 @@ function EditBudget() {
     setCountMaterial(count);
   }
   // Manejar la selección del material
-  const handleMaterialOption = (index) => (event) => {
-    let option = event.target.value;
+  const handleMaterialOption = (index) => (option) => {
 
     if (option) {
       const selectedTable = tables.find((table) => table.name === option);
@@ -534,10 +592,13 @@ function EditBudget() {
   };
   //CALCULAR TOTAL DE LOS MATERIALES
   const materialPrices = watch(
-    Array.from({ length: countMaterial }, (_, index) => `materialPrice${index}`)
+    Array.from(
+      { length: countMaterial },
+      (_, index) => `materialPrice${index}`,
+    ),
   );
   const materialQtys = watch(
-    Array.from({ length: countMaterial }, (_, index) => `materialQty${index}`)
+    Array.from({ length: countMaterial }, (_, index) => `materialQty${index}`),
   );
 
   const calculateTotalMaterialPrice = (materialPrices, materialQtys) => {
@@ -585,14 +646,14 @@ function EditBudget() {
   }
 
   const itemExtraPriceValues = watch(
-    Object.keys(getValues()).filter((key) => key.startsWith("itemExtraPrice"))
+    Object.keys(getValues()).filter((key) => key.startsWith("itemExtraPrice")),
   );
 
   // Función para calcular el total de los precios de itemExtraPrice
   const calculateSubTotalItemExtraPrice = () => {
     const total = itemExtraPriceValues.reduce(
       (acc, price) => acc + Number(price || 0),
-      0
+      0,
     );
     return total;
   };
@@ -603,8 +664,7 @@ function EditBudget() {
   }, [itemExtraPriceValues]);
 
   //AL SELECCIONAR LA CHAPA OBTENER EL VALOR
-  const handleChapaOption = (event) => {
-    let option = event.target.value;
+  const handleChapaOption = (option) => {
     // console.log(option);
     if (option) {
       const selectedVeneer = veneer.find((veneer) => veneer._id === option);
@@ -662,7 +722,7 @@ function EditBudget() {
     const filtered = allClients.filter((client) =>
       `${client.lastname} ${client.name}`
         .toLowerCase()
-        .includes(event.target.value.toLowerCase())
+        .includes(event.target.value.toLowerCase()),
     );
     setFilteredClients(filtered);
   };
@@ -680,7 +740,7 @@ function EditBudget() {
       const results = allClients.filter((client) =>
         `${client.lastname} ${client.name}`
           .toLowerCase()
-          .includes(searchTerm.toLowerCase())
+          .includes(searchTerm.toLowerCase()),
       );
       setFilteredClients(results);
     }
@@ -794,7 +854,7 @@ function EditBudget() {
     commentsHtml,
     categoryId,
     categoryName,
-    parameterHtml
+    parameterHtml,
   ) {
     if (!parameterHtml) return commentsHtml || "";
 
@@ -826,7 +886,7 @@ function EditBudget() {
 
     // 2) actualizar singleFurniture si querés que el "mueble" refleje categoría nueva
     setSingleFurniture((prev) =>
-      prev ? { ...prev, category: cat || prev.category } : prev
+      prev ? { ...prev, category: cat || prev.category } : prev,
     );
 
     // 3) append parámetros al comentario SIN borrar lo anterior
@@ -834,7 +894,7 @@ function EditBudget() {
       commentsValue,
       cat?._id,
       cat?.name,
-      cat?.parameter
+      cat?.parameter,
     );
 
     setCommentsValue(nextComments);
@@ -903,6 +963,14 @@ function EditBudget() {
         console.error(error);
       }
     } else if (clientOption === "existing") {
+      if (!data.clientId) {
+        setError("clientId", {
+          type: "manual",
+          message: "Seleccioná un cliente",
+        });
+        setSubmitLoader(false);
+        return;
+      }
       try {
         await getClientById(data.clientId).then((res) => {
           clientData = res.data;
@@ -910,6 +978,14 @@ function EditBudget() {
       } catch (error) {
         console.error(error);
       }
+    }
+    if (clientOption && !clientData) {
+      setError("clientOption", {
+        type: "manual",
+        message: "No se pudo cargar el cliente",
+      });
+      setSubmitLoader(false);
+      return;
     }
 
     // Creación del objeto materials
@@ -1169,21 +1245,25 @@ function EditBudget() {
                 <p className="mb-1">
                   <span className="font-bold">Categoría:</span>{" "}
                 </p>
-                <select
-                  className="border border-gray-300 rounded-md p-1 text-black"
-                  value={categoryIdWatch || ""}
-                  disabled={categoriesLoading}
-                  onChange={(e) => handleCategoryChange(e.target.value)}
-                >
-                  <option value="">
-                    {categoriesLoading ? "Cargando..." : "Elegir categoría"}
-                  </option>
-                  {categories.map((cat) => (
-                    <option key={cat._id} value={cat._id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  inputId="category_id"
+                  instanceId="category_id"
+                  placeholder={
+                    categoriesLoading ? "Cargando..." : "Elegir categoría"
+                  }
+                  isClearable
+                  isDisabled={categoriesLoading}
+                  options={categoryOptions}
+                  value={
+                    categoryOptions.find(
+                      (option) => option.value === categoryIdWatch
+                    ) || null
+                  }
+                  onChange={(option) =>
+                    handleCategoryChange(option?.value || "")
+                  }
+                  styles={selectStyles}
+                />
 
                 <input type="hidden" {...register("category_id")} />
                 <input type="hidden" {...register("category_name")} />
@@ -1203,11 +1283,11 @@ function EditBudget() {
                       </span>{" "}
                       {totalVeneer} m<sup>2</sup> Precio:
                       {formatCurrency(
-                        enchapadoArtesanalService?.price * totalVeneer
+                        enchapadoArtesanalService?.price * totalVeneer,
                       ).toLocaleString("es-ES")}
                       {setValue(
                         "veneerPrice",
-                        enchapadoArtesanalService?.price * totalVeneer
+                        enchapadoArtesanalService?.price * totalVeneer,
                       )}
                     </p>
                     <input
@@ -1235,11 +1315,11 @@ function EditBudget() {
                       <span className="font-bold">Lustrado en m2:</span>{" "}
                       {totalVeneerPolished} m<sup>2</sup> Precio:
                       {formatCurrency(
-                        lustreService?.price * totalVeneerPolished
+                        lustreService?.price * totalVeneerPolished,
                       )}
                       {setValue(
                         "veneerPolishedPrice",
-                        lustreService?.price * totalVeneerPolished
+                        lustreService?.price * totalVeneerPolished,
                       )}
                     </p>
                     <input
@@ -1267,11 +1347,11 @@ function EditBudget() {
                       <span className="font-bold">Laqueado en m2:</span>{" "}
                       {totalLacqueredAll} m<sup>2</sup> Precio:
                       {formatCurrency(
-                        laqueadoService?.price * totalLacqueredAll
+                        laqueadoService?.price * totalLacqueredAll,
                       )}
                       {setValue(
                         "lacqueredPrice",
-                        laqueadoService?.price * totalLacqueredAll
+                        laqueadoService?.price * totalLacqueredAll,
                       )}
                     </p>
                     <input
@@ -1299,11 +1379,11 @@ function EditBudget() {
                       </span>{" "}
                       {totalVeneerLacqueredOpen} m<sup>2</sup> Precio:
                       {formatCurrency(
-                        laqueadoOpenService?.price * totalVeneerLacqueredOpen
+                        laqueadoOpenService?.price * totalVeneerLacqueredOpen,
                       )}
                       {setValue(
                         "lacqueredOpenPrice",
-                        laqueadoOpenService?.price * totalVeneerLacqueredOpen
+                        laqueadoOpenService?.price * totalVeneerLacqueredOpen,
                       )}
                     </p>
                     <input
@@ -1333,11 +1413,11 @@ function EditBudget() {
                       <span className="font-bold">Pantografiado en m2:</span>{" "}
                       {totalPantographed} m<sup>2</sup> Precio:
                       {formatCurrency(
-                        pantografiadoService?.price * totalPantographed
+                        pantografiadoService?.price * totalPantographed,
                       )}
                       {setValue(
                         "pantographedPrice",
-                        pantografiadoService?.price * totalPantographed
+                        pantografiadoService?.price * totalPantographed,
                       )}
                     </p>
                     <input
@@ -1499,14 +1579,14 @@ function EditBudget() {
                           {totalEdgeLength.toFixed(2)} m Precio:
                           {formatCurrency(
                             totalEdgeLength * materialEdge +
-                              filoService?.price * totalEdgeLength
+                              filoService?.price * totalEdgeLength,
                           )}
                           {setValue(
                             "edgePrice",
                             Math.round(
                               totalEdgeLength * materialEdge * 3.8 +
-                                filoService?.price * totalEdgeLength
-                            )
+                                filoService?.price * totalEdgeLength,
+                            ),
                           )}
                         </span>
                       </p>
@@ -1523,20 +1603,32 @@ function EditBudget() {
                       />
 
                       <div className="flex flex-col w-1/3 ">
-                        <select
-                          name={`edgeSelect`}
-                          id={`edgeSelect`}
-                          className="border border-gray-300 rounded-md p-2"
-                          {...register(`edgeSelect`)}
-                          onChange={handleMaterialEdgeOption}
-                        >
-                          <option value="">Elegir una opción</option>
-                          {edges.map((edge) => (
-                            <option key={edge._id} value={edge._id}>
-                              {edge.name}
-                            </option>
-                          ))}
-                        </select>
+                        <Controller
+                          name="edgeSelect"
+                          control={control}
+                          defaultValue=""
+                          render={({ field }) => (
+                            <Select
+                              inputId="edgeSelect"
+                              instanceId="edgeSelect-edit"
+                              placeholder="Elegir una opción"
+                              isClearable
+                              options={edgeOptions}
+                              value={
+                                edgeOptions.find(
+                                  (option) => option.value === field.value
+                                ) || null
+                              }
+                              onChange={(option) => {
+                                const value = option?.value || "";
+                                field.onChange(value);
+                                setEdgeSelect(value);
+                                handleMaterialEdgeOption(value);
+                              }}
+                              styles={selectStyles}
+                            />
+                          )}
+                        />
                         {errors[`edgeSelect`] && (
                           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                             {errors[`edgeSelect`].message}
@@ -1671,20 +1763,31 @@ function EditBudget() {
                         <label htmlFor={`materialTable${index}`}>
                           Seleccionar placa
                         </label>
-                        <select
+                        <Controller
                           name={`materialTable${index}`}
-                          id={`materialTable${index}`}
-                          className="border border-gray-300 rounded-md p-2"
-                          {...register(`materialTable${index}`)}
-                          onChange={handleMaterialOption(index)}
-                        >
-                          <option value="">Elegir una opción</option>
-                          {tables.map((table) => (
-                            <option key={table._id} value={table.name}>
-                              {table.name}
-                            </option>
-                          ))}
-                        </select>
+                          control={control}
+                          defaultValue=""
+                          render={({ field }) => (
+                            <Select
+                              inputId={`materialTable${index}`}
+                              instanceId={`materialTable${index}`}
+                              placeholder="Elegir una opción"
+                              isClearable
+                              options={tableOptions}
+                              value={
+                                tableOptions.find(
+                                  (option) => option.value === field.value
+                                ) || null
+                              }
+                              onChange={(option) => {
+                                const value = option?.value || "";
+                                field.onChange(value);
+                                handleMaterialOption(index)(value);
+                              }}
+                              styles={selectStyles}
+                            />
+                          )}
+                        />
                         {errors[`materialTable${index}`] && (
                           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                             {errors[`materialTable${index}`].message}
@@ -1787,23 +1890,32 @@ function EditBudget() {
                     <div className="flex flex-col w-1/4  ">
                       {" "}
                       <label htmlFor={`veneerSelect`}>Elegir chapa</label>
-                      <select
-                        name={`veneerSelect`}
-                        id={`veneerSelect`}
-                        className="border-solid border-2 border-opacity mb-2 rounded-md"
-                        {...register(`veneerSelect`)}
-                        onChange={(e) => {
-                          handleChapaOption(e);
-                          calculateTotalPrice();
-                        }}
-                      >
-                        <option value="">Elegir una opción</option>
-                        {veneer.map((veneer) => (
-                          <option key={veneer._id} value={veneer._id}>
-                            {veneer.name}
-                          </option>
-                        ))}
-                      </select>
+                      <Controller
+                        name="veneerSelect"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <Select
+                            inputId="veneerSelect"
+                            instanceId="veneerSelect-edit"
+                            placeholder="Elegir una opción"
+                            isClearable
+                            options={veneerOptions}
+                            value={
+                              veneerOptions.find(
+                                (option) => option.value === field.value
+                              ) || null
+                            }
+                            onChange={(option) => {
+                              const value = option?.value || "";
+                              field.onChange(value);
+                              handleChapaOption(value);
+                              calculateTotalPrice();
+                            }}
+                            styles={selectStyles}
+                          />
+                        )}
+                      />
                       {errors[`veneerSelect`] && (
                         <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                           {errors[`veneerSelect`].message}
@@ -1949,7 +2061,15 @@ function EditBudget() {
                         {errors.clientId.message}
                       </span>
                     )}
-                    <input type="hidden" {...register("clientId")} />
+                    <input
+                      type="hidden"
+                      {...register("clientId", {
+                        validate: (value) =>
+                          clientOption !== "existing" ||
+                          (value && value.trim() !== "") ||
+                          "Seleccioná un cliente",
+                      })}
+                    />
                   </div>
                 </>
               ) : (
@@ -1962,7 +2082,7 @@ function EditBudget() {
                     Comentarios
                   </label>
 
-                  <ReactQuill
+                  <QuillEditor
                     theme="snow"
                     value={commentsValue}
                     onChange={(value) => {

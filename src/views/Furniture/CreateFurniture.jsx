@@ -1,8 +1,9 @@
 // views/Furniture/CreateFurniture.jsx
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { Oval } from "react-loader-spinner";
+import Select from "react-select";
 import {
   createFurniture,
   getAllModules,
@@ -10,8 +11,7 @@ import {
   ViewModulesFurniture,
   getFurnitureCategories,
 } from "../../index.js";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import QuillEditor from "../../components/QuillEditor.jsx";
 
 // Configuración de ReactQuill
 const quillModules = {
@@ -93,6 +93,7 @@ function CreateFurniture() {
     handleSubmit,
     formState: { errors },
     setValue,
+    control,
   } = useForm();
 
   const handleModuleChange = (e) => {
@@ -209,8 +210,7 @@ function CreateFurniture() {
   });
 
   // Cuando cambia la categoría, prelleno el editor con los parámetros de esa categoría
-  const handleCategoryChange = (event) => {
-    const categoryId = event.target.value;
+  const handleCategoryChange = (categoryId) => {
 
     // React Hook Form ya setea categoryId por el register, no hace falta setValue aquí
     const selectedCategory = categories.find((c) => c._id === categoryId);
@@ -221,6 +221,45 @@ function CreateFurniture() {
     // Campo real del formulario (hidden)
     setValue("parameter", paramHtml, { shouldValidate: true });
   };
+
+  const selectStyles = {
+    control: (base, state) => ({
+      ...base,
+      borderColor: state.isFocused ? "#10b981" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 1px #10b981" : "none",
+      minHeight: "40px",
+      backgroundColor: "#ffffff",
+      color: "#111827",
+    }),
+    menu: (base) => ({ ...base, zIndex: 30 }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#6b7280",
+    }),
+    input: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    menuList: (base) => ({ ...base, backgroundColor: "#ffffff" }),
+    option: (base, state) => ({
+      ...base,
+      color: "#111827",
+      backgroundColor: state.isSelected
+        ? "#d1fae5"
+        : state.isFocused
+          ? "#f3f4f6"
+          : "#ffffff",
+    }),
+  };
+
+  const categoryOptions = categories.map((cat) => ({
+    value: cat._id,
+    label: cat.name,
+  }));
 
   return (
     <div className="pb-8 px-16 bg-gray-100 min-h-screen">
@@ -296,24 +335,32 @@ function CreateFurniture() {
                 Categoría
               </label>
 
-              <select
-                id="categoryId"
-                className="border border-gray-300 rounded-md px-4 py-2 mt-1 focus:border-emerald-500 w-full bg-white"
-                {...register("categoryId", {
-                  onChange: handleCategoryChange,
-                  // si querés que sea obligatorio:
-                  // required: "La categoría es obligatoria",
-                })}
+              <Controller
+                name="categoryId"
+                control={control}
                 defaultValue=""
-                disabled={categoriesLoading || categories.length === 0}
-              >
-                <option value="">Selecciona una categoría</option>
-                {categories.map((cat) => (
-                  <option key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+                render={({ field }) => (
+                  <Select
+                    inputId="categoryId"
+                    instanceId="categoryId"
+                    placeholder="Selecciona una categoría"
+                    isClearable
+                    isDisabled={categoriesLoading || categories.length === 0}
+                    options={categoryOptions}
+                    value={
+                      categoryOptions.find(
+                        (option) => option.value === field.value
+                      ) || null
+                    }
+                    onChange={(option) => {
+                      const value = option?.value || "";
+                      field.onChange(value);
+                      handleCategoryChange(value);
+                    }}
+                    styles={selectStyles}
+                  />
+                )}
+              />
 
               {errors.categoryId && (
                 <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -331,7 +378,7 @@ function CreateFurniture() {
               {/* Campo real para RHF (oculto) */}
               <input type="hidden" id="parameter" {...register("parameter")} />
 
-              <ReactQuill
+              <QuillEditor
                 theme="snow"
                 value={parameterValue}
                 onChange={(value) => {

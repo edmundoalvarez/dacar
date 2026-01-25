@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
+import Select from "react-select";
 import { createSupplies, getAllSuppliesCategories } from "../../index.js";
 
 function CreateSupplie() {
@@ -10,6 +11,7 @@ function CreateSupplie() {
         register,
         handleSubmit,
         formState: { errors },
+        control,
     } = useForm();
 
     // TRAER CATEGORIAS: para el formulario
@@ -38,6 +40,45 @@ function CreateSupplie() {
     useEffect(() => {
         getAllCategoriesToSet();
     }, []);
+
+    const selectStyles = {
+        control: (base, state) => ({
+            ...base,
+            borderColor: state.isFocused ? "#10b981" : "#d1d5db",
+            boxShadow: state.isFocused ? "0 0 0 1px #10b981" : "none",
+            minHeight: "40px",
+            backgroundColor: "#ffffff",
+            color: "#111827",
+        }),
+        menu: (base) => ({ ...base, zIndex: 30 }),
+        singleValue: (base) => ({
+            ...base,
+            color: "#111827",
+        }),
+        placeholder: (base) => ({
+            ...base,
+            color: "#6b7280",
+        }),
+        input: (base) => ({
+            ...base,
+            color: "#111827",
+        }),
+        menuList: (base) => ({ ...base, backgroundColor: "#ffffff" }),
+        option: (base, state) => ({
+            ...base,
+            color: "#111827",
+            backgroundColor: state.isSelected
+                ? "#d1fae5"
+                : state.isFocused
+                  ? "#f3f4f6"
+                  : "#ffffff",
+        }),
+    };
+
+    const categoryOptions = categories.map((category) => ({
+        value: category.name,
+        label: category.name,
+    }));
 
     return (
         <div className="pb-8 px-16 bg-gray-100 min-h-screen">
@@ -155,26 +196,35 @@ function CreateSupplie() {
                             >
                                 Categoria
                             </label>
-                            <select
-                                className="border border-gray-300 rounded-md px-4 py-2 mt-1  w-full transition duration-200"
+                            <Controller
                                 name="category"
-                                id="category"
-                                {...register("category", {
+                                control={control}
+                                rules={{
                                     required: "El campo es obligatorio",
-                                })}
-                            >
-                                <option key="" value="">
-                                    Elegir una opción
-                                </option>
-                                {categories.map((category, index) => (
-                                    <option
-                                        key={category.name}
-                                        value={category.name}
-                                    >
-                                        {category.name}
-                                    </option>
-                                ))}
-                            </select>
+                                }}
+                                defaultValue=""
+                                render={({ field }) => (
+                                    <Select
+                                        inputId="category"
+                                        instanceId="category-create-supplie"
+                                        placeholder="Elegir una opción"
+                                        isClearable
+                                        options={categoryOptions}
+                                        value={
+                                            categoryOptions.find(
+                                                (option) =>
+                                                    option.value === field.value
+                                            ) || null
+                                        }
+                                        onChange={(option) =>
+                                            field.onChange(
+                                                option?.value || ""
+                                            )
+                                        }
+                                        styles={selectStyles}
+                                    />
+                                )}
+                            />
                             {errors.category && (
                                 <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                                     {errors.category.message}

@@ -1,6 +1,15 @@
 import React, { useState } from "react";
+import { Controller } from "react-hook-form";
+import Select from "react-select";
 
-function FormCreatePieces({ register, index, errors, tables, resetField }) {
+function FormCreatePieces({
+    register,
+    control,
+    index,
+    errors,
+    tables,
+    resetField,
+}) {
     const [showEdgePiece, setShowEdgePiece] = useState(false);
     const [finishingModule, setFinishingModule] = useState("");
     const [lengthLabel, setLengthLabel] = useState("");
@@ -89,6 +98,45 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
             resetField(`melamineLacqueredPieceSides${index}`);
         }
     };
+
+    const selectStyles = {
+        control: (base, state) => ({
+            ...base,
+            borderColor: state.isFocused ? "#10b981" : "#d1d5db",
+            boxShadow: state.isFocused ? "0 0 0 1px #10b981" : "none",
+            minHeight: "40px",
+            backgroundColor: "#ffffff",
+            color: "#111827",
+        }),
+        menu: (base) => ({ ...base, zIndex: 30 }),
+        singleValue: (base) => ({
+            ...base,
+            color: "#111827",
+        }),
+        placeholder: (base) => ({
+            ...base,
+            color: "#6b7280",
+        }),
+        input: (base) => ({
+            ...base,
+            color: "#111827",
+        }),
+        menuList: (base) => ({ ...base, backgroundColor: "#ffffff" }),
+        option: (base, state) => ({
+            ...base,
+            color: "#111827",
+            backgroundColor: state.isSelected
+                ? "#d1fae5"
+                : state.isFocused
+                  ? "#f3f4f6"
+                  : "#ffffff",
+        }),
+    };
+
+    const materialOptions = tables.map((table) => ({
+        value: table.name,
+        label: table.name,
+    }));
 
     return (
         <div className="flex flex-wrap justify-start align-top content-start gap-x-4 w-full border-2 border-emerald-600 rounded-lg p-10 mb-6">
@@ -279,21 +327,31 @@ function FormCreatePieces({ register, index, errors, tables, resetField }) {
                     >
                         Material
                     </label>
-                    <select
-                        className="border border-gray-300 rounded-md p-2"
+                    <Controller
                         name={`materialPiece${index}`}
-                        id={`materialPiece${index}`}
-                        {...register(`materialPiece${index}`, {
-                            required: "El campo es obligatorio",
-                        })}
-                    >
-                        <option value="">Elegir una opción</option>
-                        {tables.map((table) => (
-                            <option key={table._id} value={table.name}>
-                                {table.name}
-                            </option>
-                        ))}
-                    </select>
+                        control={control}
+                        rules={{ required: "El campo es obligatorio" }}
+                        defaultValue=""
+                        render={({ field }) => (
+                            <Select
+                                inputId={`materialPiece${index}`}
+                                instanceId={`materialPiece${index}`}
+                                placeholder="Elegir una opción"
+                                isClearable
+                                options={materialOptions}
+                                value={
+                                    materialOptions.find(
+                                        (option) =>
+                                            option.value === field.value
+                                    ) || null
+                                }
+                                onChange={(option) =>
+                                    field.onChange(option?.value || "")
+                                }
+                                styles={selectStyles}
+                            />
+                        )}
+                    />
                     {errors[`materialPiece${index}`] && (
                         <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                             {errors[`materialPiece${index}`].message}

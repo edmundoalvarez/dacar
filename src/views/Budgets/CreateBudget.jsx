@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { Grid, Oval } from "react-loader-spinner";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import QuillEditor from "../../components/QuillEditor.jsx";
+import Select from "react-select";
 import {
   getFurnitureById,
   getAllTables,
@@ -31,10 +31,12 @@ function CreateBudget() {
     register,
     unregister,
     handleSubmit,
+    setError,
     setValue,
     getValues,
     watch,
     formState: { errors },
+    control,
   } = useForm();
 
   const { idFurniture } = useParams();
@@ -85,6 +87,55 @@ function CreateBudget() {
     "list",
     "bullet",
   ];
+
+  const selectStyles = {
+    control: (base, state) => ({
+      ...base,
+      borderColor: state.isFocused ? "#10b981" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 1px #10b981" : "none",
+      minHeight: "40px",
+      backgroundColor: "#ffffff",
+      color: "#111827",
+    }),
+    menu: (base) => ({ ...base, zIndex: 30 }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#6b7280",
+    }),
+    input: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    menuList: (base) => ({ ...base, backgroundColor: "#ffffff" }),
+    option: (base, state) => ({
+      ...base,
+      color: "#111827",
+      backgroundColor: state.isSelected
+        ? "#d1fae5"
+        : state.isFocused
+          ? "#f3f4f6"
+          : "#ffffff",
+    }),
+  };
+
+  const tableOptions = tables.map((table) => ({
+    value: table.name,
+    label: table.name,
+  }));
+
+  const edgeOptions = edges.map((edge) => ({
+    value: edge._id,
+    label: edge.name,
+  }));
+
+  const veneerOptions = veneer.map((item) => ({
+    value: item._id,
+    label: item.name,
+  }));
 
   const normalizeHtml = (html) => (typeof html === "string" ? html.trim() : "");
 
@@ -419,8 +470,7 @@ function CreateBudget() {
   };
 
   //filo común
-  const handleMaterialEdgeOption = (event) => {
-    let option = event.target.value;
+  const handleMaterialEdgeOption = (option) => {
     // console.log(option);
     const selectedEdge = edges.find((edge) => edge._id === option);
 
@@ -444,8 +494,7 @@ function CreateBudget() {
   };
 
   //AL SELECCIONAR LA CHAPA OBTENER EL VALOR
-  const handleChapaOption = (event) => {
-    let option = event.target.value;
+  const handleChapaOption = (option) => {
     // console.log(option);
     if (option) {
       const selectedVeneer = veneer.find((veneer) => veneer._id === option);
@@ -526,8 +575,7 @@ function CreateBudget() {
   }, [materialPrices, materialQtys, countMaterial]);
 
   // Manejar la selección del material
-  const handleMaterialOption = (index) => (event) => {
-    let option = event.target.value;
+  const handleMaterialOption = (index) => (option) => {
     if (option) {
       const selectedTable = tables.find((table) => table.name === option);
       setValue(`materialPrice${index}`, selectedTable.price, {
@@ -728,6 +776,14 @@ function CreateBudget() {
         console.error(error);
       }
     } else if (clientOption === "existing") {
+      if (!data.clientId) {
+        setError("clientId", {
+          type: "manual",
+          message: "Seleccioná un cliente",
+        });
+        setSubmitLoader(false);
+        return;
+      }
       try {
         await getClientById(data.clientId).then((res) => {
           clientData = res.data;
@@ -735,6 +791,14 @@ function CreateBudget() {
       } catch (error) {
         console.error(error);
       }
+    }
+    if (clientOption && !clientData) {
+      setError("clientOption", {
+        type: "manual",
+        message: "No se pudo cargar el cliente",
+      });
+      setSubmitLoader(false);
+      return;
     }
 
     // Creación del objeto materials
@@ -1421,20 +1485,31 @@ function CreateBudget() {
                       />
 
                       <div className="flex flex-col w-1/3 ">
-                        <select
-                          name={`edgeSelect`}
-                          id={`edgeSelect`}
-                          className="border border-gray-300 rounded-md p-2"
-                          {...register(`edgeSelect`)}
-                          onChange={handleMaterialEdgeOption}
-                        >
-                          <option value="">Elegir una opción</option>
-                          {edges.map((edge) => (
-                            <option key={edge._id} value={edge._id}>
-                              {edge.name}
-                            </option>
-                          ))}
-                        </select>
+                        <Controller
+                          name="edgeSelect"
+                          control={control}
+                          defaultValue=""
+                          render={({ field }) => (
+                            <Select
+                              inputId="edgeSelect"
+                              instanceId="edgeSelect"
+                              placeholder="Elegir una opción"
+                              isClearable
+                              options={edgeOptions}
+                              value={
+                                edgeOptions.find(
+                                  (option) => option.value === field.value
+                                ) || null
+                              }
+                              onChange={(option) => {
+                                const value = option?.value || "";
+                                field.onChange(value);
+                                handleMaterialEdgeOption(value);
+                              }}
+                              styles={selectStyles}
+                            />
+                          )}
+                        />
                         {errors[`edgeSelect`] && (
                           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                             {errors[`edgeSelect`].message}
@@ -1621,20 +1696,31 @@ function CreateBudget() {
                         <label htmlFor={`materialTable${index}`}>
                           Seleccionar placa
                         </label>
-                        <select
+                        <Controller
                           name={`materialTable${index}`}
-                          id={`materialTable${index}`}
-                          className="border border-gray-300 rounded-md p-2"
-                          {...register(`materialTable${index}`)}
-                          onChange={handleMaterialOption(index)}
-                        >
-                          <option value="">Elegir una opción</option>
-                          {tables.map((table) => (
-                            <option key={table._id} value={table.name}>
-                              {table.name}
-                            </option>
-                          ))}
-                        </select>
+                          control={control}
+                          defaultValue=""
+                          render={({ field }) => (
+                            <Select
+                              inputId={`materialTable${index}`}
+                              instanceId={`materialTable${index}`}
+                              placeholder="Elegir una opción"
+                              isClearable
+                              options={tableOptions}
+                              value={
+                                tableOptions.find(
+                                  (option) => option.value === field.value
+                                ) || null
+                              }
+                              onChange={(option) => {
+                                const value = option?.value || "";
+                                field.onChange(value);
+                                handleMaterialOption(index)(value);
+                              }}
+                              styles={selectStyles}
+                            />
+                          )}
+                        />
                         {errors[`materialTable${index}`] && (
                           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                             {errors[`materialTable${index}`].message}
@@ -1737,23 +1823,32 @@ function CreateBudget() {
                     <div className="flex flex-col w-1/4  ">
                       {" "}
                       <label htmlFor={`veneerSelect`}>Elegir chapa</label>
-                      <select
-                        name={`veneerSelect`}
-                        id={`veneerSelect`}
-                        className="border-solid border-2 border-opacity mb-2 rounded-md"
-                        {...register(`veneerSelect`)}
-                        onChange={(e) => {
-                          handleChapaOption(e);
-                          calculateTotalPrice();
-                        }}
-                      >
-                        <option value="">Elegir una opción</option>
-                        {veneer.map((veneer) => (
-                          <option key={veneer._id} value={veneer._id}>
-                            {veneer.name}
-                          </option>
-                        ))}
-                      </select>
+                      <Controller
+                        name="veneerSelect"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <Select
+                            inputId="veneerSelect"
+                            instanceId="veneerSelect"
+                            placeholder="Elegir una opción"
+                            isClearable
+                            options={veneerOptions}
+                            value={
+                              veneerOptions.find(
+                                (option) => option.value === field.value
+                              ) || null
+                            }
+                            onChange={(option) => {
+                              const value = option?.value || "";
+                              field.onChange(value);
+                              handleChapaOption(value);
+                              calculateTotalPrice();
+                            }}
+                            styles={selectStyles}
+                          />
+                        )}
+                      />
                       {errors[`veneerSelect`] && (
                         <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                           {errors[`veneerSelect`].message}
@@ -1897,7 +1992,15 @@ function CreateBudget() {
                         {errors.clientId.message}
                       </span>
                     )}
-                    <input type="hidden" {...register("clientId")} />
+                    <input
+                      type="hidden"
+                      {...register("clientId", {
+                        validate: (value) =>
+                          clientOption !== "existing" ||
+                          (value && value.trim() !== "") ||
+                          "Seleccioná un cliente",
+                      })}
+                    />
                   </div>
                 </>
               ) : (
@@ -1918,7 +2021,7 @@ function CreateBudget() {
                   />
 
                   {/* Editor visual */}
-                  <ReactQuill
+                  <QuillEditor
                     theme="snow"
                     value={commentValue}
                     onChange={(value) => {

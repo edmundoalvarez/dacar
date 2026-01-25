@@ -58,6 +58,7 @@ function Pieces() {
         resetField,
         reset,
         formState: { errors },
+        control,
     } = useForm();
 
     //Eliminar pieza
@@ -260,6 +261,7 @@ function Pieces() {
                             <FormCreatePieces
                                 key={`FormCreatePieces${1}`}
                                 register={register}
+                                control={control}
                                 index={1}
                                 errors={errors}
                                 tables={tables}

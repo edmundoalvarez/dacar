@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
+import Select from "react-select";
 import {
     getSupplieById,
     updateSupplie,
@@ -17,6 +18,7 @@ function EditSupplie() {
         handleSubmit,
         setValue,
         formState: { errors },
+        control,
     } = useForm();
 
     // TRAER CATEGORIAS: para el formulario
@@ -61,6 +63,45 @@ function EditSupplie() {
             console.error(error);
         }
     };
+
+    const selectStyles = {
+        control: (base, state) => ({
+            ...base,
+            borderColor: state.isFocused ? "#10b981" : "#d1d5db",
+            boxShadow: state.isFocused ? "0 0 0 1px #10b981" : "none",
+            minHeight: "40px",
+            backgroundColor: "#ffffff",
+            color: "#111827",
+        }),
+        menu: (base) => ({ ...base, zIndex: 30 }),
+        singleValue: (base) => ({
+            ...base,
+            color: "#111827",
+        }),
+        placeholder: (base) => ({
+            ...base,
+            color: "#6b7280",
+        }),
+        input: (base) => ({
+            ...base,
+            color: "#111827",
+        }),
+        menuList: (base) => ({ ...base, backgroundColor: "#ffffff" }),
+        option: (base, state) => ({
+            ...base,
+            color: "#111827",
+            backgroundColor: state.isSelected
+                ? "#d1fae5"
+                : state.isFocused
+                  ? "#f3f4f6"
+                  : "#ffffff",
+        }),
+    };
+
+    const categoryOptions = categories.map((category) => ({
+        value: category.name,
+        label: category.name,
+    }));
 
     return (
         <>
@@ -173,36 +214,48 @@ function EditSupplie() {
                             </div>
                         </div>
                         <div className="w-1/3">
-                            <div className="flex flex-col my-4">
-                                <label
-                                    htmlFor="category"
-                                    className="text-gray-700 font-medium"
-                                >
-                                    Categoria
-                                </label>
-                                <select
-                                    className="border border-gray-300 rounded-md px-4 py-2 mt-1  w-full transition duration-200"
-                                    name="category"
-                                    id="category"
-                                    {...register("category", {
-                                        required: "El campo es obligatorio",
-                                    })}
-                                >
-                                    {categories.map((category, index) => (
-                                        <option
-                                            key={category.name}
-                                            value={category.name}
-                                        >
-                                            {category.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.category && (
-                                    <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                                        {errors.category.message}
-                                    </span>
+                        <div className="flex flex-col my-4">
+                            <label
+                                htmlFor="category"
+                                className="text-gray-700 font-medium"
+                            >
+                                Categoria
+                            </label>
+                            <Controller
+                                name="category"
+                                control={control}
+                                rules={{
+                                    required: "El campo es obligatorio",
+                                }}
+                                defaultValue=""
+                                render={({ field }) => (
+                                    <Select
+                                        inputId="category"
+                                        instanceId="category-edit-supplie"
+                                        placeholder="Elegir una opción"
+                                        isClearable
+                                        options={categoryOptions}
+                                        value={
+                                            categoryOptions.find(
+                                                (option) =>
+                                                    option.value === field.value
+                                            ) || null
+                                        }
+                                        onChange={(option) =>
+                                            field.onChange(
+                                                option?.value || ""
+                                            )
+                                        }
+                                        styles={selectStyles}
+                                    />
                                 )}
-                            </div>
+                            />
+                            {errors.category && (
+                                <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
+                                    {errors.category.message}
+                                </span>
+                            )}
+                        </div>
                             <div className="flex flex-col my-4">
                                 <label
                                     htmlFor="width"

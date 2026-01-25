@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Grid, Oval } from "react-loader-spinner";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import QuillEditor from "../../components/QuillEditor.jsx";
 import {
   getFurnitureCategoryById,
   updateFurnitureCategory,
@@ -159,7 +158,7 @@ function EditFurnitureCategory() {
             <input type="hidden" id="parameter" {...register("parameter")} />
 
             {/* Editor visual */}
-            <ReactQuill
+            <QuillEditor
               theme="snow"
               value={parameterValue}
               onChange={(value) => {

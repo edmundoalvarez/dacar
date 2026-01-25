@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import { useForm, Controller } from "react-hook-form";
+import QuillEditor from "../QuillEditor.jsx";
+import Select from "react-select";
 import {
   getAllModules,
   getFurnitureById,
@@ -49,11 +49,9 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors },
+    control,
   } = useForm();
-
-  const selectedCategoryId = watch("categoryId") || "";
 
   const handleOpenModal = (module) => {
     setSelectedModule(module);
@@ -249,8 +247,7 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
     );
   });
 
-  const handleCategoryChange = (event) => {
-    const categoryId = event.target.value;
+  const handleCategoryChange = (categoryId) => {
     setValue("categoryId", categoryId);
 
     const selectedCategory = categories.find(
@@ -261,6 +258,45 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
     setParameterValue(paramHtml);
     setValue("parameter", paramHtml, { shouldValidate: true });
   };
+
+  const selectStyles = {
+    control: (base, state) => ({
+      ...base,
+      borderColor: state.isFocused ? "#10b981" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 1px #10b981" : "none",
+      minHeight: "40px",
+      backgroundColor: "#ffffff",
+      color: "#111827",
+    }),
+    menu: (base) => ({ ...base, zIndex: 30 }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#6b7280",
+    }),
+    input: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    menuList: (base) => ({ ...base, backgroundColor: "#ffffff" }),
+    option: (base, state) => ({
+      ...base,
+      color: "#111827",
+      backgroundColor: state.isSelected
+        ? "#d1fae5"
+        : state.isFocused
+          ? "#f3f4f6"
+          : "#ffffff",
+    }),
+  };
+
+  const categoryOptions = categories.map((cat) => ({
+    value: cat._id,
+    label: `${cat.name}${cat.status === false ? " (desactivada)" : ""}`,
+  }));
 
   return (
     <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white p-6">
@@ -359,23 +395,32 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
                 Categoría
               </label>
 
-              <select
-                id="categoryId"
-                className="border border-gray-300 rounded-md px-4 py-2 mt-1 focus:border-emerald-500 w-full bg-white"
-                {...register("categoryId", {
-                  onChange: handleCategoryChange,
-                })}
-                value={selectedCategoryId}
-                disabled={categoriesLoading || categories.length === 0}
-              >
-                <option value="">Selecciona una categoría</option>
-                {categories.map((cat) => (
-                  <option key={cat._id} value={cat._id}>
-                    {cat.name}
-                    {cat.status === false ? " (desactivada)" : ""}
-                  </option>
-                ))}
-              </select>
+              <Controller
+                name="categoryId"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <Select
+                    inputId="categoryId"
+                    instanceId="categoryId-edit"
+                    placeholder="Selecciona una categoría"
+                    isClearable
+                    isDisabled={categoriesLoading || categories.length === 0}
+                    options={categoryOptions}
+                    value={
+                      categoryOptions.find(
+                        (option) => option.value === field.value
+                      ) || null
+                    }
+                    onChange={(option) => {
+                      const value = option?.value || "";
+                      field.onChange(value);
+                      handleCategoryChange(value);
+                    }}
+                    styles={selectStyles}
+                  />
+                )}
+              />
 
               {errors.categoryId && (
                 <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
@@ -399,7 +444,7 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
                   {...register("parameter")}
                 />
 
-                <ReactQuill
+                <QuillEditor
                   theme="snow"
                   value={parameterValue}
                   onChange={(value) => {

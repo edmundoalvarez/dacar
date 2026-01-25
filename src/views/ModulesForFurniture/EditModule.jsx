@@ -31,6 +31,7 @@ function EditModule() {
     getValues,
     resetField,
     formState: { errors },
+    control,
   } = useForm();
 
   // Obtener datos del mueble por ID
@@ -658,6 +659,7 @@ function EditModule() {
             <FormEditSupplies
               key={`supplies-${index}`}
               register={register}
+              control={control}
               index={index}
               errors={errors}
               supplies={supplies}
@@ -695,6 +697,7 @@ function EditModule() {
               <FormEditPieces
                 key={`pieces-${index}`}
                 register={register}
+                control={control}
                 index={index}
                 errors={errors}
                 tables={tables}

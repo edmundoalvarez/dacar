@@ -47,6 +47,7 @@ function CreateModule() {
     handleSubmit,
     resetField,
     formState: { errors },
+    control,
   } = useForm();
 
   const onSubmit = async (data, event) => {
@@ -389,6 +390,7 @@ function CreateModule() {
           <FormAddSupplies
             key={index}
             register={register}
+            control={control}
             index={index}
             errors={errors}
             supplies={supplies}
@@ -422,6 +424,7 @@ function CreateModule() {
             <FormCreatePieces
               key={`FormCreatePiecess${index}`}
               register={register}
+              control={control}
               index={index}
               errors={errors}
               tables={tables}

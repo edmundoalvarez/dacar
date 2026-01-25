@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { Controller } from "react-hook-form";
+import Select from "react-select";
 
 function FormEditPieces({
   register,
@@ -8,11 +10,11 @@ function FormEditPieces({
   tables,
   resetField,
   setValue,
+  control,
   piece,
 }) {
   const [showEdgePiece, setShowEdgePiece] = useState(false);
   const [finishingModule, setFinishingModule] = useState("");
-  const [material, setMaterial] = useState("");
   const [lengthLabel, setLengthLabel] = useState("");
   const [widthLabel, setWidthLabel] = useState("");
   const [selectedVeneerOption, setSelectedVeneerOption] = useState("");
@@ -38,7 +40,6 @@ function FormEditPieces({
       setFinishingModule(initialFinishing);
       setValue(`finishing${index}`, initialFinishing);
 
-      setMaterial(piece.material || "");
       setValue(`materialPiece${index}`, piece.material || "");
 
       setSelectedVeneerOption(piece.veneerFinishing);
@@ -112,12 +113,6 @@ function FormEditPieces({
     }
   };
 
-  const handleMaterialChange = (event) => {
-    const selectedMaterial = event.target.value;
-    setMaterial(selectedMaterial);
-    setValue(`materialPiece${index}`, selectedMaterial);
-  };
-
   const handleVeneerOptionChange = (e) => {
     setSelectedVeneerOption(e.target.value);
     if (e.target.value !== `veneerLacquered${index}`) {
@@ -140,6 +135,45 @@ function FormEditPieces({
       resetField(`melamineLacqueredPieceSides${index}`);
     }
   };
+
+  const selectStyles = {
+    control: (base, state) => ({
+      ...base,
+      borderColor: state.isFocused ? "#10b981" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 1px #10b981" : "none",
+      minHeight: "40px",
+      backgroundColor: "#ffffff",
+      color: "#111827",
+    }),
+    menu: (base) => ({ ...base, zIndex: 30 }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#6b7280",
+    }),
+    input: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    menuList: (base) => ({ ...base, backgroundColor: "#ffffff" }),
+    option: (base, state) => ({
+      ...base,
+      color: "#111827",
+      backgroundColor: state.isSelected
+        ? "#d1fae5"
+        : state.isFocused
+          ? "#f3f4f6"
+          : "#ffffff",
+    }),
+  };
+
+  const materialOptions = tables.map((table) => ({
+    value: table.name,
+    label: table.name,
+  }));
 
   return (
     <div className="flex flex-wrap justify-start align-top content-start gap-x-4 w-full border-2 border-emerald-600 rounded-lg p-10 mb-6">
@@ -375,23 +409,28 @@ function FormEditPieces({
           >
             Material
           </label>
-          <select
-            className="border border-gray-300 rounded-md p-2"
+          <Controller
             name={`materialPiece${index}`}
-            id={`materialPiece${index}`}
-            {...register(`materialPiece${index}`, {
-              required: "El campo es obligatorio",
-            })}
-            onChange={handleMaterialChange}
-            value={material} // Usar solo value para un componente controlado
-          >
-            <option value="">Elegir una opción</option>
-            {tables.map((table) => (
-              <option key={table._id} value={table.name}>
-                {table.name}
-              </option>
-            ))}
-          </select>
+            control={control}
+            rules={{ required: "El campo es obligatorio" }}
+            defaultValue={piece?.material || ""}
+            render={({ field }) => (
+              <Select
+                inputId={`materialPiece${index}`}
+                instanceId={`materialPiece${index}`}
+                placeholder="Elegir una opción"
+                isClearable
+                options={materialOptions}
+                value={
+                  materialOptions.find(
+                    (option) => option.value === field.value
+                  ) || null
+                }
+                onChange={(option) => field.onChange(option?.value || "")}
+                styles={selectStyles}
+              />
+            )}
+          />
           {errors[`materialPiece${index}`] && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
               {errors[`materialPiece${index}`].message}
@@ -801,6 +840,7 @@ function FormEditPieces({
 
 FormEditPieces.propTypes = {
   register: PropTypes.func.isRequired,
+  control: PropTypes.object.isRequired,
   index: PropTypes.number.isRequired,
   errors: PropTypes.object.isRequired,
   tables: PropTypes.arrayOf(
