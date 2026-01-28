@@ -379,6 +379,34 @@ function BudgetDetails() {
                 DOCUMENTO NO VÁLIDO COMO FACTURA. PRESUPUESTO VALIDO POR 7 DÍAS
               </p>
             </div>
+
+            {/* Imagen adjunta del presupuesto */}
+            {budget.client_attachment?.url && (
+              <div className="mt-8 border-t-2 border-gray-300 pt-6">
+                <h3 className="text-lg font-semibold text-[#726352] mb-4 text-center">
+                  IMAGEN DE REFERENCIA
+                </h3>
+                <div className="flex justify-center">
+                  <a
+                    href={budget.client_attachment.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <img
+                      src={budget.client_attachment.url}
+                      alt="Imagen de referencia del presupuesto"
+                      className="max-w-full max-h-[500px] object-contain border border-gray-300 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                    />
+                  </a>
+                </div>
+                {budget.client_attachment.original_name && (
+                  <p className="text-xs text-gray-500 text-center mt-2">
+                    {budget.client_attachment.original_name}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

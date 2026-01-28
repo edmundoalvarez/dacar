@@ -11,6 +11,3 @@ RewriteRule ^api/ - [L]
 
 # Todo lo demás va a index.html (SPA)
 RewriteRule ^ /index.html [L]
-
-# Error 404 para rutas que no existen y no son de la SPA
-ErrorDocument 404 /index.html

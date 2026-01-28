@@ -12,7 +12,8 @@
   "apiPieces": "https://dacar-api.vercel.app/pieces",
   "apiMainTable": "https://dacar-api.vercel.app/main-table",
   "apiClients": "https://dacar-api.vercel.app/clients",
-  "apiBudgets": "https://dacar-api.vercel.app/budgets"
+  "apiBudgets": "https://dacar-api.vercel.app/budgets",
+  "apiUploadImage": "/api/upload_image.php"
 }
 /* TEST */
 {
@@ -28,7 +29,8 @@
   "apiPieces": "https://dacar-api-test.vercel.app/pieces",
   "apiMainTable": "https://dacar-api-test.vercel.app/main-table",
   "apiClients": "https://dacar-api-test.vercel.app/clients",
-  "apiBudgets": "https://dacar-api-test.vercel.app/budgets"
+  "apiBudgets": "https://dacar-api-test.vercel.app/budgets",
+  "apiUploadImage": "/api/upload_image.php"
 }
 /* local */
 {
@@ -44,5 +46,6 @@
   "apiPieces": "http://localhost:3000/pieces",
   "apiMainTable": "http://localhost:3000/main-table",
   "apiClients": "http://localhost:3000/clients",
-  "apiBudgets": "http://localhost:3000/budgets"
+  "apiBudgets": "http://localhost:3000/budgets",
+  "apiUploadImage": "/api/upload_image.php"
 }

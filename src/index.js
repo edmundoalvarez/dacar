@@ -93,6 +93,10 @@ export { getBudgetHistory } from "./services/Budgets/getBudgetHistory.js";
 export { getConfirmedBudgets } from "./services/Budgets/getConfirmedBudgets.js";
 export { confirmBudget } from "./services/Budgets/confirmBudget.js";
 export { unconfirmBudget } from "./services/Budgets/unconfirmBudget.js";
+export {
+  uploadBudgetImage,
+  deleteBudgetImage,
+} from "./services/Budgets/uploadBudgetImage.js";
 
 //USERS
 export { createUser } from "./services/Users/createUser.js";

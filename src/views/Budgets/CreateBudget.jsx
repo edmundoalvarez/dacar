@@ -18,6 +18,7 @@ import {
   createBudget,
   getLastBudgetNum,
   ViewModulesFurniture,
+  uploadBudgetImage,
 } from "../../index.js";
 
 //importar helpers de funciones
@@ -72,6 +73,11 @@ function CreateBudget() {
   //Editor de texto
   const [commentValue, setCommentValue] = useState("");
   const [clientCommentValue, setClientCommentValue] = useState("");
+
+  // Estado para imagen adjunta
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const quillModules = {
     toolbar: [
@@ -430,6 +436,42 @@ function CreateBudget() {
     setFilteredClients([]);
   };
 
+  // Manejar selección de imagen
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validar tipo de archivo
+      const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+      if (!validTypes.includes(file.type)) {
+        alert("Solo se permiten imágenes (JPEG, PNG, GIF, WebP)");
+        e.target.value = "";
+        return;
+      }
+      // Validar tamaño (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert("La imagen no puede superar los 10MB");
+        e.target.value = "";
+        return;
+      }
+      setSelectedImage(file);
+      // Crear preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Eliminar imagen seleccionada
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    // Limpiar el input
+    const fileInput = document.getElementById("budgetImage");
+    if (fileInput) fileInput.value = "";
+  };
+
   //AL SELECCIONAR EL FILO OBTENER EL VALOR
 
   //filo laqueado
@@ -696,6 +738,11 @@ function CreateBudget() {
   function removeEmptyFields(obj) {
     // Recorremos las claves del objeto
     for (const key in obj) {
+      // Preservar client_attachment si tiene contenido
+      if (key === "client_attachment" && obj[key] && obj[key].url) {
+        continue; // No modificar client_attachment si tiene URL
+      }
+
       if (
         obj[key] &&
         typeof obj[key] === "object" &&
@@ -703,6 +750,10 @@ function CreateBudget() {
       ) {
         // Si es un objeto, hacemos la limpieza recursivamente
         removeEmptyFields(obj[key]);
+        // Si el objeto quedó vacío después de la limpieza, eliminarlo
+        if (Object.keys(obj[key]).length === 0) {
+          delete obj[key];
+        }
       } else if (
         obj[key] === undefined ||
         obj[key] === "" ||
@@ -718,7 +769,6 @@ function CreateBudget() {
   //FORMULARIO GENERAR PRESUPUESTO
   const onSubmit = async (data, event) => {
     event.preventDefault();
-    console.log(data);
     //SET LOADER
     setSubmitLoader(true);
 
@@ -760,8 +810,6 @@ function CreateBudget() {
     // Convertimos el objeto `supplies` en una lista de objetos
     const suppliesList = Object.values(supplies);
 
-    console.log(suppliesList);
-
     // Carga cliente
     let clientData;
     // Código para crear o seleccionar cliente (comentado para ejemplo)
@@ -771,7 +819,6 @@ function CreateBudget() {
           ...data,
         }).then((res) => {
           clientData = res.data;
-          console.log("¡Creaste cliente!");
         });
       } catch (error) {
         console.error(error);
@@ -885,6 +932,30 @@ function CreateBudget() {
       console.error("Error ", error);
     }
 
+    // Subir imagen si hay una seleccionada
+    let clientAttachment = null;
+    if (selectedImage) {
+      try {
+        setImageUploading(true);
+        const uploadResult = await uploadBudgetImage(selectedImage);
+        clientAttachment = {
+          url: uploadResult.url,
+          original_name: uploadResult.original_name,
+          mime_type: uploadResult.mime_type,
+          size: uploadResult.size,
+          path: uploadResult.path,
+        };
+      } catch (error) {
+        console.error("Error subiendo imagen:", error);
+        alert("Error al subir la imagen: " + error.message);
+        setSubmitLoader(false);
+        setImageUploading(false);
+        return;
+      } finally {
+        setImageUploading(false);
+      }
+    }
+
     // Objeto final para crear el presupuesto
     const budgetData = {
       budget_number: lastnumber + 1,
@@ -944,6 +1015,7 @@ function CreateBudget() {
       deliver_date: data.deliver_date,
       comments: data.comments,
       client_comment: data.client_comment,
+      client_attachment: clientAttachment,
       client: clientData,
       placement: data.placement,
       placement_days: data.placementDays,
@@ -953,13 +1025,10 @@ function CreateBudget() {
       show_modules: data.showModules,
     };
 
-    // //TODO AGREGAR USERNAME
-    console.log(budgetData);
     const cleanedBudgetData = removeEmptyFields(budgetData);
 
     try {
       await createBudget(cleanedBudgetData);
-      console.log("Presupuesto creado", cleanedBudgetData);
       navigate("/ver-presupuestos");
     } catch (error) {
       console.error("Error creando presupuesto:", error);
@@ -2084,6 +2153,53 @@ function CreateBudget() {
                     </span>
                   )}
                 </div>
+
+                {/* Imagen adjunta del presupuesto */}
+                <div className="flex flex-col w-full mt-4">
+                  <label
+                    htmlFor="budgetImage"
+                    className="mb-2 font-semibold text-lg text-emerald-700 uppercase"
+                  >
+                    Imagen adjunta (opcional)
+                  </label>
+                  <p className="text-sm text-gray-500 mb-2">
+                    Podés adjuntar una foto o imagen de referencia del
+                    presupuesto (máx. 10MB)
+                  </p>
+                  <input
+                    type="file"
+                    id="budgetImage"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    onChange={handleImageSelect}
+                    className="border border-gray-300 rounded-md p-2 bg-white"
+                  />
+                  {imagePreview && (
+                    <div className="mt-4 relative inline-block">
+                      <p className="text-sm text-gray-600 mb-2">
+                        Vista previa:
+                      </p>
+                      <div className="relative inline-block">
+                        <img
+                          src={imagePreview}
+                          alt="Vista previa"
+                          className="max-w-[300px] max-h-[200px] object-contain border border-gray-300 rounded-md"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600"
+                          title="Eliminar imagen"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {selectedImage?.name} (
+                        {(selectedImage?.size / 1024).toFixed(1)} KB)
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex flex-row gap-4">
                 <div className="flex flex-col w-1/4 mt-4 gap-0">
@@ -2180,7 +2296,7 @@ function CreateBudget() {
               <p className="text-right text-2xl font-bold my-10 w-full">
                 Total: {formatCurrency(totalPrice)}
               </p>
-              {!submitLoader ? (
+              {!submitLoader && !imageUploading ? (
                 <div className="w-full">
                   <button
                     type="submit"
@@ -2190,10 +2306,10 @@ function CreateBudget() {
                   </button>
                 </div>
               ) : (
-                <div className="flex justify-center w-full mt-8">
+                <div className="flex flex-col justify-center items-center w-full mt-8">
                   <div className="flex justify-center bg-lightblue rounded-md px-2 py-1 mb-2 w-1/6 m-auto">
                     <Oval
-                      visible={submitLoader}
+                      visible={submitLoader || imageUploading}
                       height="30"
                       width="30"
                       color="#fff"
@@ -2204,6 +2320,9 @@ function CreateBudget() {
                       wrapperClass=""
                     />
                   </div>
+                  {imageUploading && (
+                    <p className="text-sm text-gray-600">Subiendo imagen...</p>
+                  )}
                 </div>
               )}
             </div>

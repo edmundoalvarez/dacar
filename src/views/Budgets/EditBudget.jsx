@@ -17,6 +17,8 @@ import {
   createClient,
   editBudget,
   getFurnitureCategories,
+  uploadBudgetImage,
+  deleteBudgetImage,
 } from "../../index.js";
 import { useLocation } from "react-router-dom";
 
@@ -79,6 +81,13 @@ function EditBudget() {
   //Editar comentario
   const [commentsValue, setCommentsValue] = useState("");
   const [clientCommentValue, setClientCommentValue] = useState("");
+
+  // Estado para imagen adjunta
+  const [existingImage, setExistingImage] = useState(null); // Imagen existente del presupuesto
+  const [selectedImage, setSelectedImage] = useState(null); // Nueva imagen seleccionada
+  const [imagePreview, setImagePreview] = useState(null); // Preview de nueva imagen
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageDeleted, setImageDeleted] = useState(false); // Flag para saber si se eliminó la imagen existente
   const quillModules = {
     toolbar: [
       [{ header: [1, 2, false] }],
@@ -180,16 +189,16 @@ function EditBudget() {
         const furn = budgetData.data.furniture?.[0] || null;
         setSingleFurniture(furn);
 
-        setTotalVeneer(Number(budgetData.data.veneer[0].veneerM2));
+        setTotalVeneer(Number(budgetData.data.veneer?.[0]?.veneerM2 || 0));
         setTotalVeneerPolished(
-          Number(budgetData.data.veneerPolished[0].veneerPolishedM2),
+          Number(budgetData.data.veneerPolished?.[0]?.veneerPolishedM2 || 0),
         );
         setTotalVeneerLacqueredOpen(
-          Number(budgetData.data.lacqueredOpen[0].lacqueredOpenM2),
+          Number(budgetData.data.lacqueredOpen?.[0]?.lacqueredOpenM2 || 0),
         );
-        setTotalLacqueredAll(Number(budgetData.data.lacquered[0].lacqueredM2));
+        setTotalLacqueredAll(Number(budgetData.data.lacquered?.[0]?.lacqueredM2 || 0));
         setTotalPantographed(
-          Number(budgetData.data.pantographed[0].pantographedM2),
+          Number(budgetData.data.pantographed?.[0]?.pantographedM2 || 0),
         );
 
         //DATA PRINCIPAL DEL MUEBLE
@@ -383,6 +392,11 @@ function EditBudget() {
         //MOSTRAR MÓDULOS
         setValue("showModules", budgetData.data.show_modules || "");
 
+        //IMAGEN ADJUNTA
+        if (budgetData.data.client_attachment?.url) {
+          setExistingImage(budgetData.data.client_attachment);
+        }
+
         //PRECIO TOTAL
         setTotalPrice(budgetData.data.total_price);
         //SER LOADER
@@ -487,9 +501,7 @@ function EditBudget() {
   const handleMaterialEdgeLaqueredOption = (event) => {
     let thickness = Number(event.target.value);
 
-    // console.log(option);
     if (thickness > 0) {
-      console.log(laqueadoService?.price, totalLacqueredEdgeLength, thickness);
       setMaterialEdgeLaquered(thickness);
       setValue(
         "edgeLaqueredPrice",
@@ -583,7 +595,6 @@ function EditBudget() {
   }
   // Manejar la selección del material
   const handleMaterialOption = (index) => (option) => {
-
     if (option) {
       const selectedTable = tables.find((table) => table.name === option);
       setValue(`materialPrice${index}`, selectedTable.price, {
@@ -735,6 +746,53 @@ function EditBudget() {
     setValue("clientId", client._id);
     setFilteredClients([]);
   };
+
+  // Manejar selección de nueva imagen
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validar tipo de archivo
+      const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+      if (!validTypes.includes(file.type)) {
+        alert("Solo se permiten imágenes (JPEG, PNG, GIF, WebP)");
+        e.target.value = "";
+        return;
+      }
+      // Validar tamaño (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert("La imagen no puede superar los 10MB");
+        e.target.value = "";
+        return;
+      }
+      setSelectedImage(file);
+      // Crear preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Eliminar nueva imagen seleccionada (antes de guardar)
+  const handleRemoveNewImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    const fileInput = document.getElementById("budgetImage");
+    if (fileInput) fileInput.value = "";
+  };
+
+  // Marcar imagen existente para eliminar
+  const handleRemoveExistingImage = async () => {
+    if (
+      window.confirm(
+        "¿Estás seguro de que querés eliminar esta imagen del presupuesto?",
+      )
+    ) {
+      setImageDeleted(true);
+      setExistingImage(null);
+    }
+  };
   //filtro de clientes
   useEffect(() => {
     if (searchTerm === "") {
@@ -826,6 +884,11 @@ function EditBudget() {
   function removeEmptyFields(obj) {
     // Recorremos las claves del objeto
     for (const key in obj) {
+      // Preservar client_attachment si tiene contenido
+      if (key === "client_attachment" && obj[key] && obj[key].url) {
+        continue; // No modificar client_attachment si tiene URL
+      }
+
       if (
         obj[key] &&
         typeof obj[key] === "object" &&
@@ -833,6 +896,10 @@ function EditBudget() {
       ) {
         // Si es un objeto, hacemos la limpieza recursivamente
         removeEmptyFields(obj[key]);
+        // Si el objeto quedó vacío después de la limpieza, eliminarlo
+        if (Object.keys(obj[key]).length === 0) {
+          delete obj[key];
+        }
       } else if (
         obj[key] === undefined ||
         obj[key] === "" ||
@@ -1066,6 +1133,60 @@ function EditBudget() {
     // Transformar el objeto extraItems en una lista (opcional)
     const extraItemsList = Object.values(extraItems);
 
+    // Manejar imagen adjunta
+    let clientAttachment = null;
+
+    // Si hay una nueva imagen seleccionada, subirla
+    if (selectedImage) {
+      try {
+        setImageUploading(true);
+        const uploadResult = await uploadBudgetImage(selectedImage);
+        clientAttachment = {
+          url: uploadResult.url,
+          original_name: uploadResult.original_name,
+          mime_type: uploadResult.mime_type,
+          size: uploadResult.size,
+          path: uploadResult.path,
+        };
+
+        // Si había una imagen anterior, intentar eliminarla del servidor
+        if (existingImage?.path) {
+          try {
+            const filename = existingImage.path.split("/").pop();
+            await deleteBudgetImage(filename);
+          } catch (deleteError) {
+            console.warn(
+              "No se pudo eliminar la imagen anterior:",
+              deleteError,
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error subiendo imagen:", error);
+        alert("Error al subir la imagen: " + error.message);
+        setSubmitLoader(false);
+        setImageUploading(false);
+        return;
+      } finally {
+        setImageUploading(false);
+      }
+    } else if (imageDeleted) {
+      // Se marcó para eliminar la imagen existente
+      clientAttachment = null;
+      // Intentar eliminar del servidor
+      if (existingImage?.path) {
+        try {
+          const filename = existingImage.path.split("/").pop();
+          await deleteBudgetImage(filename);
+        } catch (deleteError) {
+          console.warn("No se pudo eliminar la imagen:", deleteError);
+        }
+      }
+    } else if (existingImage) {
+      // Mantener la imagen existente
+      clientAttachment = existingImage;
+    }
+
     // Objeto final para crear el presupuesto
     const budgetData = {
       budget_number: budget.budget_number,
@@ -1125,6 +1246,7 @@ function EditBudget() {
       deliver_date: data.deliver_date,
       comments: data.comments,
       client_comment: data.client_comment,
+      client_attachment: clientAttachment,
       client: clientData,
       placement: data.placement,
       placement_days: data.placementDays,
@@ -1134,11 +1256,9 @@ function EditBudget() {
       show_modules: data.showModules,
     };
     const cleanedBudgetData = removeEmptyFields(budgetData);
-    // console.log(cleanedBudgetData);
 
     try {
       await editBudget(cleanedBudgetData, budget._id);
-      // console.log("Presupuesto editado", cleanedBudgetData);
       navigate("/ver-presupuestos");
     } catch (error) {
       console.error("Error editando presupuesto front:", error);
@@ -1260,7 +1380,7 @@ function EditBudget() {
                   options={categoryOptions}
                   value={
                     categoryOptions.find(
-                      (option) => option.value === categoryIdWatch
+                      (option) => option.value === categoryIdWatch,
                     ) || null
                   }
                   onChange={(option) =>
@@ -1620,7 +1740,7 @@ function EditBudget() {
                               options={edgeOptions}
                               value={
                                 edgeOptions.find(
-                                  (option) => option.value === field.value
+                                  (option) => option.value === field.value,
                                 ) || null
                               }
                               onChange={(option) => {
@@ -1780,7 +1900,7 @@ function EditBudget() {
                               options={tableOptions}
                               value={
                                 tableOptions.find(
-                                  (option) => option.value === field.value
+                                  (option) => option.value === field.value,
                                 ) || null
                               }
                               onChange={(option) => {
@@ -1907,7 +2027,7 @@ function EditBudget() {
                             options={veneerOptions}
                             value={
                               veneerOptions.find(
-                                (option) => option.value === field.value
+                                (option) => option.value === field.value,
                               ) || null
                             }
                             onChange={(option) => {
@@ -2145,6 +2265,85 @@ function EditBudget() {
                     </span>
                   )}
                 </div>
+
+                {/* Imagen adjunta del presupuesto */}
+                <div className="flex flex-col w-full mt-4">
+                  <label
+                    htmlFor="budgetImage"
+                    className="mb-2 font-semibold text-lg text-emerald-700 uppercase"
+                  >
+                    Imagen adjunta (opcional)
+                  </label>
+
+                  {/* Mostrar imagen existente */}
+                  {existingImage && !imageDeleted && (
+                    <div className="mb-4 p-4 border border-gray-300 rounded-md bg-gray-50">
+                      <p className="text-sm text-gray-600 mb-2 font-semibold">
+                        Imagen actual:
+                      </p>
+                      <div className="relative inline-block">
+                        <img
+                          src={existingImage.url}
+                          alt="Imagen del presupuesto"
+                          className="max-w-[300px] max-h-[200px] object-contain border border-gray-300 rounded-md"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveExistingImage}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600"
+                          title="Eliminar imagen"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {existingImage.original_name}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Input para nueva imagen */}
+                  <p className="text-sm text-gray-500 mb-2">
+                    {existingImage && !imageDeleted
+                      ? "Subí una nueva imagen para reemplazar la actual"
+                      : "Podés adjuntar una foto o imagen de referencia del presupuesto (máx. 10MB)"}
+                  </p>
+                  <input
+                    type="file"
+                    id="budgetImage"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    onChange={handleImageSelect}
+                    className="border border-gray-300 rounded-md p-2 bg-white"
+                  />
+
+                  {/* Preview de nueva imagen */}
+                  {imagePreview && (
+                    <div className="mt-4 relative inline-block">
+                      <p className="text-sm text-gray-600 mb-2">
+                        Nueva imagen seleccionada:
+                      </p>
+                      <div className="relative inline-block">
+                        <img
+                          src={imagePreview}
+                          alt="Vista previa"
+                          className="max-w-[300px] max-h-[200px] object-contain border border-gray-300 rounded-md"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveNewImage}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600"
+                          title="Cancelar nueva imagen"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {selectedImage?.name} (
+                        {(selectedImage?.size / 1024).toFixed(1)} KB)
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex flex-row gap-4">
                 <div className="flex flex-col w-1/4 mt-4 gap-0">
@@ -2241,7 +2440,7 @@ function EditBudget() {
               <p className="text-right text-2xl font-bold my-10 w-full">
                 Total: {formatCurrency(totalPrice)}
               </p>
-              {!submitLoader ? (
+              {!submitLoader && !imageUploading ? (
                 <button
                   type="submit"
                   className="bg-orange text-white font-medium py-2 px-6 rounded-lg shadow-md mt-6 transition duration-200 w-full"
@@ -2249,10 +2448,10 @@ function EditBudget() {
                   Editar presupuesto
                 </button>
               ) : (
-                <div className="flex justify-center w-full mt-8">
+                <div className="flex flex-col justify-center items-center w-full mt-8">
                   <div className="flex justify-center bg-lightblue rounded-md px-2 py-1 mb-2 w-1/6 m-auto">
                     <Oval
-                      visible={submitLoader}
+                      visible={submitLoader || imageUploading}
                       height="30"
                       width="30"
                       color="#fff"
@@ -2263,6 +2462,9 @@ function EditBudget() {
                       wrapperClass=""
                     />
                   </div>
+                  {imageUploading && (
+                    <p className="text-sm text-gray-600">Subiendo imagen...</p>
+                  )}
                 </div>
               )}
             </div>
