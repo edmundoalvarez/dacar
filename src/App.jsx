@@ -42,6 +42,8 @@ import {
   Users,
   CreateUser,
   EditUser,
+  //System Variables
+  SystemVariables,
 } from "./index.js";
 
 import Navbar from "./components/Navbar";
@@ -122,6 +124,8 @@ function App() {
             <Route path="/ver-usuarios" element={<Users />} />
             <Route path="/crear-usuario" element={<CreateUser />} />
             <Route path="/editar-usuario/:userId" element={<EditUser />} />
+            {/* variables del sistema */}
+            <Route path="/variables-sistema" element={<SystemVariables />} />
           </Route>
           {/* vistas no protegidas */}
         </Routes>

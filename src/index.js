@@ -106,6 +106,13 @@ export { filterUserByName } from "./services/Users/filterUserByName.js";
 export { inactiveUser } from "./services/Users/inactiveUser.js";
 export { updateUser } from "./services/Users/updateUser.js";
 
+//SYSTEM VARIABLES
+export { getSystemVariables } from "./services/SystemVariables/getSystemVariables.js";
+export { getSystemVariableByKey } from "./services/SystemVariables/getSystemVariableByKey.js";
+export { createSystemVariable } from "./services/SystemVariables/createSystemVariable.js";
+export { updateSystemVariable } from "./services/SystemVariables/updateSystemVariable.js";
+export { deleteSystemVariable } from "./services/SystemVariables/deleteSystemVariable.js";
+
 //Components --->
 
 //MODULES
@@ -171,3 +178,6 @@ export { EditClient } from "./views/Clients/EditClient";
 export { Users } from "./views/Users/Users";
 export { CreateUser } from "./views/Users/CreateUser";
 export { EditUser } from "./views/Users/EditUser";
+
+//SYSTEM VARIABLES
+export { SystemVariables } from "./views/SystemVariables/SystemVariables";

@@ -26,18 +26,33 @@ function Navbar() {
 
   // Items del menú ABMs en orden alfabético
   const abmItems = [
-    { name: "Cat. Muebles", path: "/ver-categorias-muebles", icon: "./icon_furnitures.svg" },
-    { name: "Clientes", path: "/ver-clientes", icon: "./icon_clients.svg" },
-    { name: "Insumos", path: "/ver-insumos", icon: "./icon_supplies.svg" },
-    { name: "Servicios", path: "/ver-servicios", icon: "./icon_services.svg" },
-    { name: "Usuarios", path: "/ver-usuarios", icon: "./icon_users.svg" },
+    {
+      name: "Cat. Muebles",
+      path: "/ver-categorias-muebles",
+      icon: "/icon_furnitures.svg",
+    },
+    { name: "Clientes", path: "/ver-clientes", icon: "/icon_clients.svg" },
+    { name: "Insumos", path: "/ver-insumos", icon: "/icon_supplies.svg" },
+    { name: "Servicios", path: "/ver-servicios", icon: "/icon_services.svg" },
+    { name: "Usuarios", path: "/ver-usuarios", icon: "/icon_users.svg" },
+    {
+      name: "Variables sistema",
+      path: "/variables-sistema",
+      icon: "/icon_modules.svg",
+      adminOnly: true,
+    },
   ];
+
+  const isAdmin = user?.role === 1;
+  const visibleAbmItems = isAdmin
+    ? abmItems
+    : abmItems.filter((item) => !item.adminOnly);
 
   const isActive = (path) => {
     return location.pathname === path;
   };
 
-  const isAbmActive = abmItems.some((item) => isActive(item.path));
+  const isAbmActive = visibleAbmItems.some((item) => isActive(item.path));
 
   return (
     <div className="w-full bg-gray-900 text-white py-2 px-4 flex justify-between items-center shadow-md fixed top-0 left-0 z-50 text-sm">
@@ -110,7 +125,7 @@ function Navbar() {
 
             {isDropdownOpen && (
               <div className="absolute top-full left-0 mt-1 bg-gray-800 rounded-md shadow-lg min-w-[180px] border border-gray-700">
-                {abmItems.map((item) => (
+                {visibleAbmItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}

@@ -1,5 +1,29 @@
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+
+const loadImage = (url) =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+
+const fitImage = (imgWidth, imgHeight, maxWidth, maxHeight) => {
+  let width = imgWidth;
+  let height = imgHeight;
+  if (width > maxWidth) {
+    height *= maxWidth / width;
+    width = maxWidth;
+  }
+  if (height > maxHeight) {
+    width *= maxHeight / height;
+    height = maxHeight;
+  }
+  return { width, height };
+};
+
 export const generatePDF = async (elementId, budget) => {
   const element = document.getElementById(elementId);
 
@@ -123,6 +147,14 @@ export const generatePDF = async (elementId, budget) => {
       parrafo.style.fontSize = "16px";
     });
 
+    // Eliminar la miniatura adjunta del PDF principal
+    const attachmentPreview = clonedElement.querySelector(
+      "[data-attachment-preview='true']"
+    );
+    if (attachmentPreview) {
+      attachmentPreview.remove();
+    }
+
     // Insertar el clon en el DOM
     document.body.appendChild(clonedElement);
 
@@ -165,6 +197,49 @@ export const generatePDF = async (elementId, budget) => {
     const y = 0;
 
     pdf.addImage(imgData, "PNG", x, y, scaledWidth, scaledHeight);
+
+    const attachmentUrl = budget?.client_attachment?.url;
+    if (attachmentUrl) {
+      try {
+        const attachmentImage = await loadImage(attachmentUrl);
+        const isLandscape =
+          (attachmentImage.naturalWidth || attachmentImage.width) >
+          (attachmentImage.naturalHeight || attachmentImage.height);
+
+        pdf.addPage("a4", isLandscape ? "landscape" : "portrait");
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 5;
+        const maxImgWidth = pageWidth - margin * 2;
+        const maxImgHeight = pageHeight - margin * 2;
+
+        const imgWidth =
+          attachmentImage.naturalWidth || attachmentImage.width;
+        const imgHeight =
+          attachmentImage.naturalHeight || attachmentImage.height;
+        const { width, height } = fitImage(
+          imgWidth,
+          imgHeight,
+          maxImgWidth,
+          maxImgHeight
+        );
+
+        const canvas = document.createElement("canvas");
+        canvas.width = imgWidth;
+        canvas.height = imgHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(attachmentImage, 0, 0);
+        const attachmentData = canvas.toDataURL("image/jpeg", 0.92);
+
+        const imgX = (pageWidth - width) / 2;
+        const imgY = (pageHeight - height) / 2;
+
+        pdf.addImage(attachmentData, "JPEG", imgX, imgY, width, height);
+      } catch (attachmentError) {
+        console.error("Error al cargar la imagen adjunta:", attachmentError);
+      }
+    }
     // Abrir en nueva pestaña
     // Función para limpiar caracteres peligrosos en nombres de archivo
     const sanitizeFileName = (name) => {

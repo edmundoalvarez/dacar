@@ -12,5 +12,6 @@
   "apiMainTable": "http://localhost:3000/main-table",
   "apiClients": "http://localhost:3000/clients",
   "apiBudgets": "http://localhost:3000/budgets",
+  "apiSystemVariables": "http://localhost:3000/system-variables",
   "apiUploadImage": "/api/upload_image.php"
 }

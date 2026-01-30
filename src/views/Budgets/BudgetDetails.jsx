@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getBudgetById } from "../../index.js";
+import { getBudgetById, getSystemVariableByKey } from "../../index.js";
 import { Grid } from "react-loader-spinner";
 import { generatePDF } from "../../helpers/Budgets/budgetDetailPdf.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,6 +12,9 @@ import { formatComments } from "../../helpers/Budgets/formatComments.js";
 function BudgetDetails() {
   const [budget, setBudget] = useState({});
   const [loader, setLoader] = useState(true);
+  const defaultPaymentTerms =
+    "50% SEÑA. 50% SALDO PARA COORDINAR ENTREGA.\nSALDO DOLARIZADO SEGÚN COTIZCIÓN AL DÍA DE LA SEÑA - DÓLAR OFICIAL / VENTA BNA";
+  const [paymentTerms, setPaymentTerms] = useState(defaultPaymentTerms);
   const { idBudget } = useParams();
   const furn = budget?.furniture?.[0];
   const categoryName = furn?.category?.name || "-";
@@ -40,6 +43,26 @@ function BudgetDetails() {
   useEffect(() => {
     getBudgetToSet();
   }, [idBudget]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getSystemVariableByKey("budget_payment_terms", controller.signal)
+      .then((variable) => {
+        if (variable?.value) {
+          setPaymentTerms(variable.value);
+        }
+      })
+      .catch((error) => {
+        if (
+          error?.name === "CanceledError" ||
+          error?.name === "AbortError"
+        ) {
+          return;
+        }
+        console.error("Error al obtener términos de pago:", error);
+      });
+    return () => controller.abort();
+  }, []);
 
   const totalPriceInUnits = budget.total_price;
   const iva = totalPriceInUnits * 0.21;
@@ -256,6 +279,23 @@ function BudgetDetails() {
                   </tr>
                 ))}
 
+                {budget.client_comment ? (
+                  <>
+                    <tr className=" text-left whitespace-nowrap text-sm align-midd text-gray-700 border-b-2 border-gray-700">
+                      <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
+                        COMENTARIOS
+                      </td>
+                      <td
+                        colSpan={2}
+                        className="px-6 py-4 text-left whitespace-normal text-sm align-midd border-r-2 border-r-black border-l-2 border-l-black"
+                      >
+                        <div className="break-words comments-html text-left">
+                          {parse(formatComments(budget.client_comment || ""))}
+                        </div>
+                      </td>
+                    </tr>
+                  </>
+                ) : null}
                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
                   <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
                     COLOCACIÓN
@@ -284,11 +324,7 @@ function BudgetDetails() {
                     colSpan={2}
                     className="uppercase px-6 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black"
                   >
-                    <p>50% SEÑA. 50% SALDO PARA COORDINAR ENTREGA.</p>
-                    <p>
-                      SALDO DOLARIZADO SEGÚN COTIZCIÓN AL DÍA DE LA SEÑA - DÓLAR
-                      OFICIAL / VENTA BNA
-                    </p>
+                    <p className="whitespace-pre-line">{paymentTerms}</p>
                   </td>
                 </tr>
                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
@@ -319,28 +355,6 @@ function BudgetDetails() {
                     </strong>
                   </td>
                 </tr>
-                {budget.client_comment ? (
-                  <>
-                    <tr>
-                      <td colSpan={3} className="p-0 m-0 h-0">
-                        <div className="w-full border-t-2 border-gray-700" />
-                      </td>
-                    </tr>
-                    <tr className=" text-left whitespace-nowrap text-sm align-midd text-gray-700">
-                      <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
-                        COMENTARIOS
-                      </td>
-                      <td
-                        colSpan={2}
-                        className="px-6 py-4 text-left whitespace-normal text-sm align-midd border-r-2 border-r-black border-l-2 border-l-black"
-                      >
-                        <div className="break-words comments-html text-left">
-                          {parse(formatComments(budget.client_comment || ""))}
-                        </div>
-                      </td>
-                    </tr>
-                  </>
-                ) : null}
               </tbody>
             </table>
 
@@ -380,13 +394,16 @@ function BudgetDetails() {
               </p>
             </div>
 
-            {/* Imagen adjunta del presupuesto */}
+            {/* Imagen adjunta (miniatura) */}
             {budget.client_attachment?.url && (
-              <div className="mt-8 border-t-2 border-gray-300 pt-6">
-                <h3 className="text-lg font-semibold text-[#726352] mb-4 text-center">
-                  IMAGEN DE REFERENCIA
-                </h3>
-                <div className="flex justify-center">
+              <div
+                className="mt-6 border-t-2 border-gray-300 pt-4"
+                data-attachment-preview="true"
+              >
+                <p className="text-sm font-semibold text-[#726352] mb-2">
+                  Imagen adjunta
+                </p>
+                <div className="flex items-center gap-4">
                   <a
                     href={budget.client_attachment.url}
                     target="_blank"
@@ -395,16 +412,16 @@ function BudgetDetails() {
                   >
                     <img
                       src={budget.client_attachment.url}
-                      alt="Imagen de referencia del presupuesto"
-                      className="max-w-full max-h-[500px] object-contain border border-gray-300 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                      alt="Imagen adjunta del presupuesto"
+                      className="w-[180px] h-[140px] object-contain border border-gray-300 rounded-md shadow-sm hover:shadow-md transition-shadow bg-white"
                     />
                   </a>
+                  {budget.client_attachment.original_name && (
+                    <p className="text-xs text-gray-500">
+                      {budget.client_attachment.original_name}
+                    </p>
+                  )}
                 </div>
-                {budget.client_attachment.original_name && (
-                  <p className="text-xs text-gray-500 text-center mt-2">
-                    {budget.client_attachment.original_name}
-                  </p>
-                )}
               </div>
             )}
           </div>

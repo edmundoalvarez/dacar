@@ -19,6 +19,7 @@ import {
   getFurnitureCategories,
   uploadBudgetImage,
   deleteBudgetImage,
+  getSystemVariableByKey,
 } from "../../index.js";
 import { useLocation } from "react-router-dom";
 
@@ -88,6 +89,27 @@ function EditBudget() {
   const [imagePreview, setImagePreview] = useState(null); // Preview de nueva imagen
   const [imageUploading, setImageUploading] = useState(false);
   const [imageDeleted, setImageDeleted] = useState(false); // Flag para saber si se eliminó la imagen existente
+
+  // Coeficiente de cálculo (variable del sistema, default 3.8)
+  const [calculationCoefficient, setCalculationCoefficient] = useState(3.8);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getSystemVariableByKey("budget_calculation_coefficient", controller.signal)
+      .then((variable) => {
+        if (variable?.value != null && variable.value !== "") {
+          const num = Number(variable.value);
+          if (!Number.isNaN(num)) setCalculationCoefficient(num);
+        }
+      })
+      .catch((err) => {
+        if (err?.name !== "CanceledError" && err?.name !== "AbortError") {
+          console.error("Error al obtener coeficiente de cálculo:", err);
+        }
+      });
+    return () => controller.abort();
+  }, []);
+
   const quillModules = {
     toolbar: [
       [{ header: [1, 2, false] }],
@@ -557,7 +579,7 @@ function EditBudget() {
       setMaterialEdge(selectedEdge.price);
       setValue(
         "edgePrice",
-        Math.round((totalEdgeLength / 100) * selectedEdge.price * 3.8) +
+        Math.round((totalEdgeLength / 100) * selectedEdge.price * calculationCoefficient) +
           filoService?.price * (totalEdgeLength / 100),
       );
       calculateTotalPrice();
@@ -565,7 +587,7 @@ function EditBudget() {
       setMaterialEdge(1);
       setValue(
         "edgePrice",
-        Math.round((totalEdgeLength / 100) * 1 * 3.8) +
+        Math.round((totalEdgeLength / 100) * 1 * calculationCoefficient) +
           filoService?.price * (totalEdgeLength / 100),
       );
       calculateTotalPrice();
@@ -626,7 +648,7 @@ function EditBudget() {
       total += price * qty;
       totalQty += qty;
     }
-    subTotal = subTotal * 3.8 + totalQty * cortePlacaService?.price;
+    subTotal = subTotal * calculationCoefficient + totalQty * cortePlacaService?.price;
     total = total;
     setSubtotalMaterialPrice(subTotal);
     setTotalMaterialPrice(total);
@@ -635,7 +657,7 @@ function EditBudget() {
   // Ejecutar cálculo automáticamente cuando cambien los precios o cantidades
   useEffect(() => {
     calculateTotalMaterialPrice(materialPrices, materialQtys);
-  }, [materialPrices, materialQtys, countMaterial]);
+  }, [materialPrices, materialQtys, countMaterial, calculationCoefficient]);
 
   //CALCULAR TOTAL DE ITEMS EXTRA
 
@@ -840,8 +862,8 @@ function EditBudget() {
 
     //suma del total
     let totalPrice =
-      (chapa_price_subtotal * 3.8 || 0) +
-      (enchapado_artesanal_subtotal * 3.8 || 0) +
+      (chapa_price_subtotal * calculationCoefficient || 0) +
+      (enchapado_artesanal_subtotal * calculationCoefficient || 0) +
       (lustrado_subtotal || 0) +
       (laqueado_subtotal || 0) +
       (laqueado_poro_subtotal || 0) +
@@ -849,7 +871,7 @@ function EditBudget() {
       (filo_laqueado_subtotal || 0) +
       (filo_lustrado_subtotal || 0) +
       (filo_subtotal || 0) +
-      (totalSuppliePrice * 3.8 || 0) +
+      (totalSuppliePrice * calculationCoefficient || 0) +
       (subtotalMaterialPrice || 0) +
       (subTotalItemExtraPrice || 0) +
       (subtotalAdjustmentPrice || 0) +
@@ -879,6 +901,7 @@ function EditBudget() {
     subtotalAdjustmentPrice,
     subtotalPlacement,
     subtotalShipmentPrice,
+    calculationCoefficient,
   ]);
   //Función para limpiar el objeto budgetData:
   function removeEmptyFields(obj) {
@@ -1708,7 +1731,7 @@ function EditBudget() {
                           {setValue(
                             "edgePrice",
                             Math.round(
-                              totalEdgeLength * materialEdge * 3.8 +
+                              totalEdgeLength * materialEdge * calculationCoefficient +
                                 filoService?.price * totalEdgeLength,
                             ),
                           )}
