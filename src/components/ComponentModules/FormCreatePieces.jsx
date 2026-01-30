@@ -58,7 +58,6 @@ function FormCreatePieces({
         // Reset fields based on finishing module change
         if (selectedFinishing !== "lacqueredPiece") {
             resetField(`lacqueredPieceSides${index}`);
-            resetField(`pantographed${index}`);
             setSelectedVeneerOption("");
             setSelectedVeneer2Option("");
         }
@@ -483,6 +482,16 @@ function FormCreatePieces({
                                 </div>
                             )}
                         </div>
+                        <div className="flex flex-col justify-start items-center gap-3 mt-2 w-1/2">
+                            <label className="font-semibold">
+                                Pantografiado
+                            </label>
+                            <input
+                                className="ml-2"
+                                type="checkbox"
+                                {...register(`pantographed${index}`)}
+                            />
+                        </div>
                     </>
                 )}
                 {/* Enchapado artesanal veneer */}
@@ -530,6 +539,16 @@ function FormCreatePieces({
                                 {errors[`veneerOption${index}`].message}
                             </span>
                         )}
+                        <div className="flex flex-col justify-start items-center gap-3 mt-2 w-full">
+                            <label className="font-semibold">
+                                Pantografiado
+                            </label>
+                            <input
+                                className="ml-2"
+                                type="checkbox"
+                                {...register(`pantographed${index}`)}
+                            />
+                        </div>
                     </div>
                 )}
                 {/* al elegir que el enchapado artesnal tiene laqueado */}
@@ -608,6 +627,16 @@ function FormCreatePieces({
                                 {errors[`veneer2Option${index}`].message}
                             </span>
                         )}
+                        <div className="flex flex-col justify-start items-center gap-3 mt-2 w-full">
+                            <label className="font-semibold">
+                                Pantografiado
+                            </label>
+                            <input
+                                className="ml-2"
+                                type="checkbox"
+                                {...register(`pantographed${index}`)}
+                            />
+                        </div>
                     </div>
                 )}
                 {/* al elegir que el enchapado NO artesnal tiene laqueado */}

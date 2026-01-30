@@ -93,7 +93,6 @@ function FormEditPieces({
     // Reset fields based on finishing module change
     if (selectedFinishing !== "lacqueredPiece") {
       resetField(`lacqueredPieceSides${index}`);
-      resetField(`pantographed${index}`);
       setSelectedVeneerOption("");
       setSelectedVeneer2Option("");
     }
@@ -550,6 +549,15 @@ function FormEditPieces({
                 </div>
               )}
             </div>
+            <div className="flex flex-col justify-start items-center gap-3 mt-2 w-1/2">
+              <label className="font-semibold">Pantografiado</label>
+              <input
+                className="ml-2"
+                type="checkbox"
+                {...register(`pantographed${index}`)}
+                defaultChecked={piece?.pantographed || false}
+              />
+            </div>
           </>
         )}
         {/* Enchapado artesanal veneer */}
@@ -593,6 +601,15 @@ function FormEditPieces({
                 {errors[`veneerOption${index}`].message}
               </span>
             )}
+            <div className="flex flex-col justify-start items-center gap-3 mt-2 w-full">
+              <label className="font-semibold">Pantografiado</label>
+              <input
+                className="ml-2"
+                type="checkbox"
+                {...register(`pantographed${index}`)}
+                defaultChecked={piece?.pantographed || false}
+              />
+            </div>
           </div>
         )}
         {/* al elegir que el enchapado artesnal tiene laqueado */}
@@ -662,6 +679,15 @@ function FormEditPieces({
                 {errors[`veneer2Option${index}`].message}
               </span>
             )}
+            <div className="flex flex-col justify-start items-center gap-3 mt-2 w-full">
+              <label className="font-semibold">Pantografiado</label>
+              <input
+                className="ml-2"
+                type="checkbox"
+                {...register(`pantographed${index}`)}
+                defaultChecked={piece?.pantographed || false}
+              />
+            </div>
           </div>
         )}
         {/* al elegir que el enchapado NO artesnal tiene laqueado */}

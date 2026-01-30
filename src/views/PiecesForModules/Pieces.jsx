@@ -459,6 +459,14 @@ function Pieces() {
                                                     ) : (
                                                         ""
                                                     )}
+                                                    {piece.pantographed && (
+                                                        <>
+                                                            <br />
+                                                            <strong>
+                                                                Pantografiado
+                                                            </strong>
+                                                        </>
+                                                    )}
                                                 </>
                                             ) : piece.veneer2 ? (
                                                 <>
@@ -493,6 +501,14 @@ function Pieces() {
                                                     ) : (
                                                         ""
                                                     )}
+                                                    {piece.pantographed && (
+                                                        <>
+                                                            <br />
+                                                            <strong>
+                                                                Pantografiado
+                                                            </strong>
+                                                        </>
+                                                    )}
                                                 </>
                                             ) : piece.melamine ? (
                                                 <>
@@ -514,6 +530,14 @@ function Pieces() {
                                                         2 && (
                                                         <strong>2 lados</strong>
                                                     )}{" "}
+                                                    {piece.pantographed && (
+                                                        <>
+                                                            <br />
+                                                            <strong>
+                                                                Pantografiado
+                                                            </strong>
+                                                        </>
+                                                    )}
                                                 </>
                                             ) : (
                                                 "No indica"
