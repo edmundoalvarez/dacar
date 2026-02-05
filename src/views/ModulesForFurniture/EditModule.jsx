@@ -62,6 +62,8 @@ function EditModule() {
           setValue(`qty${index}`, piece.qty);
           setValue(`lengthPiece${index}`, piece.length);
           setValue(`widthPiece${index}`, piece.width);
+          setValue(`lengthPieceBase${index}`, piece.length);
+          setValue(`widthPieceBase${index}`, piece.width);
           setValue(`orientation${index}`, piece.orientation);
           setValue(`commentPiece${index}`, piece.comment);
           setValue(`materialPiece${index}`, piece.material);
@@ -334,8 +336,8 @@ function EditModule() {
       // setModuleOriginalHeight(formattedModuleNewHeight);
       // setModuleOriginalLength(formattedModuleNewLength);
       // setModuleOriginalWidth(formattedModuleNewWidth);
-      let pieceLength = getValues(`lengthPieceHidden${index}`);
-      let pieceWidth = getValues(`widthPieceHidden${index}`);
+      let pieceLength = getValues(`lengthPieceBase${index}`);
+      let pieceWidth = getValues(`widthPieceBase${index}`);
       pieceLength = Number(pieceLength);
       pieceWidth = Number(pieceWidth);
 
@@ -451,11 +453,9 @@ function EditModule() {
       // Solo actualizar si no está bloqueado
       if (!lockLength) {
         setValue(`lengthPiece${index}`, formatNumber(pieceLength));
-        setValue(`lengthPieceHidden${index}`, pieceLength);
       }
       if (!lockWidth) {
         setValue(`widthPiece${index}`, formatNumber(pieceWidth));
-        setValue(`widthPieceHidden${index}`, pieceWidth);
       }
     });
   };

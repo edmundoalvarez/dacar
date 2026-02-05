@@ -276,7 +276,7 @@ function FormEditPieces({
             defaultValue={piece?.width.toString() || ""}
             onChange={(e) => {
               const value = Number(e.target.value);
-              setValue(`widthPieceHidden${index}`, value);
+              setValue(`widthPieceBase${index}`, value);
             }}
           />
           {errors[`widthPiece${index}`] && (
@@ -287,9 +287,9 @@ function FormEditPieces({
           <input
             className="border border-gray-300 rounded-md p-2"
             type="hidden"
-            name={`widthPieceHidden${index}`}
-            id={`widthPieceHidden${index}`}
-            {...register(`widthPieceHidden${index}`)}
+            name={`widthPieceBase${index}`}
+            id={`widthPieceBase${index}`}
+            {...register(`widthPieceBase${index}`)}
             defaultValue={piece?.width.toString() || ""}
           />
           <div className="flex items-center gap-2 mt-2">
@@ -340,7 +340,7 @@ function FormEditPieces({
             defaultValue={piece?.length.toString() || ""}
             onChange={(e) => {
               const value = Number(e.target.value);
-              setValue(`lengthPieceHidden${index}`, value);
+              setValue(`lengthPieceBase${index}`, value);
             }}
           />
           {errors[`lengthPiece${index}`] && (
@@ -351,9 +351,9 @@ function FormEditPieces({
           <input
             className="border border-gray-300 rounded-md p-2"
             type="hidden"
-            name={`lengthPieceHidden${index}`}
-            id={`lengthPieceHidden${index}`}
-            {...register(`lengthPieceHidden${index}`)}
+            name={`lengthPieceBase${index}`}
+            id={`lengthPieceBase${index}`}
+            {...register(`lengthPieceBase${index}`)}
             defaultValue={piece?.length.toString() || ""}
           />
           <div className="flex items-center gap-2 mt-2">

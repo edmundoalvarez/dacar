@@ -3,7 +3,8 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext"; // ajustá el path si es necesario
 
 function Home() {
-  const { logout } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
+  const isAdmin = user?.role === 1;
   const ENV = import.meta.env.VITE_ENV;
 
   const bgColorClass = ENV === "PROD" ? "bg-gray-800" : "bg-yellow-700";
@@ -124,6 +125,21 @@ function Home() {
             />
             <p className="m-0 leading-loose">Usuarios</p>
           </Link>
+          {isAdmin && (
+            <Link
+              to={`/variables-sistema`}
+              className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium min-w-[200px] text-center flex flex-row justify-center gap-4"
+            >
+              <img
+                src="./icon_modules.svg"
+                alt="Variables sistema"
+                className="w-[28px] shrink-0"
+              />
+              <p className="m-0 leading-loose whitespace-nowrap">
+                Variables sistema
+              </p>
+            </Link>
+          )}
         </div>
         <button
           onClick={logout}
