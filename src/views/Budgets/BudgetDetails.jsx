@@ -138,54 +138,56 @@ function BudgetDetails() {
             id="budget-to-print"
             className="border border-gray-300 p-8 shadow-lg rounded-lg max-w-6xl m-auto"
           >
-            <div className="text-center w-[240px] m-auto mt-4 mb-6">
-              <img className="" src="./../logo-dacar.png" alt="Logo Dacar" />
-            </div>
-            <div className="flex flex-row justify-between ">
-              <h2 className="w-[300px] text-lg font-light text-[#726352]">
-                CARPINTERIA GENERAL DE OBRA EQUIPAMIENTOS A MEDIDA
-              </h2>
-              <ul className="text-[#726352] font-light text-right text-lg">
-                <li>MERCEDES 3280, SAN ANDRES - BS.AS.</li>
-                <li>OFICINA: 2198.3323</li>
-                <li>WHATSAPP: 11.5019.9244</li>
-              </ul>
-            </div>
-            <div
-              className="flex justify-between mb-4 py-4 mt-4 border-t-4  border-t-[#9C846A] border-b-4  border-b-[#9C846A]"
-              id="intro"
-            >
-              <div className="flex flex-col gap-0">
-                <p className="text-gray-600">
-                  <span className="font-bold">CLIENTE:</span>{" "}
-                  {budget.client?.[0]?.name} {budget.client?.[0]?.lastname}
-                </p>
-                <p className="text-gray-600">
-                  <span className="font-bold">OBRA:</span>{" "}
-                  {budget.furniture_name}
-                </p>
+            <div id="budget-pdf-header">
+              <div className="text-center w-[240px] m-auto mt-4 mb-6">
+                <img className="" src="./../logo-dacar.png" alt="Logo Dacar" />
               </div>
-
-              <div className="flex flex-col gap-0">
-                <p className="text-gray-600">
-                  <span className="font-bold">FECHA:</span>{" "}
-                  {new Date(budget.date).toLocaleDateString()}
-                </p>
-                <p className="text-gray-600">
-                  <span className="font-bold">PRESUPUESTO:</span>{" "}
-                  {budget.budget_number}
-                </p>
+              <div className="flex flex-row justify-between ">
+                <h2 className="w-[300px] text-lg font-light text-[#726352]">
+                  CARPINTERIA GENERAL DE OBRA EQUIPAMIENTOS A MEDIDA
+                </h2>
+                <ul className="text-[#726352] font-light text-right text-lg">
+                  <li>MERCEDES 3280, SAN ANDRES - BS.AS.</li>
+                  <li>OFICINA: 2198.3323</li>
+                  <li>WHATSAPP: 11.5019.9244</li>
+                </ul>
               </div>
+              <div
+                className="flex justify-between mb-4 py-4 mt-4 border-t-4  border-t-[#9C846A] border-b-4  border-b-[#9C846A]"
+                id="intro"
+              >
+                <div className="flex flex-col gap-0">
+                  <p className="text-gray-600">
+                    <span className="font-bold">CLIENTE:</span>{" "}
+                    {budget.client?.[0]?.name} {budget.client?.[0]?.lastname}
+                  </p>
+                  <p className="text-gray-600">
+                    <span className="font-bold">OBRA:</span>{" "}
+                    {budget.furniture_name}
+                  </p>
+                </div>
 
-              <div className="flex flex-col gap-0">
-                <p className="text-gray-600">
-                  <span className="font-bold">
-                    FECHA ESTIMADA DE ENTREGA:
-                  </span>{" "}
-                </p>
-                <p className="text-gray-600 uppercase text-right">
-                  {budget.deliver_date}
-                </p>
+                <div className="flex flex-col gap-0">
+                  <p className="text-gray-600">
+                    <span className="font-bold">FECHA:</span>{" "}
+                    {new Date(budget.date).toLocaleDateString()}
+                  </p>
+                  <p className="text-gray-600">
+                    <span className="font-bold">PRESUPUESTO:</span>{" "}
+                    {budget.budget_number}
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-0">
+                  <p className="text-gray-600">
+                    <span className="font-bold">
+                      FECHA ESTIMADA DE ENTREGA:
+                    </span>{" "}
+                  </p>
+                  <p className="text-gray-600 uppercase text-right">
+                    {budget.deliver_date}
+                  </p>
+                </div>
               </div>
             </div>
 

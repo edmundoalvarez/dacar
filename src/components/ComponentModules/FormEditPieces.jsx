@@ -400,8 +400,8 @@ function FormEditPieces({
           </span>
         )}
       </div>
-      <div className="flex flex-row gap-4 w-full mt-4">
-        <div className="flex flex-col w-1/2">
+      <div className="flex flex-row gap-4 w-full mt-4 items-start">
+        <div className="flex flex-col flex-1 min-w-0">
           <label
             htmlFor={`materialPiece${index}`}
             className="font-semibold mb-1"
@@ -436,7 +436,7 @@ function FormEditPieces({
             </span>
           )}
         </div>
-        <div className="flex flex-col w-1/2">
+        <div className="flex flex-col flex-1 min-w-0">
           <label
             htmlFor={`lacqueredOrVeneer${index}`}
             className="font-semibold mb-1"
@@ -464,6 +464,17 @@ function FormEditPieces({
               {errors[`finishing${index}`].message}
             </span>
           )}
+        </div>
+        <div className="flex flex-col justify-end items-center gap-1 pt-6 flex-shrink-0 w-24">
+          <label className="font-semibold text-sm whitespace-nowrap">
+            Pantografiado
+          </label>
+          <input
+            className="ml-2"
+            type="checkbox"
+            {...register(`pantographed${index}`)}
+            defaultChecked={piece?.pantographed || false}
+          />
         </div>
       </div>
 
@@ -496,15 +507,6 @@ function FormEditPieces({
                   {errors[`lacqueredPieceSides${index}`].message}
                 </span>
               )}
-            </div>
-            <div className="flex flex-col justify-start items-center gap-3 mt-2 w-1/2">
-              <label className="font-semibold">Pantografiado</label>
-              <input
-                className="ml-2"
-                type="checkbox"
-                {...register(`pantographed${index}`)}
-                defaultChecked={piece?.pantographed || false}
-              />
             </div>
           </div>
         )}
@@ -549,15 +551,6 @@ function FormEditPieces({
                 </div>
               )}
             </div>
-            <div className="flex flex-col justify-start items-center gap-3 mt-2 w-1/2">
-              <label className="font-semibold">Pantografiado</label>
-              <input
-                className="ml-2"
-                type="checkbox"
-                {...register(`pantographed${index}`)}
-                defaultChecked={piece?.pantographed || false}
-              />
-            </div>
           </>
         )}
         {/* Enchapado artesanal veneer */}
@@ -601,15 +594,6 @@ function FormEditPieces({
                 {errors[`veneerOption${index}`].message}
               </span>
             )}
-            <div className="flex flex-col justify-start items-center gap-3 mt-2 w-full">
-              <label className="font-semibold">Pantografiado</label>
-              <input
-                className="ml-2"
-                type="checkbox"
-                {...register(`pantographed${index}`)}
-                defaultChecked={piece?.pantographed || false}
-              />
-            </div>
           </div>
         )}
         {/* al elegir que el enchapado artesnal tiene laqueado */}
@@ -679,15 +663,6 @@ function FormEditPieces({
                 {errors[`veneer2Option${index}`].message}
               </span>
             )}
-            <div className="flex flex-col justify-start items-center gap-3 mt-2 w-full">
-              <label className="font-semibold">Pantografiado</label>
-              <input
-                className="ml-2"
-                type="checkbox"
-                {...register(`pantographed${index}`)}
-                defaultChecked={piece?.pantographed || false}
-              />
-            </div>
           </div>
         )}
         {/* al elegir que el enchapado NO artesnal tiene laqueado */}

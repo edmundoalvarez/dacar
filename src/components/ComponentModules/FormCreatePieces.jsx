@@ -318,8 +318,8 @@ function FormCreatePieces({
                     </span>
                 )}
             </div>
-            <div className="flex flex-row gap-4 w-full mt-4">
-                <div className="flex flex-col w-1/2">
+            <div className="flex flex-row gap-4 w-full mt-4 items-start">
+                <div className="flex flex-col flex-1 min-w-0">
                     <label
                         htmlFor={`materialPiece${index}`}
                         className="font-semibold mb-1"
@@ -358,8 +358,8 @@ function FormCreatePieces({
                     )}
                 </div>
 
-                <div className="flex flex-col w-1/2">
-                    <label htmlFor={`finishing`} className="font-semibold mb-1">
+                <div className="flex flex-col flex-1 min-w-0">
+                    <label htmlFor={`finishing${index}`} className="font-semibold mb-1">
                         Acabado
                     </label>
                     <select
@@ -382,6 +382,17 @@ function FormCreatePieces({
                             {errors[`finishing${index}`].message}
                         </span>
                     )}
+                </div>
+
+                <div className="flex flex-col justify-end items-center gap-1 pt-6 flex-shrink-0 w-24">
+                    <label className="font-semibold text-sm whitespace-nowrap">
+                        Pantografiado
+                    </label>
+                    <input
+                        className="ml-2"
+                        type="checkbox"
+                        {...register(`pantographed${index}`)}
+                    />
                 </div>
             </div>
             <div className="flex flex-row gap-4 w-full mt-4">
@@ -415,16 +426,6 @@ function FormCreatePieces({
                                     }
                                 </span>
                             )}
-                        </div>
-                        <div className="flex flex-col justify-start items-center gap-3 mt-2 w-1/2">
-                            <label className="font-semibold">
-                                Pantografiado
-                            </label>
-                            <input
-                                className="ml-2"
-                                type="checkbox"
-                                {...register(`pantographed${index}`)}
-                            />
                         </div>
                     </div>
                 )}
@@ -482,16 +483,6 @@ function FormCreatePieces({
                                 </div>
                             )}
                         </div>
-                        <div className="flex flex-col justify-start items-center gap-3 mt-2 w-1/2">
-                            <label className="font-semibold">
-                                Pantografiado
-                            </label>
-                            <input
-                                className="ml-2"
-                                type="checkbox"
-                                {...register(`pantographed${index}`)}
-                            />
-                        </div>
                     </>
                 )}
                 {/* Enchapado artesanal veneer */}
@@ -539,16 +530,6 @@ function FormCreatePieces({
                                 {errors[`veneerOption${index}`].message}
                             </span>
                         )}
-                        <div className="flex flex-col justify-start items-center gap-3 mt-2 w-full">
-                            <label className="font-semibold">
-                                Pantografiado
-                            </label>
-                            <input
-                                className="ml-2"
-                                type="checkbox"
-                                {...register(`pantographed${index}`)}
-                            />
-                        </div>
                     </div>
                 )}
                 {/* al elegir que el enchapado artesnal tiene laqueado */}
@@ -627,16 +608,6 @@ function FormCreatePieces({
                                 {errors[`veneer2Option${index}`].message}
                             </span>
                         )}
-                        <div className="flex flex-col justify-start items-center gap-3 mt-2 w-full">
-                            <label className="font-semibold">
-                                Pantografiado
-                            </label>
-                            <input
-                                className="ml-2"
-                                type="checkbox"
-                                {...register(`pantographed${index}`)}
-                            />
-                        </div>
                     </div>
                 )}
                 {/* al elegir que el enchapado NO artesnal tiene laqueado */}
