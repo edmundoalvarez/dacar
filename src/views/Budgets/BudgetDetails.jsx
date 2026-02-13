@@ -12,8 +12,7 @@ import { formatComments } from "../../helpers/Budgets/formatComments.js";
 function BudgetDetails() {
   const [budget, setBudget] = useState({});
   const [loader, setLoader] = useState(true);
-  const defaultPaymentTerms =
-    "50% SEÑA. 50% SALDO PARA COORDINAR ENTREGA.\nSALDO DOLARIZADO SEGÚN COTIZACIÓN AL DÍA DE LA SEÑA - DÓLAR OFICIAL / VENTA BNA";
+  const defaultPaymentTerms = "50% SEÑA. 50% SALDO PARA COORDINAR ENTREGA.";
   const [paymentTerms, setPaymentTerms] = useState(defaultPaymentTerms);
   const { idBudget } = useParams();
   const furn = budget?.furniture?.[0];
