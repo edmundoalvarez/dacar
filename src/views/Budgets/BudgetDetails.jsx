@@ -141,7 +141,9 @@ function BudgetDetails() {
 
               <div className="flex flex-col gap-0">
                 <p className="text-gray-600">
-                  <span className="font-bold">FECHA ESTIMADA DE ENTREGA:</span>{" "}
+                  <span className="font-bold">
+                    FECHA ESTIMADA DE ENTREGA:
+                  </span>{" "}
                 </p>
                 <p className="text-gray-600 uppercase text-right">
                   {budget.deliver_date}
@@ -244,10 +246,10 @@ function BudgetDetails() {
                       {budget.placement && budget.shipment
                         ? "INCLUYE COLOCACIÓN Y ENVÍO"
                         : budget.placement
-                        ? "INCLUYE COLOCACIÓN"
-                        : budget.shipment
-                        ? "INCLUYE ENVÍO"
-                        : "NO INCLUYE COLOCACIÓN NI ENVÍO"}
+                          ? "INCLUYE COLOCACIÓN"
+                          : budget.shipment
+                            ? "INCLUYE ENVÍO"
+                            : "NO INCLUYE COLOCACIÓN NI ENVÍO"}
                     </strong>
                   </td>
                 </tr>
@@ -261,10 +263,6 @@ function BudgetDetails() {
                     className="uppercase px-6 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black"
                   >
                     <p>50% SEÑA. 50% SALDO PARA COORDINAR ENTREGA.</p>
-                    <p>
-                      SALDO DOLARIZADO SEGÚN COTIZCIÓN AL DÍA DE LA SEÑA - DÓLAR
-                      OFICIAL / VENTA BNA
-                    </p>
                   </td>
                 </tr>
                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
