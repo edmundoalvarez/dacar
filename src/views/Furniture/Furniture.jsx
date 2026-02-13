@@ -391,6 +391,40 @@ function Furniture() {
     }
   }
 
+  function formatInitialData(meta) {
+    if (!meta || typeof meta !== "object") return null;
+
+    const items = [];
+
+    // Nombre del mueble
+    if (meta.name) {
+      items.push({ label: "Nombre", value: meta.name });
+    }
+
+    // Categoría
+    if (meta.category) {
+      // Si es un objeto con name, mostrar el name
+      if (typeof meta.category === "object" && meta.category.name) {
+        items.push({ label: "Categoría", value: meta.category.name });
+      } else if (typeof meta.category === "string") {
+        // Si es solo un ID, mostrar "ID: ..." o intentar obtener el nombre
+        items.push({ label: "Categoría", value: meta.category });
+      }
+    } else {
+      items.push({ label: "Categoría", value: "Sin categoría" });
+    }
+
+    // Cantidad de módulos
+    if (meta.modules_count !== undefined && meta.modules_count !== null) {
+      items.push({
+        label: "Cantidad de módulos",
+        value: String(meta.modules_count),
+      });
+    }
+
+    return items;
+  }
+
   const handleOpenHistory = async (furniture) => {
     try {
       setHistoryFurnitureName(furniture.name);
@@ -899,9 +933,26 @@ function Furniture() {
                     {log.action === "create" && log.meta && (
                       <div className="text-xs text-gray-700">
                         <span className="font-medium">Datos iniciales:</span>
-                        <pre className="mt-1 bg-gray-50 p-2 rounded text-[11px] whitespace-pre-wrap">
-                          {JSON.stringify(log.meta, null, 2)}
-                        </pre>
+                        <div className="mt-1 bg-gray-50 p-2 rounded">
+                          {formatInitialData(log.meta) ? (
+                            <ul className="space-y-1">
+                              {formatInitialData(log.meta).map((item, idx) => (
+                                <li key={idx} className="flex gap-2">
+                                  <span className="font-medium text-gray-600">
+                                    {item.label}:
+                                  </span>
+                                  <span className="text-gray-800">
+                                    {item.value}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <pre className="text-[11px] whitespace-pre-wrap">
+                              {JSON.stringify(log.meta, null, 2)}
+                            </pre>
+                          )}
+                        </div>
                       </div>
                     )}
 

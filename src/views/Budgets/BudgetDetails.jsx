@@ -13,7 +13,7 @@ function BudgetDetails() {
   const [budget, setBudget] = useState({});
   const [loader, setLoader] = useState(true);
   const defaultPaymentTerms =
-    "50% SEÑA. 50% SALDO PARA COORDINAR ENTREGA.\nSALDO DOLARIZADO SEGÚN COTIZCIÓN AL DÍA DE LA SEÑA - DÓLAR OFICIAL / VENTA BNA";
+    "50% SEÑA. 50% SALDO PARA COORDINAR ENTREGA.\nSALDO DOLARIZADO SEGÚN COTIZACIÓN AL DÍA DE LA SEÑA - DÓLAR OFICIAL / VENTA BNA";
   const [paymentTerms, setPaymentTerms] = useState(defaultPaymentTerms);
   const { idBudget } = useParams();
   const furn = budget?.furniture?.[0];
@@ -53,10 +53,7 @@ function BudgetDetails() {
         }
       })
       .catch((error) => {
-        if (
-          error?.name === "CanceledError" ||
-          error?.name === "AbortError"
-        ) {
+        if (error?.name === "CanceledError" || error?.name === "AbortError") {
           return;
         }
         console.error("Error al obtener términos de pago:", error);
@@ -191,10 +188,10 @@ function BudgetDetails() {
               </div>
             </div>
 
-            <table className="min-w-full border-2 border-gray-700 ">
+            <table className="min-w-full border-2 border-gray-700 table-fixed">
               <thead className="bg-[#9C846A]">
                 <tr>
-                  <th className="w-1/6 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider">
+                  <th className="w-[100px] max-w-[100px] px-2 py-3 text-center text-sm font-light text-white uppercase tracking-wider break-words">
                     ITEM
                   </th>
                   <th className="w-4/6 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider border-r-2 border-r-black border-l-2 border-l-black">
@@ -211,7 +208,7 @@ function BudgetDetails() {
                     key={idx}
                     className=" text-left border-b-2 border-gray-700"
                   >
-                    <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700 ">
+                    <td className="px-2 py-4 max-w-[150px] w-[150px] text-sm align-top text-gray-700 break-words">
                       {categoryName}
                     </td>
                     <td className="px-2 py-4 text-left text-sm align-top text-gray-700 border-r-2 border-r-black border-l-2 border-l-black">
@@ -236,9 +233,9 @@ function BudgetDetails() {
                 {budget.furniture?.map((furn, idx) => (
                   <tr
                     key={idx}
-                    className=" text-left whitespace-nowrap text-sm align-middle text-gray-700 border-b-2 border-gray-700"
+                    className=" text-left text-sm align-middle text-gray-700 border-b-2 border-gray-700"
                   >
-                    <td className="px-2 py-4 whitespace-nowrap text-sm align-middel text-gray-[#9C846A]  border-r-2 border-r-black">
+                    <td className="px-2 py-4 max-w-[150px] w-[150px] text-sm align-middle text-gray-[#9C846A] border-r-2 border-r-black break-words">
                       DETALLES DE MÓDULOS
                     </td>
                     <td colSpan={3} className="px-6 py-4">
@@ -283,8 +280,8 @@ function BudgetDetails() {
 
                 {budget.client_comment ? (
                   <>
-                    <tr className=" text-left whitespace-nowrap text-sm align-midd text-gray-700 border-b-2 border-gray-700">
-                      <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
+                    <tr className=" text-left text-sm align-middle text-gray-700 border-b-2 border-gray-700">
+                      <td className="px-2 py-4 text-left max-w-[150px] w-[150px] text-sm align-middle border-r-2 border-r-black border-l-2 border-l-black break-words">
                         COMENTARIOS
                       </td>
                       <td
@@ -299,7 +296,7 @@ function BudgetDetails() {
                   </>
                 ) : null}
                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
-                  <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
+                  <td className="px-2 py-4 text-left max-w-[150px] w-[150px] text-sm align-middle border-r-2 border-r-black border-l-2 border-l-black break-words">
                     COLOCACIÓN
                   </td>
                   <td
@@ -319,7 +316,7 @@ function BudgetDetails() {
                 </tr>
 
                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
-                  <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
+                  <td className="px-2 py-4 text-left max-w-[150px] w-[150px] text-sm align-middle border-r-2 border-r-black border-l-2 border-l-black break-words">
                     FORMA DE PAGO
                   </td>
                   <td
@@ -330,7 +327,7 @@ function BudgetDetails() {
                   </td>
                 </tr>
                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
-                  <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
+                  <td className="px-2 py-4 text-left max-w-[150px] w-[150px] text-sm align-middle border-r-2 border-r-black border-l-2 border-l-black break-words">
                     MEDIO DE PAGO
                   </td>
                   <td
@@ -340,8 +337,8 @@ function BudgetDetails() {
                     Transferencia, Depósito, Efectivo
                   </td>
                 </tr>
-                <tr className=" text-left whitespace-nowrap text-sm align-midd text-gray-700">
-                  <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
+                <tr className=" text-left text-sm align-middle text-gray-700">
+                  <td className="px-2 py-4 text-left max-w-[150px] w-[150px] text-sm align-middle border-r-2 border-r-black border-l-2 border-l-black break-words">
                     PLAZO DE ENTREGA
                   </td>
                   <td

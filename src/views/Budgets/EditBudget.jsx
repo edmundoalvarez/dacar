@@ -92,6 +92,8 @@ function EditBudget() {
 
   // Coeficiente de cálculo (variable del sistema, default 3.8)
   const [calculationCoefficient, setCalculationCoefficient] = useState(3.8);
+  const [systemCoefficient, setSystemCoefficient] = useState(3.8); // Guardar el valor del sistema para referencia
+  const [coefficientInput, setCoefficientInput] = useState("3.8");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -99,7 +101,11 @@ function EditBudget() {
       .then((variable) => {
         if (variable?.value != null && variable.value !== "") {
           const num = Number(variable.value);
-          if (!Number.isNaN(num)) setCalculationCoefficient(num);
+          if (!Number.isNaN(num)) {
+            setSystemCoefficient(num);
+            // Solo setear si no hay valor guardado en el presupuesto
+            // Esto se manejará en getBudgetToSet
+          }
         }
       })
       .catch((err) => {
@@ -109,6 +115,11 @@ function EditBudget() {
       });
     return () => controller.abort();
   }, []);
+
+  // Sincronizar coefficientInput cuando cambia calculationCoefficient
+  useEffect(() => {
+    setCoefficientInput(String(calculationCoefficient).replace(",", "."));
+  }, [calculationCoefficient]);
 
   const quillModules = {
     toolbar: [
@@ -413,6 +424,12 @@ function EditBudget() {
         }
         //MOSTRAR MÓDULOS
         setValue("showModules", budgetData.data.show_modules || "");
+
+        //COEFICIENTE DE CÁLCULO
+        if (budgetData.data.calculation_coefficient != null) {
+          setCalculationCoefficient(budgetData.data.calculation_coefficient);
+          setCoefficientInput(String(budgetData.data.calculation_coefficient).replace(",", "."));
+        }
 
         //IMAGEN ADJUNTA
         if (budgetData.data.client_attachment?.url) {
@@ -1277,6 +1294,7 @@ function EditBudget() {
       shipment: data.shipment,
       shipment_price: Number(data.shipmentPrice),
       show_modules: data.showModules,
+      calculation_coefficient: calculationCoefficient,
     };
     const cleanedBudgetData = removeEmptyFields(budgetData);
 
@@ -1415,6 +1433,62 @@ function EditBudget() {
                 <input type="hidden" {...register("category_id")} />
                 <input type="hidden" {...register("category_name")} />
               </div>
+            </div>
+            {/* Coeficiente de cálculo editable */}
+            <div className="flex flex-row gap-4 items-center my-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
+              <div className="flex flex-col w-1/4">
+                <label
+                  htmlFor="calculationCoefficient"
+                  className="font-semibold text-gray-700 mb-1"
+                >
+                  Coeficiente de cálculo
+                </label>
+                <input
+                  name="calculationCoefficient"
+                  id="calculationCoefficient"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*\.?[0-9]*"
+                  className="border border-gray-300 rounded-md p-2"
+                  value={coefficientInput}
+                  onChange={(e) => {
+                    // Reemplazar coma por punto y permitir solo números y un punto
+                    let raw = e.target.value.replace(",", ".");
+                    // Remover cualquier carácter que no sea número o punto
+                    raw = raw.replace(/[^0-9.]/g, "");
+                    // Asegurar que solo haya un punto
+                    const parts = raw.split(".");
+                    if (parts.length > 2) {
+                      raw = parts[0] + "." + parts.slice(1).join("");
+                    }
+                    // Actualizar el input siempre para permitir escribir
+                    setCoefficientInput(raw);
+                    // Si hay un valor válido, actualizar también el estado principal
+                    if (raw !== "" && raw !== ".") {
+                      const value = parseFloat(raw);
+                      if (!isNaN(value) && value >= 0) {
+                        setCalculationCoefficient(value);
+                      }
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // Al perder el foco, asegurar que el valor sea válido
+                    const raw = e.target.value.replace(",", ".");
+                    const value = parseFloat(raw);
+                    if (isNaN(value) || value < 0 || raw === "" || raw === ".") {
+                      setCalculationCoefficient(systemCoefficient);
+                      setCoefficientInput(String(systemCoefficient).replace(",", "."));
+                    } else {
+                      setCalculationCoefficient(value);
+                      setCoefficientInput(String(value).replace(",", "."));
+                    }
+                  }}
+                />
+              </div>
+              <p className="text-sm text-gray-500 w-3/4">
+                Este valor se usa para calcular el precio de materiales, insumos, chapas y filos.
+                Valor del sistema: {systemCoefficient}. Podés modificarlo para este presupuesto en particular.
+              </p>
             </div>
             <div className="flex gap-16 w-full">
               <div className="w-1/2">

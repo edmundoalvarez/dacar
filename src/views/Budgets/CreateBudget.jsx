@@ -82,6 +82,7 @@ function CreateBudget() {
 
   // Coeficiente de cálculo (variable del sistema, default 3.8)
   const [calculationCoefficient, setCalculationCoefficient] = useState(3.8);
+  const [coefficientInput, setCoefficientInput] = useState("3.8");
 
   const quillModules = {
     toolbar: [
@@ -169,7 +170,10 @@ function CreateBudget() {
       .then((variable) => {
         if (variable?.value != null && variable.value !== "") {
           const num = Number(variable.value);
-          if (!Number.isNaN(num)) setCalculationCoefficient(num);
+          if (!Number.isNaN(num)) {
+            setCalculationCoefficient(num);
+            setCoefficientInput(String(num).replace(",", "."));
+          }
         }
       })
       .catch((err) => {
@@ -1045,6 +1049,7 @@ function CreateBudget() {
       shipment: data.shipment,
       shipment_price: Number(data.shipmentPrice),
       show_modules: data.showModules,
+      calculation_coefficient: calculationCoefficient,
     };
 
     const cleanedBudgetData = removeEmptyFields(budgetData);
@@ -1172,6 +1177,63 @@ function CreateBudget() {
                 value={singleFurniture?.category}
                 {...register(`category`)}
               />
+            </div>
+            {/* Coeficiente de cálculo editable */}
+            <div className="flex flex-row gap-4 items-center my-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
+              <div className="flex flex-col w-1/4">
+                <label
+                  htmlFor="calculationCoefficient"
+                  className="font-semibold text-gray-700 mb-1"
+                >
+                  Coeficiente de cálculo
+                </label>
+                <input
+                  name="calculationCoefficient"
+                  id="calculationCoefficient"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*\.?[0-9]*"
+                  className="border border-gray-300 rounded-md p-2"
+                  value={coefficientInput}
+                  onChange={(e) => {
+                    // Reemplazar coma por punto y permitir solo números y un punto
+                    let raw = e.target.value.replace(",", ".");
+                    // Remover cualquier carácter que no sea número o punto
+                    raw = raw.replace(/[^0-9.]/g, "");
+                    // Asegurar que solo haya un punto
+                    const parts = raw.split(".");
+                    if (parts.length > 2) {
+                      raw = parts[0] + "." + parts.slice(1).join("");
+                    }
+                    // Actualizar el input siempre para permitir escribir
+                    setCoefficientInput(raw);
+                    // Si hay un valor válido, actualizar también el estado principal
+                    if (raw !== "" && raw !== ".") {
+                      const value = parseFloat(raw);
+                      if (!isNaN(value) && value >= 0) {
+                        setCalculationCoefficient(value);
+                      }
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // Al perder el foco, asegurar que el valor sea válido
+                    const raw = e.target.value.replace(",", ".");
+                    const value = parseFloat(raw);
+                    if (isNaN(value) || value < 0 || raw === "" || raw === ".") {
+                      setCalculationCoefficient(3.8);
+                      setCoefficientInput("3.8");
+                    } else {
+                      setCalculationCoefficient(value);
+                      setCoefficientInput(String(value).replace(",", "."));
+                    }
+                  }}
+                />
+              </div>
+              <p className="text-sm text-gray-500 w-3/4">
+                Este valor se usa para calcular el precio de materiales, insumos, chapas y filos.
+                Por defecto usa el valor del sistema ({calculationCoefficient}), pero podés
+                modificarlo para este presupuesto en particular.
+              </p>
             </div>
             <div className="flex gap-16 w-full">
               <div className="w-1/2">
