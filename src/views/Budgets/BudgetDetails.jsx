@@ -163,17 +163,6 @@ function BudgetDetails() {
                   </p>
                 </div>
 
-<<<<<<< HEAD
-              <div className="flex flex-col gap-0">
-                <p className="text-gray-600">
-                  <span className="font-bold">
-                    FECHA ESTIMADA DE ENTREGA:
-                  </span>{" "}
-                </p>
-                <p className="text-gray-600 uppercase text-right">
-                  {budget.deliver_date}
-                </p>
-=======
                 <div className="flex flex-col gap-0">
                   <p className="text-gray-600">
                     <span className="font-bold">FECHA:</span>{" "}
@@ -195,7 +184,6 @@ function BudgetDetails() {
                     {budget.deliver_date}
                   </p>
                 </div>
->>>>>>> 6d3768999cf813cb58e047195c2d8c26802422af
               </div>
             </div>
 
@@ -334,11 +322,7 @@ function BudgetDetails() {
                     colSpan={2}
                     className="uppercase px-6 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black"
                   >
-<<<<<<< HEAD
-                    <p>50% SEÑA. 50% SALDO PARA COORDINAR ENTREGA.</p>
-=======
                     <p className="whitespace-pre-line">{paymentTerms}</p>
->>>>>>> 6d3768999cf813cb58e047195c2d8c26802422af
                   </td>
                 </tr>
                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
