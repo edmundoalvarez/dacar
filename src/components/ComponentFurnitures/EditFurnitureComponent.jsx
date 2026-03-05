@@ -1,46 +1,57 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
+import QuillEditor from "../QuillEditor.jsx";
+import Select from "react-select";
 import {
   getAllModules,
   getFurnitureById,
   getPiecesByModuleId,
   updateFurniture,
+  getFurnitureCategoriesForEdit,
 } from "../../index.js";
 
 function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
   const [originalFurnitureModules, setOriginalFurnitureModules] = useState([]);
   const [modules, setModules] = useState([]);
   const [selectedModules, setSelectedModules] = useState([]);
+  //categorias
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [parameterValue, setParameterValue] = useState("");
+
   const [formData, setFormData] = useState({});
   const [originalData, setOriginalData] = useState({});
   const [selectedModule, setSelectedModule] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedModuleIds, setSelectedModuleIds] = useState([]);
   const [moduleQuantities, setModuleQuantities] = useState({});
+
   const [searchTerm, setSearchTerm] = useState("");
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ["bold", "italic", "underline"],
+      [{ list: "ordered" }, { list: "bullet" }],
+    ],
+  };
+
+  const quillFormats = [
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "list",
+    "bullet",
+  ];
+
   const {
     register,
     handleSubmit,
     setValue,
     formState: { errors },
+    control,
   } = useForm();
-  const getFurnitureData = () => {
-    if (!idFurniture) {
-      console.error("idFurniture is undefined");
-      return;
-    }
-
-    getFurnitureById(idFurniture).then((furnitureData) => {
-      const furniture = furnitureData.data;
-      setOriginalFurnitureModules(furniture.modules_furniture);
-      setValue("name", furniture.name);
-      setValue("height", furniture.height);
-      setValue("length", furniture.length);
-      setValue("width", furniture.width);
-      setValue("category", furniture.category);
-    });
-  };
 
   const handleOpenModal = (module) => {
     setSelectedModule(module);
@@ -67,14 +78,17 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
   const handleModuleChange = (e) => {
     const { value, checked } = e.target;
     const selectedModule = modules.find((module) => module._id === value);
+
     setSelectedModules((prev) =>
       checked
         ? [...prev, selectedModule]
         : prev.filter((module) => module._id !== value)
     );
+
     setSelectedModuleIds((prev) =>
       checked ? [...prev, value] : prev.filter((id) => id !== value)
     );
+
     if (checked) {
       setFormData((prev) => ({
         ...prev,
@@ -83,6 +97,11 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
       setOriginalData((prev) => ({
         ...prev,
         [selectedModule._id]: { ...selectedModule },
+      }));
+
+      setModuleQuantities((prev) => ({
+        ...prev,
+        [selectedModule._id]: prev[selectedModule._id] || 1,
       }));
     } else {
       setFormData((prev) => {
@@ -94,6 +113,12 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
         const newOriginalData = { ...prev };
         delete newOriginalData[selectedModule._id];
         return newOriginalData;
+      });
+
+      setModuleQuantities((prev) => {
+        const nq = { ...prev };
+        delete nq[selectedModule._id];
+        return nq;
       });
     }
   };
@@ -107,10 +132,10 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
 
   const onSubmit = async (data, event) => {
     event.preventDefault();
-    console.log("Data del form", data);
-    console.log("selectedModules", selectedModules);
-    console.log("moduleQuantities", moduleQuantities);
-    console.log("originalFurnitureModules", originalFurnitureModules);
+    // console.log("Data del form", data);
+    // console.log("selectedModules", selectedModules);
+    // console.log("moduleQuantities", moduleQuantities);
+    // console.log("originalFurnitureModules", originalFurnitureModules);
     try {
       const editedModules = await Promise.all(
         selectedModules.flatMap(async (module) => {
@@ -144,9 +169,9 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
           return newModules;
         })
       ).then((modules) => modules.flat());
-      console.log("data", data, "editedModules", editedModules);
+      // console.log("data", data, "editedModules", editedModules);
       const allModules = [...originalFurnitureModules, ...editedModules];
-      console.log("allModules", allModules);
+
       await updateFurniture(idFurniture, {
         ...data,
         modules_furniture: allModules,
@@ -160,9 +185,55 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
   };
 
   useEffect(() => {
-    getAllModulesToSet();
-    getFurnitureData();
-  }, []);
+    async function fetchData() {
+      try {
+        // 1) Traer mueble
+        const furnitureRes = await getFurnitureById(idFurniture);
+        const furniture = furnitureRes.data;
+
+        setOriginalFurnitureModules(furniture.modules_furniture || []);
+        setValue("name", furniture.name || "");
+        setValue("height", furniture.height || "");
+        setValue("length", furniture.length || "");
+        setValue("width", furniture.width || "");
+
+        // Ojo: según cómo lo estés guardando, puede llamarse category o categoryId
+        const currentCategoryId =
+          furniture.categoryId || furniture.category?._id || null;
+
+        // 2) Traer módulos disponibles
+        getAllModulesToSet();
+
+        // 3) Traer categorías para edición
+        setCategoriesLoading(true);
+        const cats = await getFurnitureCategoriesForEdit(currentCategoryId);
+        setCategories(cats || []);
+
+        // 4) Setear categoryId en el formulario
+        if (currentCategoryId) {
+          setValue("categoryId", currentCategoryId);
+        }
+
+        // 5) Prellenar parámetro
+        const currentCategory = (cats || []).find(
+          (c) => String(c._id) === String(currentCategoryId)
+        );
+
+        const paramHtml =
+          currentCategory?.parameter || furniture.parameter || "";
+        setParameterValue(paramHtml);
+        setValue("parameter", paramHtml);
+      } catch (err) {
+        console.error("Error al cargar datos del mueble para edición:", err);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    }
+
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idFurniture, setValue]);
+
   //Filtrar dentro de los modulos a elegir
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -175,6 +246,58 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
       module.description.toLowerCase().includes(term)
     );
   });
+
+  const handleCategoryChange = (categoryId) => {
+    setValue("categoryId", categoryId);
+
+    const selectedCategory = categories.find(
+      (c) => String(c._id) === String(categoryId)
+    );
+
+    const paramHtml = selectedCategory?.parameter || "";
+    setParameterValue(paramHtml);
+    setValue("parameter", paramHtml, { shouldValidate: true });
+  };
+
+  const selectStyles = {
+    control: (base, state) => ({
+      ...base,
+      borderColor: state.isFocused ? "#10b981" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 1px #10b981" : "none",
+      minHeight: "40px",
+      backgroundColor: "#ffffff",
+      color: "#111827",
+    }),
+    menu: (base) => ({ ...base, zIndex: 30 }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#6b7280",
+    }),
+    input: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    menuList: (base) => ({ ...base, backgroundColor: "#ffffff" }),
+    option: (base, state) => ({
+      ...base,
+      color: "#111827",
+      backgroundColor: state.isSelected
+        ? "#d1fae5"
+        : state.isFocused
+          ? "#f3f4f6"
+          : "#ffffff",
+    }),
+  };
+
+  const categoryOptions = categories.map((cat) => ({
+    value: cat._id,
+    label: `${cat.name}${cat.status === false ? " (desactivada)" : ""}`,
+  }));
+
   return (
     <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white p-6">
       <div className="flex flex-row justify-between gap-4">
@@ -265,25 +388,87 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
                 </span>
               )}
             </div>
-
+            // dentro del bloque de la izquierda (w-1/2), debajo de width por
+            ejemplo:
             <div className="flex flex-col w-11/12 my-2">
-              <label htmlFor="category" className="text-gray-700 font-medium">
-                Categoria
+              <label htmlFor="categoryId" className="text-gray-700 font-medium">
+                Categoría
               </label>
-              <input
-                className="border border-gray-300 rounded-md px-4 py-2 mt-1 focus:border-emerald-500 w-full"
-                type="text"
-                name="category"
-                id="category"
-                {...register("category", {
-                  required: "El campo es obligatorio",
-                })}
+
+              <Controller
+                name="categoryId"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <Select
+                    inputId="categoryId"
+                    instanceId="categoryId-edit"
+                    placeholder="Selecciona una categoría"
+                    isClearable
+                    isDisabled={categoriesLoading || categories.length === 0}
+                    options={categoryOptions}
+                    value={
+                      categoryOptions.find(
+                        (option) => option.value === field.value
+                      ) || null
+                    }
+                    onChange={(option) => {
+                      const value = option?.value || "";
+                      field.onChange(value);
+                      handleCategoryChange(value);
+                    }}
+                    styles={selectStyles}
+                  />
+                )}
               />
-              {errors.category && (
+
+              {errors.categoryId && (
                 <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                  {errors.category.message}
+                  {errors.categoryId.message}
                 </span>
               )}
+            </div>
+            <div className="flex flex-col w-11/12 my-2">
+              <div className="flex flex-col w-11/12 my-2 mb-6">
+                <label
+                  htmlFor="parameter"
+                  className="text-gray-700 font-medium"
+                >
+                  Parámetros
+                </label>
+
+                {/* Campo real para RHF */}
+                <input
+                  type="hidden"
+                  id="parameter"
+                  {...register("parameter")}
+                />
+
+                <QuillEditor
+                  theme="snow"
+                  value={parameterValue}
+                  onChange={(value) => {
+                    setParameterValue(value);
+                    setValue("parameter", value, { shouldValidate: true });
+                  }}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  className="
+                    w-full bg-white border border-gray-300 rounded-md overflow-hidden
+                    [&_.ql-toolbar]:border-0
+                    [&_.ql-toolbar]:border-b [&_.ql-toolbar]:border-gray-300
+                    [&_.ql-container]:border-0
+                    [&_.ql-container]:min-h-[220px]
+                    [&_.ql-editor]:min-h-[220px]
+                    [&_.ql-editor]:text-gray-800
+                  "
+                />
+
+                <p className="text-xs text-gray-500 mt-1">
+                  Se autocompleta según la categoría, pero puede editarse
+                  libremente.
+                </p>
+              </div>
             </div>
           </div>
           <div className="mb-6 w-1/2">
@@ -345,7 +530,7 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
                             className="border border-gray-300 bg-gray-100 rounded-md px-2 py-1 w-20 text-center"
                             type="number"
                             min="1"
-                            value={moduleQuantities[module._id] || 0}
+                            value={moduleQuantities[module._id] ?? 1}
                             onChange={(e) =>
                               handleInputChange(module._id, e.target.value)
                             }
@@ -375,10 +560,17 @@ function EditFurnitureComponent({ idFurniture, onModified, notModified }) {
             {selectedModules.flatMap((module, index) => (
               <div
                 key={module._id + "-" + index}
-                className=" text-black border border-gray-300 rounded-md p-4 my-2 flex items-center justify-between bg-gray-50"
+                className="text-black border border-gray-300 rounded-md p-4 my-2 flex items-center justify-between bg-gray-50"
               >
-                <p>{module.name}</p>
-                <p>{module.description}</p>
+                <div className="flex items-center gap-4">
+                  <p className="font-semibold">{module.name}</p>
+                  <span className="text-sm bg-emerald-600 text-white rounded-full px-3 py-1">
+                    x{moduleQuantities[module._id] ?? 1}
+                  </span>
+                </div>
+
+                <p className="text-gray-700">{module.description}</p>
+
                 <button
                   type="button"
                   onClick={() => handleOpenModal(module)}

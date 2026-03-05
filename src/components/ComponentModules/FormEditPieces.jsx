@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { Controller } from "react-hook-form";
+import Select from "react-select";
 
 function FormEditPieces({
   register,
@@ -8,11 +10,11 @@ function FormEditPieces({
   tables,
   resetField,
   setValue,
+  control,
   piece,
 }) {
   const [showEdgePiece, setShowEdgePiece] = useState(false);
   const [finishingModule, setFinishingModule] = useState("");
-  const [material, setMaterial] = useState("");
   const [lengthLabel, setLengthLabel] = useState("");
   const [widthLabel, setWidthLabel] = useState("");
   const [selectedVeneerOption, setSelectedVeneerOption] = useState("");
@@ -38,7 +40,6 @@ function FormEditPieces({
       setFinishingModule(initialFinishing);
       setValue(`finishing${index}`, initialFinishing);
 
-      setMaterial(piece.material || "");
       setValue(`materialPiece${index}`, piece.material || "");
 
       setSelectedVeneerOption(piece.veneerFinishing);
@@ -92,7 +93,6 @@ function FormEditPieces({
     // Reset fields based on finishing module change
     if (selectedFinishing !== "lacqueredPiece") {
       resetField(`lacqueredPieceSides${index}`);
-      resetField(`pantographed${index}`);
       setSelectedVeneerOption("");
       setSelectedVeneer2Option("");
     }
@@ -110,12 +110,6 @@ function FormEditPieces({
       resetField(`veneer2Option${index}`);
       setSelectedVeneerOption("");
     }
-  };
-
-  const handleMaterialChange = (event) => {
-    const selectedMaterial = event.target.value;
-    setMaterial(selectedMaterial);
-    setValue(`materialPiece${index}`, selectedMaterial);
   };
 
   const handleVeneerOptionChange = (e) => {
@@ -140,6 +134,45 @@ function FormEditPieces({
       resetField(`melamineLacqueredPieceSides${index}`);
     }
   };
+
+  const selectStyles = {
+    control: (base, state) => ({
+      ...base,
+      borderColor: state.isFocused ? "#10b981" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 1px #10b981" : "none",
+      minHeight: "40px",
+      backgroundColor: "#ffffff",
+      color: "#111827",
+    }),
+    menu: (base) => ({ ...base, zIndex: 30 }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#6b7280",
+    }),
+    input: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    menuList: (base) => ({ ...base, backgroundColor: "#ffffff" }),
+    option: (base, state) => ({
+      ...base,
+      color: "#111827",
+      backgroundColor: state.isSelected
+        ? "#d1fae5"
+        : state.isFocused
+          ? "#f3f4f6"
+          : "#ffffff",
+    }),
+  };
+
+  const materialOptions = tables.map((table) => ({
+    value: table.name,
+    label: table.name,
+  }));
 
   return (
     <div className="flex flex-wrap justify-start align-top content-start gap-x-4 w-full border-2 border-emerald-600 rounded-lg p-10 mb-6">
@@ -243,7 +276,7 @@ function FormEditPieces({
             defaultValue={piece?.width.toString() || ""}
             onChange={(e) => {
               const value = Number(e.target.value);
-              setValue(`widthPieceHidden${index}`, value);
+              setValue(`widthPieceBase${index}`, value);
             }}
           />
           {errors[`widthPiece${index}`] && (
@@ -254,11 +287,34 @@ function FormEditPieces({
           <input
             className="border border-gray-300 rounded-md p-2"
             type="hidden"
-            name={`widthPieceHidden${index}`}
-            id={`widthPieceHidden${index}`}
-            {...register(`widthPieceHidden${index}`)}
+            name={`widthPieceBase${index}`}
+            id={`widthPieceBase${index}`}
+            {...register(`widthPieceBase${index}`)}
             defaultValue={piece?.width.toString() || ""}
           />
+          <div className="flex items-center gap-2 mt-2">
+            <input
+              type="checkbox"
+              id={`lockWidth${index}`}
+              defaultChecked={piece?.lockWidth || false}
+              {...register(`lockWidth${index}`)}
+            />
+            <label
+              htmlFor={`lockWidth${index}`}
+              className="text-sm text-gray-600"
+            >
+              Bloquear{" "}
+              {widthLabel ||
+                (piece.orientation === "cross-vertical"
+                  ? "Largo"
+                  : piece.orientation === "cross-horizontal"
+                  ? "Profundidad"
+                  : piece.orientation === "side"
+                  ? "Profundidad"
+                  : "")}{" "}
+              (no se modificará automáticamente)
+            </label>
+          </div>
         </div>
         {/* length */}
 
@@ -284,7 +340,7 @@ function FormEditPieces({
             defaultValue={piece?.length.toString() || ""}
             onChange={(e) => {
               const value = Number(e.target.value);
-              setValue(`lengthPieceHidden${index}`, value);
+              setValue(`lengthPieceBase${index}`, value);
             }}
           />
           {errors[`lengthPiece${index}`] && (
@@ -295,11 +351,34 @@ function FormEditPieces({
           <input
             className="border border-gray-300 rounded-md p-2"
             type="hidden"
-            name={`lengthPieceHidden${index}`}
-            id={`lengthPieceHidden${index}`}
-            {...register(`lengthPieceHidden${index}`)}
+            name={`lengthPieceBase${index}`}
+            id={`lengthPieceBase${index}`}
+            {...register(`lengthPieceBase${index}`)}
             defaultValue={piece?.length.toString() || ""}
           />
+          <div className="flex items-center gap-2 mt-2">
+            <input
+              type="checkbox"
+              id={`lockLength${index}`}
+              defaultChecked={piece?.lockLength || false}
+              {...register(`lockLength${index}`)}
+            />
+            <label
+              htmlFor={`lockLength${index}`}
+              className="text-sm text-gray-600"
+            >
+              Bloquear{" "}
+              {lengthLabel ||
+                (piece.orientation === "cross-vertical"
+                  ? "Alto"
+                  : piece.orientation === "cross-horizontal"
+                  ? "Largo"
+                  : piece.orientation === "side"
+                  ? "Alto"
+                  : "")}{" "}
+              (no se modificará automáticamente)
+            </label>
+          </div>
         </div>
       </div>
 
@@ -321,38 +400,43 @@ function FormEditPieces({
           </span>
         )}
       </div>
-      <div className="flex flex-row gap-4 w-full mt-4">
-        <div className="flex flex-col w-1/2">
+      <div className="flex flex-row gap-4 w-full mt-4 items-start">
+        <div className="flex flex-col flex-1 min-w-0">
           <label
             htmlFor={`materialPiece${index}`}
             className="font-semibold mb-1"
           >
             Material
           </label>
-          <select
-            className="border border-gray-300 rounded-md p-2"
+          <Controller
             name={`materialPiece${index}`}
-            id={`materialPiece${index}`}
-            {...register(`materialPiece${index}`, {
-              required: "El campo es obligatorio",
-            })}
-            onChange={handleMaterialChange}
-            value={material} // Usar solo value para un componente controlado
-          >
-            <option value="">Elegir una opción</option>
-            {tables.map((table) => (
-              <option key={table._id} value={table.name}>
-                {table.name}
-              </option>
-            ))}
-          </select>
+            control={control}
+            rules={{ required: "El campo es obligatorio" }}
+            defaultValue={piece?.material || ""}
+            render={({ field }) => (
+              <Select
+                inputId={`materialPiece${index}`}
+                instanceId={`materialPiece${index}`}
+                placeholder="Elegir una opción"
+                isClearable
+                options={materialOptions}
+                value={
+                  materialOptions.find(
+                    (option) => option.value === field.value
+                  ) || null
+                }
+                onChange={(option) => field.onChange(option?.value || "")}
+                styles={selectStyles}
+              />
+            )}
+          />
           {errors[`materialPiece${index}`] && (
             <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
               {errors[`materialPiece${index}`].message}
             </span>
           )}
         </div>
-        <div className="flex flex-col w-1/2">
+        <div className="flex flex-col flex-1 min-w-0">
           <label
             htmlFor={`lacqueredOrVeneer${index}`}
             className="font-semibold mb-1"
@@ -380,6 +464,17 @@ function FormEditPieces({
               {errors[`finishing${index}`].message}
             </span>
           )}
+        </div>
+        <div className="flex flex-col justify-end items-center gap-1 pt-6 flex-shrink-0 w-24">
+          <label className="font-semibold text-sm whitespace-nowrap">
+            Pantografiado
+          </label>
+          <input
+            className="ml-2"
+            type="checkbox"
+            {...register(`pantographed${index}`)}
+            defaultChecked={piece?.pantographed || false}
+          />
         </div>
       </div>
 
@@ -412,15 +507,6 @@ function FormEditPieces({
                   {errors[`lacqueredPieceSides${index}`].message}
                 </span>
               )}
-            </div>
-            <div className="flex flex-col justify-start items-center gap-3 mt-2 w-1/2">
-              <label className="font-semibold">Pantografiado</label>
-              <input
-                className="ml-2"
-                type="checkbox"
-                {...register(`pantographed${index}`)}
-                defaultChecked={piece?.pantographed || false}
-              />
             </div>
           </div>
         )}
@@ -755,6 +841,7 @@ function FormEditPieces({
 
 FormEditPieces.propTypes = {
   register: PropTypes.func.isRequired,
+  control: PropTypes.object.isRequired,
   index: PropTypes.number.isRequired,
   errors: PropTypes.object.isRequired,
   tables: PropTypes.arrayOf(

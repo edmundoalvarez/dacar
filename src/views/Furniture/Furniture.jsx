@@ -14,6 +14,8 @@ import {
   getPiecesByFurnitureId,
   deleteFurniture,
   ViewModulesFurniture,
+  getFurnitureHistory,
+  getFurnitureCategories,
 } from "../../index.js";
 
 function Furniture() {
@@ -26,6 +28,17 @@ function Furniture() {
   const [loader, setLoader] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
+
+  //categorias muebles
+  const [categoriesMap, setCategoriesMap] = useState({});
+
+  // Historial de edicion
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [historyEntries, setHistoryEntries] = useState([]);
+  const [historyLoader, setHistoryLoader] = useState(false);
+  const [historyFurnitureName, setHistoryFurnitureName] = useState("");
+  const [historyFurnitureId, setHistoryFurnitureId] = useState(null);
+
   // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -73,6 +86,31 @@ function Furniture() {
   useEffect(() => {
     getAllFurnituresToSet(searchTerm, currentPage, { showMainLoader: true });
   }, [currentPage, getAllFurnituresToSet]);
+
+  // Cargar categorías de muebles una sola vez
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const controller = new AbortController();
+        const res = await getFurnitureCategories(controller.signal);
+
+        const cats = Array.isArray(res) ? res : [];
+
+        const map = {};
+        cats.forEach((cat) => {
+          map[cat._id] = cat.name;
+        });
+
+        setCategoriesMap(map);
+
+        return () => controller.abort();
+      } catch (err) {
+        console.error("Error cargando categorías de muebles:", err);
+      }
+    }
+
+    fetchCategories();
+  }, []);
 
   // Manejar la búsqueda de muebles
   // Debounce estable (se crea 1 sola vez)
@@ -307,6 +345,109 @@ function Furniture() {
     });
   };
 
+  // Historial de edicion
+  const FIELD_LABELS = {
+    name: "Nombre del mueble",
+    length: "Largo",
+    height: "Alto",
+    width: "Profundidad",
+    category: "Categoría",
+    modules_count: "Cantidad de módulos",
+  };
+
+  function getFieldLabel(field) {
+    return FIELD_LABELS[field] || field;
+  }
+
+  function formatChangeValue(change, key) {
+    const val = change[key];
+
+    if (!val) return "—";
+
+    // Si es string ISO de fecha
+    if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}T/.test(val)) {
+      try {
+        const date = new Date(val);
+        return date.toLocaleString("es-AR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch {
+        return val;
+      }
+    }
+
+    if (typeof val !== "object") {
+      return String(val);
+    }
+
+    try {
+      return JSON.stringify(val);
+    } catch {
+      return String(val);
+    }
+  }
+
+  function formatInitialData(meta) {
+    if (!meta || typeof meta !== "object") return null;
+
+    const items = [];
+
+    // Nombre del mueble
+    if (meta.name) {
+      items.push({ label: "Nombre", value: meta.name });
+    }
+
+    // Categoría
+    if (meta.category) {
+      // Si es un objeto con name, mostrar el name
+      if (typeof meta.category === "object" && meta.category.name) {
+        items.push({ label: "Categoría", value: meta.category.name });
+      } else if (typeof meta.category === "string") {
+        // Si es solo un ID, mostrar "ID: ..." o intentar obtener el nombre
+        items.push({ label: "Categoría", value: meta.category });
+      }
+    } else {
+      items.push({ label: "Categoría", value: "Sin categoría" });
+    }
+
+    // Cantidad de módulos
+    if (meta.modules_count !== undefined && meta.modules_count !== null) {
+      items.push({
+        label: "Cantidad de módulos",
+        value: String(meta.modules_count),
+      });
+    }
+
+    return items;
+  }
+
+  const handleOpenHistory = async (furniture) => {
+    try {
+      setHistoryFurnitureName(furniture.name);
+      setHistoryFurnitureId(furniture._id);
+      setHistoryModalOpen(true);
+      setHistoryLoader(true);
+
+      const logs = await getFurnitureHistory(furniture._id);
+      setHistoryEntries(logs);
+    } catch (err) {
+      console.error("Error al obtener historial del mueble:", err);
+    } finally {
+      setHistoryLoader(false);
+    }
+  };
+
+  const handleCloseHistoryModal = () => {
+    setHistoryModalOpen(false);
+    setHistoryEntries([]);
+    setHistoryFurnitureName("");
+    setHistoryFurnitureId(null);
+  };
+
   return (
     <>
       <div className="pb-8 px-16 bg-gray-100 min-h-screen">
@@ -431,8 +572,11 @@ function Furniture() {
                     </td>
 
                     <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
-                      {furniture.category}
+                      {categoriesMap[furniture.category]
+                        ? categoriesMap[furniture.category]
+                        : "(Categoría eliminada)"}
                     </td>
+
                     <td className="px-2 py-4 text-center text-sm whitespace-nowrap max-w-[140px] text-gray-500">
                       {Array.isArray(furniture.modules_furniture) &&
                       furniture.modules_furniture.length > 0 ? (
@@ -480,6 +624,7 @@ function Furniture() {
                             <p className="m-0 leading-loose">Presupuestar</p>
                           </Link>
                         </div>
+
                         <div className="flex flex-row gap-2 w-full">
                           <Link
                             to={`/editar-modulos-mueble/${furniture._id}`}
@@ -487,7 +632,7 @@ function Furniture() {
                           >
                             <img
                               src="./../icon_edit.svg"
-                              alt="Icono de budgets"
+                              alt="Icono editar mueble"
                               className="w-[20px]"
                             />
                             <p className="m-0 leading-loose">Editar</p>
@@ -498,12 +643,13 @@ function Furniture() {
                           >
                             <img
                               src="./../icon_delete.svg"
-                              alt="Icono de budgets"
+                              alt="Icono eliminar mueble"
                               className="w-[18px]"
                             />
                             <p className="m-0 leading-loose">Eliminar</p>
                           </button>
                         </div>
+
                         <div className="flex flex-col gap-2 w-full">
                           <button
                             onClick={() =>
@@ -536,6 +682,23 @@ function Furniture() {
                               size="lg"
                             />
                             <p className="m-0 leading-loose">Piezas Sueltas</p>
+                          </button>
+                        </div>
+
+                        {/* NUEVO: botón Historial */}
+                        <div className="flex flex-row gap-2 w-full">
+                          <button
+                            onClick={() => handleOpenHistory(furniture)}
+                            className="w-full text-white bg-gray-900 rounded-md px-3 py-0.5 flex flex-row justify-center items-center gap-2"
+                          >
+                            <img
+                              src="./../icon_history.svg"
+                              alt="Historial del mueble"
+                              className="w-[16px]"
+                            />
+                            <p className="m-0 leading-loose text-sm">
+                              Historial
+                            </p>
                           </button>
                         </div>
                       </div>
@@ -639,6 +802,211 @@ function Furniture() {
                 onClick={() => setOpenModalToDelete(false)}
               >
                 Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal historial de mueble */}
+      {historyModalOpen && (
+        <div
+          onClick={handleCloseHistoryModal}
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white p-8 rounded-lg shadow-lg max-h-[600px] w-full max-w-3xl overflow-y-auto relative text-black"
+          >
+            <button
+              onClick={handleCloseHistoryModal}
+              className="absolute top-2 right-2 bg-red-600 text-white rounded-md w-8 h-8 flex items-center justify-center"
+            >
+              &times;
+            </button>
+
+            <h2 className="text-xl font-semibold mb-2">
+              Historial de cambios – {historyFurnitureName}
+            </h2>
+
+            <p className="text-sm text-gray-600 mb-4">
+              ID mueble:{" "}
+              <span className="font-mono text-xs">{historyFurnitureId}</span>
+            </p>
+
+            {historyLoader ? (
+              <div className="flex justify-center items-center h-32">
+                <Oval
+                  visible={true}
+                  height="40"
+                  width="40"
+                  color="rgb(92, 92, 92)"
+                  secondaryColor="rgb(92,92,92)"
+                  strokeWidth="6"
+                  ariaLabel="oval-loading"
+                />
+              </div>
+            ) : historyEntries.length === 0 ? (
+              <p className="text-sm text-gray-600">
+                No hay actividad registrada.
+              </p>
+            ) : (
+              <ul className="space-y-4">
+                {historyEntries.map((log) => (
+                  <li
+                    key={log._id}
+                    className="border border-gray-200 rounded-md p-3 text-sm"
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-semibold">
+                        {log.action === "create"
+                          ? "Creación"
+                          : log.action === "update" &&
+                            log.meta?.changeType === "module_update"
+                          ? "Edición de módulo"
+                          : log.action === "update" &&
+                            log.meta?.changeType === "module_deleted"
+                          ? "Eliminación de módulo"
+                          : log.action === "update" &&
+                            log.meta?.changeType === "modules_added"
+                          ? "Agregado de módulos"
+                          : log.action === "update"
+                          ? "Actualización"
+                          : log.action === "delete"
+                          ? "Eliminación"
+                          : log.action === "clone"
+                          ? "Clonación"
+                          : log.action}
+                      </span>
+
+                      <span className="text-xs text-gray-500">
+                        {new Date(log.createdAt).toLocaleString("es-AR")}
+                      </span>
+                    </div>
+
+                    <div className="text-xs text-gray-700 mb-2">
+                      <span className="font-medium">Usuario: </span>
+                      {log.user?.username ||
+                        log.user?.email ||
+                        "Usuario desconocido"}
+                    </div>
+
+                    {/* Mensaje específico para módulos agregados */}
+                    {log.action === "update" &&
+                      log.meta?.changeType === "modules_added" &&
+                      Array.isArray(log.meta.addedModules) &&
+                      log.meta.addedModules.length > 0 && (
+                        <div className="text-xs text-gray-700 mb-2">
+                          <p className="mb-1">
+                            Se agregaron los siguientes módulos al mueble:
+                          </p>
+                          <ul className="list-disc ml-4">
+                            {log.meta.addedModules.map((mod) => (
+                              <li key={mod.moduleId}>{mod.moduleName}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    {/* Mensaje específico para edición / eliminación de módulo dentro del mueble */}
+                    {log.action === "update" &&
+                      log.meta?.changeType === "module_update" && (
+                        <p className="text-xs text-gray-700 mb-2">
+                          Se editó el módulo{" "}
+                          <span className="font-semibold">
+                            {log.meta.moduleName}
+                          </span>{" "}
+                          dentro del mueble.
+                        </p>
+                      )}
+
+                    {log.action === "update" &&
+                      log.meta?.changeType === "module_deleted" && (
+                        <p className="text-xs text-gray-700 mb-2">
+                          Se eliminó el módulo{" "}
+                          <span className="font-semibold">
+                            {log.meta.moduleName}
+                          </span>{" "}
+                          del mueble.
+                        </p>
+                      )}
+
+                    {/* Si es creación, mostrar meta */}
+                    {log.action === "create" && log.meta && (
+                      <div className="text-xs text-gray-700">
+                        <span className="font-medium">Datos iniciales:</span>
+                        <div className="mt-1 bg-gray-50 p-2 rounded">
+                          {formatInitialData(log.meta) ? (
+                            <ul className="space-y-1">
+                              {formatInitialData(log.meta).map((item, idx) => (
+                                <li key={idx} className="flex gap-2">
+                                  <span className="font-medium text-gray-600">
+                                    {item.label}:
+                                  </span>
+                                  <span className="text-gray-800">
+                                    {item.value}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <pre className="text-[11px] whitespace-pre-wrap">
+                              {JSON.stringify(log.meta, null, 2)}
+                            </pre>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Si es actualización, mostrar cambios (para cuando tengas update con log) */}
+                    {log.action === "update" &&
+                      Array.isArray(log.changes) &&
+                      log.changes.length > 0 && (
+                        <div className="mt-2">
+                          <span className="font-medium text-xs">
+                            Cambios realizados:
+                          </span>
+                          <table className="mt-1 w-full text-[11px] border border-gray-200">
+                            <thead className="bg-gray-100">
+                              <tr>
+                                <th className="border px-2 py-1 text-left">
+                                  Campo
+                                </th>
+                                <th className="border px-2 py-1 text-left">
+                                  Antes
+                                </th>
+                                <th className="border px-2 py-1 text-left">
+                                  Después
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {log.changes.map((change, idx) => (
+                                <tr key={idx}>
+                                  <td className="border px-2 py-1 align-top">
+                                    {getFieldLabel(change.field)}
+                                  </td>
+                                  <td className="border px-2 py-1 align-top">
+                                    {formatChangeValue(change, "from")}
+                                  </td>
+                                  <td className="border px-2 py-1 align-top">
+                                    {formatChangeValue(change, "to")}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={handleCloseHistoryModal}
+                className="bg-red-500 text-white py-2 px-6 rounded"
+              >
+                Cerrar
               </button>
             </div>
           </div>

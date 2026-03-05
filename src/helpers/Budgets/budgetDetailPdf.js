@@ -1,5 +1,77 @@
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+
+const loadImage = (url) =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+
+const fitImage = (imgWidth, imgHeight, maxWidth, maxHeight) => {
+  let width = imgWidth;
+  let height = imgHeight;
+  if (width > maxWidth) {
+    height *= maxWidth / width;
+    width = maxWidth;
+  }
+  if (height > maxHeight) {
+    width *= maxHeight / height;
+    height = maxHeight;
+  }
+  return { width, height };
+};
+
+/**
+ * Genera la imagen del encabezado del presupuesto (logo, datos, intro) para repetir en cada página del PDF.
+ * @returns {Promise<{ dataUrl: string, widthPx: number, heightPx: number }|null>} Datos del encabezado o null si falla
+ */
+const captureHeaderImage = async () => {
+  const headerEl = document.getElementById("budget-pdf-header");
+  if (!headerEl) return null;
+
+  const clone = headerEl.cloneNode(true);
+  clone.style.position = "absolute";
+  clone.style.top = "0px";
+  clone.style.left = "-9999px";
+  clone.style.width = headerEl.offsetWidth + "px";
+  clone.style.background = "white";
+  clone.style.borderRadius = "0";
+  clone.style.border = "none";
+
+  clone.querySelectorAll("img").forEach((img) => {
+    img.style.width = "240px";
+    img.style.height = "auto";
+    img.style.objectFit = "contain";
+  });
+  clone.querySelectorAll("p, li, h2").forEach((el) => {
+    el.style.fontSize = "16px";
+    el.style.color = "#726352";
+  });
+
+  document.body.appendChild(clone);
+  try {
+    const canvas = await html2canvas(clone, {
+      scale: 1.2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+    });
+    document.body.removeChild(clone);
+    const dataUrl = canvas.toDataURL("image/png");
+    return {
+      dataUrl,
+      widthPx: canvas.width,
+      heightPx: canvas.height,
+    };
+  } catch (err) {
+    if (clone.parentNode) document.body.removeChild(clone);
+    console.error("Error al capturar encabezado para PDF:", err);
+    return null;
+  }
+};
+
 export const generatePDF = async (elementId, budget) => {
   const element = document.getElementById(elementId);
 
@@ -123,6 +195,14 @@ export const generatePDF = async (elementId, budget) => {
       parrafo.style.fontSize = "16px";
     });
 
+    // Eliminar la miniatura adjunta del PDF principal
+    const attachmentPreview = clonedElement.querySelector(
+      "[data-attachment-preview='true']"
+    );
+    if (attachmentPreview) {
+      attachmentPreview.remove();
+    }
+
     // Insertar el clon en el DOM
     document.body.appendChild(clonedElement);
 
@@ -165,6 +245,78 @@ export const generatePDF = async (elementId, budget) => {
     const y = 0;
 
     pdf.addImage(imgData, "PNG", x, y, scaledWidth, scaledHeight);
+
+    const attachments = budget?.client_attachments?.length
+      ? budget.client_attachments
+      : budget?.client_attachment?.url
+        ? [budget.client_attachment]
+        : [];
+
+    for (const att of attachments) {
+      const attachmentUrl = att?.url;
+      if (!attachmentUrl) continue;
+      try {
+        const headerResult = await captureHeaderImage();
+
+        const attachmentImage = await loadImage(attachmentUrl);
+        const isLandscape =
+          (attachmentImage.naturalWidth || attachmentImage.width) >
+          (attachmentImage.naturalHeight || attachmentImage.height);
+
+        pdf.addPage("a4", isLandscape ? "landscape" : "portrait");
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 5;
+        const maxImgWidth = pageWidth - margin * 2;
+        let contentTop = margin;
+
+        if (headerResult) {
+          const pxToMm = 0.264583;
+          const headerWMm = headerResult.widthPx * pxToMm;
+          const headerHMm = headerResult.heightPx * pxToMm;
+          const headerMaxWidth = pageWidth - margin * 2;
+          const scale = headerWMm > headerMaxWidth ? headerMaxWidth / headerWMm : 1;
+          const headerWidth = headerWMm * scale;
+          const headerHeight = headerHMm * scale;
+          pdf.addImage(
+            headerResult.dataUrl,
+            "PNG",
+            margin,
+            contentTop,
+            headerWidth,
+            headerHeight
+          );
+          contentTop += headerHeight + 8;
+        }
+
+        const maxImgHeight = pageHeight - contentTop - margin;
+        const imgWidth =
+          attachmentImage.naturalWidth || attachmentImage.width;
+        const imgHeight =
+          attachmentImage.naturalHeight || attachmentImage.height;
+        const { width, height } = fitImage(
+          imgWidth,
+          imgHeight,
+          maxImgWidth,
+          maxImgHeight
+        );
+
+        const canvas = document.createElement("canvas");
+        canvas.width = imgWidth;
+        canvas.height = imgHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(attachmentImage, 0, 0);
+        const attachmentData = canvas.toDataURL("image/jpeg", 0.92);
+
+        const imgX = (pageWidth - width) / 2;
+        const imgY = contentTop;
+
+        pdf.addImage(attachmentData, "JPEG", imgX, imgY, width, height);
+      } catch (attachmentError) {
+        console.error("Error al cargar la imagen adjunta:", attachmentError);
+      }
+    }
     // Abrir en nueva pestaña
     // Función para limpiar caracteres peligrosos en nombres de archivo
     const sanitizeFileName = (name) => {

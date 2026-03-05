@@ -4,7 +4,7 @@ import config from "../../config.json";
 const token = Cookies.get("token");
 const userId = Cookies.get("userId"); */
 
-//TRAER TODAS LOS MODULOS CREADOS
+//TRAER USUARIO POR ID
 async function getClientById(clientId) {
   const res = await axios.get(`${config.apiClients}/${clientId}`, {
     headers: {

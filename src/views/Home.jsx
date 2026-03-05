@@ -3,7 +3,8 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext"; // ajustá el path si es necesario
 
 function Home() {
-  const { logout } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
+  const isAdmin = user?.role === 1;
   const ENV = import.meta.env.VITE_ENV;
 
   const bgColorClass = ENV === "PROD" ? "bg-gray-800" : "bg-yellow-700";
@@ -25,7 +26,7 @@ function Home() {
         <div className="flex flex-row flex-wrap justify-center gap-4 mt-4 w-[800px]">
           <Link
             to={`/ver-presupuestos`}
-            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[200px] text-center flex flex-row justify-center gap-4"
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-2"
           >
             <img
               src="./icon_budgets.svg"
@@ -35,8 +36,20 @@ function Home() {
             <p className="m-0 leading-loose">Presupuestos</p>
           </Link>
           <Link
+            to={`/reporte-presupuestos-confirmados`}
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[220px] text-center flex flex-row justify-center gap-2"
+          >
+            <img
+              src="./icon_budgets_confirmed.svg" // el icono que tengas
+              alt="Icono reporte presupuestos"
+              className="w-[40px]"
+            />
+            <p className="m-0 leading-loose">Pres. confirmados</p>
+          </Link>
+
+          <Link
             to={`/ver-modulos`}
-            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[200px] text-center flex flex-row justify-center gap-4"
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
           >
             <img
               src="./icon_modules.svg"
@@ -47,7 +60,7 @@ function Home() {
           </Link>
           <Link
             to={`/ver-muebles`}
-            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[200px] text-center flex flex-row justify-center gap-4"
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
           >
             <img
               src="./icon_furnitures.svg"
@@ -57,8 +70,19 @@ function Home() {
             <p className="m-0 leading-loose">Muebles</p>
           </Link>
           <Link
+            to={`/ver-categorias-muebles`}
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[180px] text-center flex flex-row justify-center gap-4"
+          >
+            <img
+              src="./icon_furnitures.svg" // o el icono que quieras crear, por ej. icon_furniture_categories.svg
+              alt="Icono categorías de muebles"
+              className="w-[24px]"
+            />
+            <p className="m-0 leading-loose">Cat. Muebles</p>
+          </Link>
+          <Link
             to={`/ver-insumos`}
-            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[200px] text-center flex flex-row justify-center gap-4"
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
           >
             <img
               src="./icon_supplies.svg"
@@ -70,7 +94,7 @@ function Home() {
 
           <Link
             to={`/ver-servicios`}
-            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[200px] text-center flex flex-row justify-center gap-4"
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
           >
             <img
               src="./icon_services.svg"
@@ -81,15 +105,41 @@ function Home() {
           </Link>
           <Link
             to={`/ver-clientes`}
-            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[200px] text-center flex flex-row justify-center gap-4"
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
           >
             <img
               src="./icon_clients.svg"
               alt="Icono de budgets"
-              className="w-[24px]"
+              className="w-[20px]"
             />
             <p className="m-0 leading-loose">Clientes</p>
           </Link>
+          <Link
+            to={`/ver-usuarios`}
+            className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium w-[150px] text-center flex flex-row justify-center gap-4"
+          >
+            <img
+              src="./icon_users.svg"
+              alt="Icono de budgets"
+              className="w-[28px]"
+            />
+            <p className="m-0 leading-loose">Usuarios</p>
+          </Link>
+          {isAdmin && (
+            <Link
+              to={`/variables-sistema`}
+              className="bg-emerald-600 border-2 border-emerald-500 py-4 px-4 rounded-xl hover:bg-emerald-500 text-light font-medium min-w-[200px] text-center flex flex-row justify-center gap-4"
+            >
+              <img
+                src="./icon_modules.svg"
+                alt="Variables sistema"
+                className="w-[28px] shrink-0"
+              />
+              <p className="m-0 leading-loose whitespace-nowrap">
+                Variables sistema
+              </p>
+            </Link>
+          )}
         </div>
         <button
           onClick={logout}

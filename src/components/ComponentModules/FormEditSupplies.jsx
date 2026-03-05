@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import PropTypes from "prop-types";
+import { Controller } from "react-hook-form";
+import Select from "react-select";
 
 function FormEditSupplies({
   register,
@@ -8,24 +10,54 @@ function FormEditSupplies({
   supplies,
   supplyModule,
   setValue,
+  control,
 }) {
-  const [selectedSupply, setSelectedSupply] = useState("");
-
   useEffect(() => {
     if (supplyModule) {
       const id = supplyModule.supplie_id || "";
-      setSelectedSupply(id);
       setValue(`supplie_id${index}`, id);
       setValue(`supplie_qty${index}`, supplyModule.supplie_qty);
       setValue(`supplie_length${index}`, supplyModule.supplie_length);
     }
   }, [supplyModule, index, setValue]);
-
-  const handleSupplyChange = (event) => {
-    const value = event.target.value;
-    setSelectedSupply(value);
-    setValue(`supplie_id${index}`, value);
+  const selectStyles = {
+    control: (base, state) => ({
+      ...base,
+      borderColor: state.isFocused ? "#10b981" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 1px #10b981" : "none",
+      minHeight: "40px",
+      backgroundColor: "#ffffff",
+      color: "#111827",
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#6b7280",
+    }),
+    input: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    menu: (base) => ({ ...base, zIndex: 30 }),
+    menuList: (base) => ({ ...base, backgroundColor: "#ffffff" }),
+    option: (base, state) => ({
+      ...base,
+      color: "#111827",
+      backgroundColor: state.isSelected
+        ? "#d1fae5"
+        : state.isFocused
+          ? "#f3f4f6"
+          : "#ffffff",
+    }),
   };
+
+  const supplyOptions = supplies.map((supplie) => ({
+    value: supplie._id,
+    label: supplie.name,
+  }));
 
   return (
     <div className="flex gap-x-4 w-full border-2 border-emerald-600 rounded-lg p-10 mb-6">
@@ -33,23 +65,28 @@ function FormEditSupplies({
         <label htmlFor={`supplie_id${index}`} className="font-semibold mb-1">
           Insumo
         </label>
-        <select
-          className="border border-gray-300 rounded-md p-2"
+        <Controller
           name={`supplie_id${index}`}
-          id={`supplie_id${index}`}
-          {...register(`supplie_id${index}`, {
-            required: "El campo es obligatorio",
-          })}
-          value={selectedSupply}
-          onChange={handleSupplyChange}
-        >
-          <option value="">Elegir una opción</option>
-          {supplies.map((supplie) => (
-            <option key={supplie._id} value={supplie._id}>
-              {supplie.name}
-            </option>
-          ))}
-        </select>
+          control={control}
+          rules={{ required: "El campo es obligatorio" }}
+          defaultValue={supplyModule?.supplie_id || ""}
+          render={({ field }) => (
+            <Select
+              inputId={`supplie_id${index}`}
+              instanceId={`supplie_id${index}`}
+              placeholder="Elegir una opción"
+              isClearable
+              options={supplyOptions}
+              value={
+                supplyOptions.find(
+                  (option) => option.value === field.value
+                ) || null
+              }
+              onChange={(option) => field.onChange(option?.value || "")}
+              styles={selectStyles}
+            />
+          )}
+        />
         {errors[`supplie_id${index}`] && (
           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
             {errors[`supplie_id${index}`].message}
@@ -107,6 +144,7 @@ function FormEditSupplies({
 
 FormEditSupplies.propTypes = {
   register: PropTypes.func.isRequired,
+  control: PropTypes.object.isRequired,
   index: PropTypes.number.isRequired,
   errors: PropTypes.object.isRequired,
   supplies: PropTypes.arrayOf(

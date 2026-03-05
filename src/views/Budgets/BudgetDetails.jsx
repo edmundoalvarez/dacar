@@ -1,20 +1,37 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getBudgetById } from "../../index.js";
+import { getBudgetById, getSystemVariableByKey } from "../../index.js";
 import { Grid } from "react-loader-spinner";
 import { generatePDF } from "../../helpers/Budgets/budgetDetailPdf.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { useLocation } from "react-router-dom";
+import parse from "html-react-parser";
+import { formatComments } from "../../helpers/Budgets/formatComments.js";
 
 function BudgetDetails() {
   const [budget, setBudget] = useState({});
   const [loader, setLoader] = useState(true);
+  const defaultPaymentTerms = "50% SEÑA. 50% SALDO PARA COORDINAR ENTREGA.";
+  const [paymentTerms, setPaymentTerms] = useState(defaultPaymentTerms);
   const { idBudget } = useParams();
+  const furn = budget?.furniture?.[0];
+  const categoryName = furn?.category?.name || "-";
+  const parameterHtml = furn?.parameter || furn?.category?.parameter || "";
+
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const from = params.get("from");
+  const backUrl =
+    from === "confirmed"
+      ? "/reporte-presupuestos-confirmados"
+      : "/ver-presupuestos";
 
   const getBudgetToSet = () => {
     getBudgetById(idBudget)
       .then((budgetData) => {
         setBudget(budgetData.data);
+        console.log(budgetData.data);
         setLoader(false);
       })
       .catch((error) => {
@@ -25,6 +42,23 @@ function BudgetDetails() {
   useEffect(() => {
     getBudgetToSet();
   }, [idBudget]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getSystemVariableByKey("budget_payment_terms", controller.signal)
+      .then((variable) => {
+        if (variable?.value) {
+          setPaymentTerms(variable.value);
+        }
+      })
+      .catch((error) => {
+        if (error?.name === "CanceledError" || error?.name === "AbortError") {
+          return;
+        }
+        console.error("Error al obtener términos de pago:", error);
+      });
+    return () => controller.abort();
+  }, []);
 
   const totalPriceInUnits = budget.total_price;
   const iva = totalPriceInUnits * 0.21;
@@ -50,7 +84,7 @@ function BudgetDetails() {
           </h1>
           <div className="flex items-center gap-4">
             <Link
-              to={`/ver-presupuestos`}
+              to={backUrl}
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center align-middle items-center gap-2"
             >
               <img
@@ -100,45 +134,36 @@ function BudgetDetails() {
             id="budget-to-print"
             className="border border-gray-300 p-8 shadow-lg rounded-lg max-w-6xl m-auto"
           >
-            <div className="text-center w-[240px] m-auto mt-4 mb-6">
-              <img className="" src="./../logo-dacar.png" alt="Logo Dacar" />
-            </div>
-            <div className="flex flex-row justify-between ">
-              <h2 className="w-[300px] text-lg font-light text-[#726352]">
-                CARPINTERIA GENERAL DE OBRA EQUIPAMIENTOS A MEDIDA
-              </h2>
-              <ul className="text-[#726352] font-light text-right text-lg">
-                <li>MERCEDES 3280, SAN ANDRES - BS.AS.</li>
-                <li>OFICINA: 2198.3323</li>
-                <li>WHATSAPP: 11.5019.9244</li>
-              </ul>
-            </div>
-            <div
-              className="flex justify-between mb-4 py-4 mt-4 border-t-4  border-t-[#9C846A] border-b-4  border-b-[#9C846A]"
-              id="intro"
-            >
-              <div className="flex flex-col gap-0">
-                <p className="text-gray-600">
-                  <span className="font-bold">CLIENTE:</span>{" "}
-                  {budget.client?.[0]?.name} {budget.client?.[0]?.lastname}
-                </p>
-                <p className="text-gray-600">
-                  <span className="font-bold">OBRA:</span>{" "}
-                  {budget.furniture_name}
-                </p>
+            <div id="budget-pdf-header">
+              <div className="text-center w-[240px] m-auto mt-4 mb-6">
+                <img className="" src="./../logo-dacar.png" alt="Logo Dacar" />
               </div>
-
-              <div className="flex flex-col gap-0">
-                <p className="text-gray-600">
-                  <span className="font-bold">FECHA:</span>{" "}
-                  {new Date(budget.date).toLocaleDateString()}
-                </p>
-                <p className="text-gray-600">
-                  <span className="font-bold">PRESUPUESTO:</span>{" "}
-                  {budget.budget_number}
-                </p>
+              <div className="flex flex-row justify-between ">
+                <h2 className="w-[300px] text-lg font-light text-[#726352]">
+                  CARPINTERIA GENERAL DE OBRA EQUIPAMIENTOS A MEDIDA
+                </h2>
+                <ul className="text-[#726352] font-light text-right text-lg">
+                  <li>MERCEDES 3280, SAN ANDRES - BS.AS.</li>
+                  <li>OFICINA: 2198.3323</li>
+                  <li>WHATSAPP: 11.5019.9244</li>
+                </ul>
               </div>
+              <div
+                className="flex justify-between mb-4 py-4 mt-4 border-t-4  border-t-[#9C846A] border-b-4  border-b-[#9C846A]"
+                id="intro"
+              >
+                <div className="flex flex-col gap-0">
+                  <p className="text-gray-600">
+                    <span className="font-bold">CLIENTE:</span>{" "}
+                    {budget.client?.[0]?.name} {budget.client?.[0]?.lastname}
+                  </p>
+                  <p className="text-gray-600">
+                    <span className="font-bold">OBRA:</span>{" "}
+                    {budget.furniture_name}
+                  </p>
+                </div>
 
+<<<<<<< HEAD
               <div className="flex flex-col gap-0">
                 <p className="text-gray-600">
                   <span className="font-bold">
@@ -148,13 +173,36 @@ function BudgetDetails() {
                 <p className="text-gray-600 uppercase text-right">
                   {budget.deliver_date}
                 </p>
+=======
+                <div className="flex flex-col gap-0">
+                  <p className="text-gray-600">
+                    <span className="font-bold">FECHA:</span>{" "}
+                    {new Date(budget.date).toLocaleDateString()}
+                  </p>
+                  <p className="text-gray-600">
+                    <span className="font-bold">PRESUPUESTO:</span>{" "}
+                    {budget.budget_number}
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-0">
+                  <p className="text-gray-600">
+                    <span className="font-bold">
+                      FECHA ESTIMADA DE ENTREGA:
+                    </span>{" "}
+                  </p>
+                  <p className="text-gray-600 uppercase text-right">
+                    {budget.deliver_date}
+                  </p>
+                </div>
+>>>>>>> 6d3768999cf813cb58e047195c2d8c26802422af
               </div>
             </div>
 
-            <table className="min-w-full border-2 border-gray-700 ">
+            <table className="min-w-full border-2 border-gray-700 table-fixed">
               <thead className="bg-[#9C846A]">
                 <tr>
-                  <th className="w-1/6 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider">
+                  <th className="w-[100px] max-w-[100px] px-2 py-3 text-center text-sm font-light text-white uppercase tracking-wider break-words">
                     ITEM
                   </th>
                   <th className="w-4/6 px-6 py-3 text-center text-sm font-light text-white uppercase tracking-wider border-r-2 border-r-black border-l-2 border-l-black">
@@ -171,18 +219,23 @@ function BudgetDetails() {
                     key={idx}
                     className=" text-left border-b-2 border-gray-700"
                   >
-                    <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700 ">
-                      {budget.category}
+                    <td className="px-2 py-4 max-w-[150px] w-[150px] text-sm align-top text-gray-700 break-words">
+                      {categoryName}
                     </td>
-                    <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-top text-gray-700 border-r-2 border-r-black border-l-2 border-l-black">
-                      <div className="w-fit max-w-[700px] m-auto text-left">
-                        <p className="mb-2 break-words whitespace-pre-line">
-                          {budget.comments
-                            ? budget.comments
-                            : "- No hay comentarios -"}
-                        </p>
+                    <td className="px-2 py-4 text-left text-sm align-top text-gray-700 border-r-2 border-r-black border-l-2 border-l-black">
+                      <div className="w-full max-w-[700px] text-left">
+                        {budget.comments ? (
+                          <div className="mb-2 break-words comments-html text-left">
+                            {parse(formatComments(budget.comments || ""))}
+                          </div>
+                        ) : (
+                          <p className="mb-2 break-words whitespace-pre-line">
+                            - No hay comentarios -
+                          </p>
+                        )}
                       </div>
                     </td>
+
                     <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700 ">
                       {formatCurrency(totalPriceInUnits)}
                     </td>
@@ -191,17 +244,19 @@ function BudgetDetails() {
                 {budget.furniture?.map((furn, idx) => (
                   <tr
                     key={idx}
-                    className=" text-left whitespace-nowrap text-sm align-middle text-gray-700 border-b-2 border-gray-700"
+                    className=" text-left text-sm align-middle text-gray-700 border-b-2 border-gray-700"
                   >
-                    <td className="px-2 py-4 whitespace-nowrap text-sm align-middel text-gray-[#9C846A]  border-r-2 border-r-black">
+                    <td className="px-2 py-4 max-w-[150px] w-[150px] text-sm align-middle text-gray-[#9C846A] border-r-2 border-r-black break-words">
                       DETALLES DE MÓDULOS
                     </td>
                     <td colSpan={3} className="px-6 py-4">
-                      {furn.category ||
+                      {categoryName ||
                       (furn.width && furn.height && furn.length) ? (
                         <p className="mb-0">
                           <span className="font-bold">
-                            {furn.category ? furn.category.toUpperCase() : ""}
+                            {furn?.category?.name
+                              ? furn.category.name.toUpperCase()
+                              : ""}
                           </span>{" "}
                           {furn.width && furn.height && furn.length ? (
                             <>
@@ -234,8 +289,25 @@ function BudgetDetails() {
                   </tr>
                 ))}
 
+                {budget.client_comment ? (
+                  <>
+                    <tr className=" text-left text-sm align-middle text-gray-700 border-b-2 border-gray-700">
+                      <td className="px-2 py-4 text-left max-w-[150px] w-[150px] text-sm align-middle border-r-2 border-r-black border-l-2 border-l-black break-words">
+                        COMENTARIOS
+                      </td>
+                      <td
+                        colSpan={2}
+                        className="px-6 py-4 text-left whitespace-normal text-sm align-midd border-r-2 border-r-black border-l-2 border-l-black"
+                      >
+                        <div className="break-words comments-html text-left">
+                          {parse(formatComments(budget.client_comment || ""))}
+                        </div>
+                      </td>
+                    </tr>
+                  </>
+                ) : null}
                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
-                  <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
+                  <td className="px-2 py-4 text-left max-w-[150px] w-[150px] text-sm align-middle border-r-2 border-r-black border-l-2 border-l-black break-words">
                     COLOCACIÓN
                   </td>
                   <td
@@ -255,18 +327,22 @@ function BudgetDetails() {
                 </tr>
 
                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
-                  <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
+                  <td className="px-2 py-4 text-left max-w-[150px] w-[150px] text-sm align-middle border-r-2 border-r-black border-l-2 border-l-black break-words">
                     FORMA DE PAGO
                   </td>
                   <td
                     colSpan={2}
                     className="uppercase px-6 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black"
                   >
+<<<<<<< HEAD
                     <p>50% SEÑA. 50% SALDO PARA COORDINAR ENTREGA.</p>
+=======
+                    <p className="whitespace-pre-line">{paymentTerms}</p>
+>>>>>>> 6d3768999cf813cb58e047195c2d8c26802422af
                   </td>
                 </tr>
                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
-                  <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
+                  <td className="px-2 py-4 text-left max-w-[150px] w-[150px] text-sm align-middle border-r-2 border-r-black border-l-2 border-l-black break-words">
                     MEDIO DE PAGO
                   </td>
                   <td
@@ -276,8 +352,8 @@ function BudgetDetails() {
                     Transferencia, Depósito, Efectivo
                   </td>
                 </tr>
-                <tr className=" text-left whitespace-nowrap text-sm align-midd text-gray-700">
-                  <td className="px-2 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black">
+                <tr className=" text-left text-sm align-middle text-gray-700">
+                  <td className="px-2 py-4 text-left max-w-[150px] w-[150px] text-sm align-middle border-r-2 border-r-black border-l-2 border-l-black break-words">
                     PLAZO DE ENTREGA
                   </td>
                   <td
@@ -331,6 +407,51 @@ function BudgetDetails() {
                 DOCUMENTO NO VÁLIDO COMO FACTURA. PRESUPUESTO VALIDO POR 7 DÍAS
               </p>
             </div>
+
+            {/* Imágenes adjuntas (miniaturas) */}
+            {(() => {
+              const attachments = budget.client_attachments?.length
+                ? budget.client_attachments
+                : budget.client_attachment?.url
+                  ? [budget.client_attachment]
+                  : [];
+              if (attachments.length === 0) return null;
+              return (
+                <div
+                  className="mt-6 border-t-2 border-gray-300 pt-4"
+                  data-attachment-preview="true"
+                >
+                  <p className="text-sm font-semibold text-[#726352] mb-2">
+                    Imágenes adjuntas ({attachments.length})
+                  </p>
+                  <div className="flex flex-wrap gap-4">
+                    {attachments.map((att, idx) => (
+                      att?.url && (
+                        <div key={att._id || idx} className="flex flex-col">
+                          <a
+                            href={att.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block"
+                          >
+                            <img
+                              src={att.url}
+                              alt={`Imagen adjunta ${idx + 1}`}
+                              className="w-[180px] h-[140px] object-contain border border-gray-300 rounded-md shadow-sm hover:shadow-md transition-shadow bg-white"
+                            />
+                          </a>
+                          {att.original_name && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {att.original_name}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
       </div>

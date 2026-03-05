@@ -231,6 +231,14 @@ function ViewModulesFurniture({ sortedModules }) {
                                                             ) : (
                                                                 ""
                                                             )}
+                                                            {piece.pantographed && (
+                                                                <>
+                                                                    <br />
+                                                                    <strong>
+                                                                        Pantografiado
+                                                                    </strong>
+                                                                </>
+                                                            )}
                                                         </>
                                                     ) : piece.veneer2 ? (
                                                         <>
@@ -268,6 +276,14 @@ function ViewModulesFurniture({ sortedModules }) {
                                                             ) : (
                                                                 ""
                                                             )}
+                                                            {piece.pantographed && (
+                                                                <>
+                                                                    <br />
+                                                                    <strong>
+                                                                        Pantografiado
+                                                                    </strong>
+                                                                </>
+                                                            )}
                                                         </>
                                                     ) : piece.melamine ? (
                                                         <>
@@ -293,6 +309,14 @@ function ViewModulesFurniture({ sortedModules }) {
                                                                     2 lados
                                                                 </strong>
                                                             )}{" "}
+                                                            {piece.pantographed && (
+                                                                <>
+                                                                    <br />
+                                                                    <strong>
+                                                                        Pantografiado
+                                                                    </strong>
+                                                                </>
+                                                            )}
                                                         </>
                                                     ) : (
                                                         "No indica"

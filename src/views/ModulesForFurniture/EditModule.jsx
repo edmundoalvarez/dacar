@@ -31,6 +31,7 @@ function EditModule() {
     getValues,
     resetField,
     formState: { errors },
+    control,
   } = useForm();
 
   // Obtener datos del mueble por ID
@@ -61,6 +62,8 @@ function EditModule() {
           setValue(`qty${index}`, piece.qty);
           setValue(`lengthPiece${index}`, piece.length);
           setValue(`widthPiece${index}`, piece.width);
+          setValue(`lengthPieceBase${index}`, piece.length);
+          setValue(`widthPieceBase${index}`, piece.width);
           setValue(`orientation${index}`, piece.orientation);
           setValue(`commentPiece${index}`, piece.comment);
           setValue(`materialPiece${index}`, piece.material);
@@ -95,6 +98,8 @@ function EditModule() {
           if (piece.polishedEdge) {
             setValue(`edgeType${index}`, "polished");
           }
+          setValue(`lockLength${index}`, piece.lockLength || false);
+          setValue(`lockWidth${index}`, piece.lockWidth || false);
         });
       })
       .catch((error) => {
@@ -136,25 +141,49 @@ function EditModule() {
     try {
       const { name, height, length, width, material, description } = data;
 
-      const supplies_module = [...Array(suppliesCount)].map((_, index) => {
-        const supplie_id = data[`supplie_id${index}`];
+      const supplies_module = [...Array(suppliesCount)]
+        .map((_, index) => {
+          const supplie_id = data[`supplie_id${index}`];
 
-        // Buscamos nombre del catálogo actual:
-        const found = supplies.find((s) => s._id === supplie_id);
-        const supplie_name = found?.name ?? ""; // o directamente omitir este campo
+          // Si no hay insumo seleccionado, se ignora
+          if (!supplie_id) return null;
 
-        return {
-          supplie_id,
-          supplie_name, // <-- opcional; si no lo usás en backend, quitalo
-          supplie_qty: data[`supplie_qty${index}`],
-          supplie_length: data[`supplie_length${index}`],
-        };
-      });
+          const found = supplies.find((s) => s._id === supplie_id);
+          const supplie_name = found?.name ?? "";
 
+          // qty
+          const rawQty = data[`supplie_qty${index}`];
+          const qty =
+            rawQty === undefined || rawQty === null || rawQty === ""
+              ? 1
+              : Number(rawQty);
+
+          // length — aquí empieza la corrección para que NO mande 0
+          const rawLength = data[`supplie_length${index}`];
+
+          let supply = {
+            supplie_id,
+            supplie_name,
+            supplie_qty: qty,
+          };
+
+          // Solo enviamos length si el usuario escribió un número válido
+          if (
+            rawLength !== undefined &&
+            rawLength !== null &&
+            rawLength !== "" &&
+            !Number.isNaN(Number(rawLength))
+          ) {
+            supply.supplie_length = Number(rawLength);
+          }
+
+          return supply;
+        })
+        .filter(Boolean);
       let piecesNumber = 0;
 
       const pieces = [...Array(piecesCount)].map((_, index) => {
-        console.log("qty", data[`qty${index}`]);
+        // console.log("qty", data[`qty${index}`]);
         let qty =
           data[`qty${index}`] !== undefined &&
           data[`qty${index}`] !== "" &&
@@ -248,6 +277,8 @@ function EditModule() {
           loose_piece: data[`loose_piece${index}`]
             ? Number(data[`loose_piece${index}`])
             : undefined,
+          lockLength: data[`lockLength${index}`] || false,
+          lockWidth: data[`lockWidth${index}`] || false,
           module_id: idModule,
         };
       });
@@ -295,6 +326,8 @@ function EditModule() {
 
     currentModule.pieces.map((piece, index) => {
       const orientation = getValues(`orientation${index}`);
+      const lockLength = getValues(`lockLength${index}`) || false;
+      const lockWidth = getValues(`lockWidth${index}`) || false;
 
       const formattedModuleNewHeight = moduleNewHeight ?? moduleOriginalHeight;
       const formattedModuleNewLength = moduleNewLength ?? moduleOriginalLength;
@@ -303,92 +336,104 @@ function EditModule() {
       // setModuleOriginalHeight(formattedModuleNewHeight);
       // setModuleOriginalLength(formattedModuleNewLength);
       // setModuleOriginalWidth(formattedModuleNewWidth);
-      let pieceLength = getValues(`lengthPieceHidden${index}`);
-      let pieceWidth = getValues(`widthPieceHidden${index}`);
+      let pieceLength = getValues(`lengthPieceBase${index}`);
+      let pieceWidth = getValues(`widthPieceBase${index}`);
       pieceLength = Number(pieceLength);
       pieceWidth = Number(pieceWidth);
 
       /* transversal vertical */
       if (orientation === "cross-vertical") {
-        if (formattedModuleNewHeight >= moduleOriginalHeight) {
-          pieceLength =
-            pieceLength +
-            (formattedModuleNewHeight - moduleOriginalHeight) *
-              (pieceLength / moduleOriginalHeight);
-        }
-        if (formattedModuleNewHeight < moduleOriginalHeight) {
-          pieceLength =
-            pieceLength -
-            (moduleOriginalHeight - formattedModuleNewHeight) *
-              (pieceLength / moduleOriginalHeight);
+        if (!lockLength) {
+          if (formattedModuleNewHeight >= moduleOriginalHeight) {
+            pieceLength =
+              pieceLength +
+              (formattedModuleNewHeight - moduleOriginalHeight) *
+                (pieceLength / moduleOriginalHeight);
+          }
+          if (formattedModuleNewHeight < moduleOriginalHeight) {
+            pieceLength =
+              pieceLength -
+              (moduleOriginalHeight - formattedModuleNewHeight) *
+                (pieceLength / moduleOriginalHeight);
+          }
         }
 
-        if (formattedModuleNewLength >= moduleOriginalLength) {
-          pieceWidth =
-            pieceWidth +
-            (formattedModuleNewLength - moduleOriginalLength) *
-              (pieceWidth / moduleOriginalLength);
-        }
-        if (formattedModuleNewLength < moduleOriginalLength) {
-          pieceWidth =
-            pieceWidth -
-            (moduleOriginalLength - formattedModuleNewLength) *
-              (pieceWidth / moduleOriginalLength);
+        if (!lockWidth) {
+          if (formattedModuleNewLength >= moduleOriginalLength) {
+            pieceWidth =
+              pieceWidth +
+              (formattedModuleNewLength - moduleOriginalLength) *
+                (pieceWidth / moduleOriginalLength);
+          }
+          if (formattedModuleNewLength < moduleOriginalLength) {
+            pieceWidth =
+              pieceWidth -
+              (moduleOriginalLength - formattedModuleNewLength) *
+                (pieceWidth / moduleOriginalLength);
+          }
         }
       }
       /* tranversal horizontal */
       if (orientation === "cross-horizontal") {
-        if (formattedModuleNewLength >= moduleOriginalLength) {
-          pieceLength =
-            pieceLength +
-            (formattedModuleNewLength - moduleOriginalLength) *
-              (pieceLength / moduleOriginalLength);
+        if (!lockLength) {
+          if (formattedModuleNewLength >= moduleOriginalLength) {
+            pieceLength =
+              pieceLength +
+              (formattedModuleNewLength - moduleOriginalLength) *
+                (pieceLength / moduleOriginalLength);
+          }
+          if (formattedModuleNewLength < moduleOriginalLength) {
+            pieceLength =
+              pieceLength -
+              (moduleOriginalLength - formattedModuleNewLength) *
+                (pieceLength / moduleOriginalLength);
+          }
         }
-        if (formattedModuleNewLength < moduleOriginalLength) {
-          pieceLength =
-            pieceLength -
-            (moduleOriginalLength - formattedModuleNewLength) *
-              (pieceLength / moduleOriginalLength);
-        }
-        if (formattedModuleNewWidth >= moduleOriginalWidth) {
-          pieceWidth =
-            pieceWidth +
-            (formattedModuleNewWidth - moduleOriginalWidth) *
-              (pieceWidth / moduleOriginalWidth);
-        }
-        if (formattedModuleNewWidth < moduleOriginalWidth) {
-          pieceWidth =
-            pieceWidth -
-            (moduleOriginalWidth - formattedModuleNewWidth) *
-              (pieceWidth / moduleOriginalWidth);
+        if (!lockWidth) {
+          if (formattedModuleNewWidth >= moduleOriginalWidth) {
+            pieceWidth =
+              pieceWidth +
+              (formattedModuleNewWidth - moduleOriginalWidth) *
+                (pieceWidth / moduleOriginalWidth);
+          }
+          if (formattedModuleNewWidth < moduleOriginalWidth) {
+            pieceWidth =
+              pieceWidth -
+              (moduleOriginalWidth - formattedModuleNewWidth) *
+                (pieceWidth / moduleOriginalWidth);
+          }
         }
       }
 
       /* lateral */
       if (orientation === "side") {
-        if (formattedModuleNewHeight >= moduleOriginalHeight) {
-          pieceLength =
-            pieceLength +
-            (formattedModuleNewHeight - moduleOriginalHeight) *
-              (pieceLength / moduleOriginalHeight);
+        if (!lockLength) {
+          if (formattedModuleNewHeight >= moduleOriginalHeight) {
+            pieceLength =
+              pieceLength +
+              (formattedModuleNewHeight - moduleOriginalHeight) *
+                (pieceLength / moduleOriginalHeight);
+          }
+          if (formattedModuleNewHeight < moduleOriginalHeight) {
+            pieceLength =
+              pieceLength -
+              (moduleOriginalHeight - formattedModuleNewHeight) *
+                (pieceLength / moduleOriginalHeight);
+          }
         }
-        if (formattedModuleNewHeight < moduleOriginalHeight) {
-          pieceLength =
-            pieceLength -
-            (moduleOriginalHeight - formattedModuleNewHeight) *
-              (pieceLength / moduleOriginalHeight);
-        }
-        if (formattedModuleNewWidth >= moduleOriginalWidth) {
-          pieceWidth =
-            pieceWidth +
-            (formattedModuleNewWidth - moduleOriginalWidth) *
-              (pieceWidth / moduleOriginalWidth);
-        }
-        if (formattedModuleNewWidth < moduleOriginalWidth) {
-          pieceWidth =
-            pieceWidth -
-            (moduleOriginalWidth - formattedModuleNewWidth) *
-              (pieceWidth / moduleOriginalWidth);
+        if (!lockWidth) {
+          if (formattedModuleNewWidth >= moduleOriginalWidth) {
+            pieceWidth =
+              pieceWidth +
+              (formattedModuleNewWidth - moduleOriginalWidth) *
+                (pieceWidth / moduleOriginalWidth);
+          }
+          if (formattedModuleNewWidth < moduleOriginalWidth) {
+            pieceWidth =
+              pieceWidth -
+              (moduleOriginalWidth - formattedModuleNewWidth) *
+                (pieceWidth / moduleOriginalWidth);
+          }
         }
       }
       const formatNumber = (num) => {
@@ -405,8 +450,13 @@ function EditModule() {
 
         return rounded; // Si no es redondo, devolver con 2 decimales
       };
-      setValue(`lengthPiece${index}`, formatNumber(pieceLength));
-      setValue(`widthPiece${index}`, formatNumber(pieceWidth));
+      // Solo actualizar si no está bloqueado
+      if (!lockLength) {
+        setValue(`lengthPiece${index}`, formatNumber(pieceLength));
+      }
+      if (!lockWidth) {
+        setValue(`widthPiece${index}`, formatNumber(pieceWidth));
+      }
     });
   };
 
@@ -609,6 +659,7 @@ function EditModule() {
             <FormEditSupplies
               key={`supplies-${index}`}
               register={register}
+              control={control}
               index={index}
               errors={errors}
               supplies={supplies}
@@ -646,6 +697,7 @@ function EditModule() {
               <FormEditPieces
                 key={`pieces-${index}`}
                 register={register}
+                control={control}
                 index={index}
                 errors={errors}
                 tables={tables}

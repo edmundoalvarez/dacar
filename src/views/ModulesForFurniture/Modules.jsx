@@ -8,6 +8,7 @@ import {
   deleteOriginalModule,
   ViewModulesFurniture,
   getPiecesByModuleId,
+  getModuleHistory,
 } from "../../index.js";
 
 function Modules() {
@@ -25,6 +26,79 @@ function Modules() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 50;
+
+  //Historial edición
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [historyEntries, setHistoryEntries] = useState([]);
+  const [historyLoader, setHistoryLoader] = useState(false);
+  const [historyModuleName, setHistoryModuleName] = useState("");
+  const [historyModuleId, setHistoryModuleId] = useState(null);
+
+  const FIELD_LABELS = {
+    name: "Nombre del módulo",
+    material: "Material",
+    height: "Alto",
+    length: "Largo",
+    width: "Profundidad",
+    description: "Descripción",
+    pieces_number: "Cantidad de piezas",
+    "supplies_module.supplie_qty": "Cantidad de insumo",
+    "supplies_module.supplie_length": "Largo del insumo",
+    supplies_module: "Insumo agregado",
+  };
+
+  function getFieldLabel(field) {
+    return FIELD_LABELS[field] || field;
+  }
+
+  function formatChangeValue(change, key) {
+    const val = change[key];
+
+    if (val === null || val === undefined) return "—";
+
+    // Caso especial: se agregó un insumo completo (field === "supplies_module")
+    if (change.field === "supplies_module" && typeof val === "object") {
+      const name = val.supplie_name ?? "";
+      const qty = val.supplie_qty ?? "";
+      const len = val.supplie_length ?? "";
+      return `${name} (cant.: ${qty || "-"}, largo: ${len || "-"})`;
+    }
+
+    // Números / strings normales
+    if (typeof val !== "object") {
+      return String(val);
+    }
+
+    // Cualquier otro objeto (fallback)
+    try {
+      return JSON.stringify(val);
+    } catch {
+      return String(val);
+    }
+  }
+
+  const handleOpenHistory = async (module) => {
+    try {
+      setHistoryModuleName(module.name);
+      setHistoryModuleId(module._id);
+      setHistoryModalOpen(true);
+      setHistoryLoader(true);
+
+      const logs = await getModuleHistory(module._id);
+      setHistoryEntries(logs);
+    } catch (error) {
+      console.error("Error al obtener historial del módulo:", error);
+    } finally {
+      setHistoryLoader(false);
+    }
+  };
+
+  const handleCloseHistoryModal = () => {
+    setHistoryModalOpen(false);
+    setHistoryEntries([]);
+    setHistoryModuleName("");
+    setHistoryModuleId(null);
+  };
 
   // AbortController actual para abortar la request previa
   const controllerRef = useRef(null);
@@ -252,50 +326,66 @@ function Modules() {
                       {module.pieces_number}
                     </td>
                     <td>
-                      <div className="flex justify-center align-middle gap-4">
+                      <div className="flex justify-center items-center gap-2 text-xs">
                         <button
-                          className="text-white bg-blue-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          className="text-white bg-blue-500 rounded-md px-2 py-1 flex flex-row justify-center items-center gap-1"
                           onClick={() => handleOpenModal(module)}
                         >
                           <img
                             src="./../icon_search.svg"
                             alt="Ver"
-                            className="w-[20px]"
+                            className="w-[16px]"
                           />
-                          <p className="m-0 leading-loose">Ver</p>
+                          <span>Ver</span>
                         </button>
+
                         <Link
                           to={`/editar-modulo/${module._id}`}
-                          className="text-white bg-orange rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          className="text-white bg-orange rounded-md px-2 py-1 flex flex-row justify-center items-center gap-1"
                         >
                           <img
                             src="./../icon_edit.svg"
                             alt="Editar"
-                            className="w-[20px]"
+                            className="w-[16px]"
                           />
-                          <p className="m-0 leading-loose">Editar</p>
+                          <span>Editar</span>
                         </Link>
+
                         <button
-                          className="text-white bg-lightblue rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          className="text-white bg-lightblue rounded-md px-2 py-1 flex flex-row justify-center items-center gap-1"
                           onClick={() => handleCloneModule(module._id)}
                         >
                           <img
                             src="./../icon_clone.svg"
                             alt="Clonar"
-                            className="w-[18px]"
+                            className="w-[16px]"
                           />
-                          <p className="m-0 leading-loose">Clonar</p>
+                          <span>Clonar</span>
                         </button>
+
                         <button
                           onClick={() => handleDeleteModule(module._id)}
-                          className="text-white bg-red-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          className="text-white bg-red-500 rounded-md px-2 py-1 flex flex-row justify-center items-center gap-1"
                         >
                           <img
                             src="./../icon_delete.svg"
                             alt="Eliminar"
-                            className="w-[18px]"
+                            className="w-[16px]"
                           />
-                          <p className="m-0 leading-loose">Eliminar</p>
+                          <span>Eliminar</span>
+                        </button>
+
+                        {/* NUEVO botón de historial */}
+                        <button
+                          onClick={() => handleOpenHistory(module)}
+                          className="text-white bg-gray-700 rounded-md px-2 py-1 flex flex-row justify-center items-center gap-1"
+                        >
+                          <img
+                            src="./../icon_history.svg" // inventate el icono o usá uno existente
+                            alt="Historial"
+                            className="w-[16px]"
+                          />
+                          <span>Historial</span>
                         </button>
                       </div>
                     </td>
@@ -397,6 +487,152 @@ function Modules() {
                 onClick={() => setOpenModalToDeleteModule(false)}
               >
                 Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal historial */}
+      {historyModalOpen && (
+        <div
+          onClick={handleCloseHistoryModal}
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white p-8 rounded-lg shadow-lg max-h-[600px] w-full max-w-3xl overflow-y-auto relative text-black"
+          >
+            <button
+              onClick={handleCloseHistoryModal}
+              className="absolute top-2 right-2 bg-red-600 text-white rounded-md w-8 h-8 flex items-center justify-center"
+            >
+              &times;
+            </button>
+
+            <h2 className="text-xl font-semibold mb-2">
+              Historial de cambios – {historyModuleName}
+            </h2>
+
+            <p className="text-sm text-gray-600 mb-4">
+              ID módulo:{" "}
+              <span className="font-mono text-xs">{historyModuleId}</span>
+            </p>
+
+            {historyLoader ? (
+              <div className="flex justify-center items-center h-32">
+                <Oval
+                  visible={true}
+                  height="40"
+                  width="40"
+                  color="rgb(92, 92, 92)"
+                  secondaryColor="rgb(92,92,92)"
+                  strokeWidth="6"
+                  ariaLabel="oval-loading"
+                />
+              </div>
+            ) : historyEntries.length === 0 ? (
+              <p className="text-sm text-gray-600">
+                No hay actividad registrada.
+              </p>
+            ) : (
+              <ul className="space-y-4">
+                {historyEntries.map((log) => (
+                  <li
+                    key={log._id}
+                    className="border border-gray-200 rounded-md p-3 text-sm"
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-semibold">
+                        {log.action === "create"
+                          ? "Creación"
+                          : log.action === "update"
+                          ? "Actualización"
+                          : log.action === "delete"
+                          ? "Eliminación"
+                          : log.action === "clone"
+                          ? "Clonación"
+                          : log.action}
+                      </span>
+
+                      <span className="text-xs text-gray-500">
+                        {new Date(log.createdAt).toLocaleString("es-AR")}
+                      </span>
+                    </div>
+
+                    <div className="text-xs text-gray-700 mb-2">
+                      <span className="font-medium">Usuario: </span>
+                      <span className="font-bold">
+                        {" "}
+                        {log.user?.username ||
+                          log.user?.email ||
+                          "Usuario desconocido"}
+                      </span>
+                    </div>
+
+                    {/* Si es creación, podés mostrar meta */}
+                    {log.action === "create" && log.meta && (
+                      <div className="text-xs text-gray-700">
+                        <span className="font-medium">Datos iniciales:</span>
+                        <pre className="mt-1 bg-gray-50 p-2 rounded text-[11px] whitespace-pre-wrap">
+                          {JSON.stringify(log.meta, null, 2)}
+                        </pre>
+                      </div>
+                    )}
+
+                    {/* Si es actualización, mostrar cambios */}
+                    {log.action === "update" && Array.isArray(log.changes) && (
+                      <div className="mt-2">
+                        <span className="font-medium text-xs">
+                          Cambios realizados:
+                        </span>
+                        <table className="mt-1 w-full text-[11px] border border-gray-200">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              <th className="border px-2 py-1 text-left">
+                                Campo
+                              </th>
+                              <th className="border px-2 py-1 text-left">
+                                Antes
+                              </th>
+                              <th className="border px-2 py-1 text-left">
+                                Después
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {log.changes.map((change, idx) => (
+                              <tr key={idx}>
+                                <td className="border px-2 py-1 align-top">
+                                  {getFieldLabel(change.field)}
+                                  {change.supplie_id && (
+                                    <div className="text-[10px] text-gray-500">
+                                      ID insumo: {change.supplie_id}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="border px-2 py-1 align-top">
+                                  {formatChangeValue(change, "from")}
+                                </td>
+                                <td className="border px-2 py-1 align-top">
+                                  {formatChangeValue(change, "to")}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={handleCloseHistoryModal}
+                className="bg-red-500 text-white py-2 px-6 rounded"
+              >
+                Cerrar
               </button>
             </div>
           </div>

@@ -2,8 +2,7 @@ import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { login } from "../../index.js";
-
-import axios from "axios";
+import { Oval } from "react-loader-spinner";
 
 const Login = () => {
   const { setUser } = useContext(AuthContext);
@@ -15,6 +14,7 @@ const Login = () => {
   });
 
   const [error, setError] = useState("");
+  const [submitLoader, setSubmitLoader] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -26,22 +26,32 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSubmitLoader(true);
 
-    const response = await login(formData); // llamás a tu service
+    try {
+      const response = await login(formData); // llamás a tu service
 
-    if (response.error) {
-      setError(response.error);
-      return;
+      if (response.error) {
+        setError(response.error);
+        return;
+      }
+
+      const { user } = response;
+
+      setUser({
+        email: user.email,
+        id: user._id,
+        username: user.username,
+        role: user.role,
+      });
+
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      setError("Ocurrió un error al iniciar sesión. Intentá de nuevo.");
+    } finally {
+      setSubmitLoader(false);
     }
-
-    const { user } = response;
-
-    setUser({
-      email: user.email,
-      id: user._id,
-    });
-
-    navigate("/");
   };
 
   return (
@@ -72,12 +82,28 @@ const Login = () => {
           className="w-full px-3 py-2 border border-gray-300 rounded mb-4"
         />
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-        >
-          Iniciar sesión
-        </button>
+        {!submitLoader ? (
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          >
+            Iniciar sesión
+          </button>
+        ) : (
+          <div className="flex justify-center w-full mt-2">
+            <div className="flex justify-center bg-blue-600 rounded px-3 py-2 w-1/2">
+              <Oval
+                visible={true}
+                height="24"
+                width="24"
+                color="#fff"
+                secondaryColor="#fff"
+                strokeWidth="6"
+                ariaLabel="Cargando"
+              />
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );
