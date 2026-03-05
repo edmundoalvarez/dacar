@@ -1,11 +1,10 @@
 import axios from "axios";
 import config from "../../config.json";
-/* import Cookies from "js-cookie"; */
-/* const token = Cookies.get("token");
-const userId = Cookies.get("userId"); */
+import Cookies from "js-cookie";
 
 //CREAR MUEBLE
 async function createFurniture(data) {
+  const token = Cookies.get("token");
   const res = await axios.post(
     config.apiFurnitures,
     {
@@ -14,7 +13,7 @@ async function createFurniture(data) {
     {
       headers: {
         "Content-Type": "application/json",
-        /* auth: token, */
+        auth: token,
       },
     }
   );

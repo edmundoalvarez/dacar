@@ -1,1 +1,16 @@
+# Habilitar rewrite
+RewriteEngine On
+
+# Si el archivo o directorio existe físicamente, servirlo directamente
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Excluir la carpeta /api/ de la redirección a React
+RewriteRule ^api/ - [L]
+
+# Todo lo demás va a index.html (SPA)
+RewriteRule ^ /index.html [L]
+
+# Error 404 para rutas que no existen y no son de la SPA
 ErrorDocument 404 /index.html

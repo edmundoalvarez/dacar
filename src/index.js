@@ -18,6 +18,15 @@ export { filterFurnitureByName } from "./services/Furniture/filterFurnitureByNam
 export { getLoosePiecesByFurnitureId } from "./services/Furniture/getLoosePiecesByFurnitureId.js";
 export { getPiecesByFurnitureId } from "./services/Furniture/getPiecesByFurnitureId.js";
 export { deleteFurniture } from "./services/Furniture/deleteFurniture.js";
+export { getFurnitureHistory } from "./services/Furniture/getFurnitureHistory.js";
+
+//FURNITURE-CATEGORIES
+export { getFurnitureCategories } from "./services/FurnitureCategories/getFurnitureCategories.js";
+export { getFurnitureCategoryById } from "./services/FurnitureCategories/getFurnitureCategoryById.js";
+export { getFurnitureCategoriesForEdit } from "./services/FurnitureCategories/getFurnitureCategoriesForEdit.js";
+export { createFurnitureCategory } from "./services/FurnitureCategories/createFurnitureCategory.js";
+export { updateFurnitureCategory } from "./services/FurnitureCategories/updateFurnitureCategory.js";
+export { softDeleteFurnitureCategory } from "./services/FurnitureCategories/softDeleteFurnitureCategory.js";
 
 //MODULES
 export { createModule } from "./services/ModulesForFurniture/createModule.js";
@@ -29,6 +38,7 @@ export { updateModulePiecesNumber } from "./services/ModulesForFurniture/updateM
 export { cloneModule } from "./services/ModulesForFurniture/cloneModule.js";
 export { deleteOriginalModule } from "./services/ModulesForFurniture/deleteOriginalModule.js";
 export { filterModuleByName } from "./services/ModulesForFurniture/filterModuleByName.js";
+export { getModuleHistory } from "./services/ModulesForFurniture/getModuleHistory.js";
 
 //PIECES
 export { createPieces } from "./services/Pieces/createPieces.js";
@@ -79,6 +89,29 @@ export { getBudgetById } from "./services/Budgets/getBudgetById.js";
 export { filterBudgetByClientName } from "./services/Budgets/filterBudgetByClientName.js";
 export { deleteBudget } from "./services/Budgets/deleteBudget.js";
 export { editBudget } from "./services/Budgets/editBudget.js";
+export { getBudgetHistory } from "./services/Budgets/getBudgetHistory.js";
+export { getConfirmedBudgets } from "./services/Budgets/getConfirmedBudgets.js";
+export { confirmBudget } from "./services/Budgets/confirmBudget.js";
+export { unconfirmBudget } from "./services/Budgets/unconfirmBudget.js";
+export {
+  uploadBudgetImage,
+  deleteBudgetImage,
+} from "./services/Budgets/uploadBudgetImage.js";
+
+//USERS
+export { createUser } from "./services/Users/createUser.js";
+export { getAllUsersList } from "./services/Users/getAllUsersList.js";
+export { getUserById } from "./services/Users/getUserById.js";
+export { filterUserByName } from "./services/Users/filterUserByName.js";
+export { inactiveUser } from "./services/Users/inactiveUser.js";
+export { updateUser } from "./services/Users/updateUser.js";
+
+//SYSTEM VARIABLES
+export { getSystemVariables } from "./services/SystemVariables/getSystemVariables.js";
+export { getSystemVariableByKey } from "./services/SystemVariables/getSystemVariableByKey.js";
+export { createSystemVariable } from "./services/SystemVariables/createSystemVariable.js";
+export { updateSystemVariable } from "./services/SystemVariables/updateSystemVariable.js";
+export { deleteSystemVariable } from "./services/SystemVariables/deleteSystemVariable.js";
 
 //Components --->
 
@@ -108,6 +141,11 @@ export { Furniture } from "./views/Furniture/Furniture";
 export { CreateFurniture } from "./views/Furniture/CreateFurniture";
 export { EditFurnitureMultipleModules } from "./views/Furniture/EditFurnitureMultipleModules";
 
+//FURNITURE-CATEGORIES
+export { FurnitureCategories } from "./views/FurnitureCategories/FurnitureCategories";
+export { CreateFurnitureCategory } from "./views/FurnitureCategories/CreateFurnitureCategory";
+export { EditFurnitureCategory } from "./views/FurnitureCategories/EditFurnitureCategory";
+
 //MODULES
 export { Modules } from "./views/ModulesForFurniture/Modules";
 export { CreateModule } from "./views/ModulesForFurniture/CreateModule";
@@ -129,8 +167,17 @@ export { CreateBudget } from "./views/Budgets/CreateBudget";
 export { Budgets } from "./views/Budgets/Budgets";
 export { BudgetDetails } from "./views/Budgets/BudgetDetails";
 export { EditBudget } from "./views/Budgets/EditBudget";
+export { ConfirmedBudgetsReport } from "./views/Budgets/ConfirmedBudgetsReport";
 
 //CLIENTS
 export { Clients } from "./views/Clients/Clients";
 export { CreateClient } from "./views/Clients/CreateClient";
 export { EditClient } from "./views/Clients/EditClient";
+
+//USERS
+export { Users } from "./views/Users/Users";
+export { CreateUser } from "./views/Users/CreateUser";
+export { EditUser } from "./views/Users/EditUser";
+
+//SYSTEM VARIABLES
+export { SystemVariables } from "./views/SystemVariables/SystemVariables";

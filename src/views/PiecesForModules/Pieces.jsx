@@ -58,6 +58,7 @@ function Pieces() {
         resetField,
         reset,
         formState: { errors },
+        control,
     } = useForm();
 
     //Eliminar pieza
@@ -184,6 +185,8 @@ function Pieces() {
                 lacqueredEdge: lacqueredEdge,
                 polishedEdge: polishedEdge,
                 loose_piece: data[`loose_piece1`],
+                lockLength: data[`lockLength1`] || false,
+                lockWidth: data[`lockWidth1`] || false,
                 moduleId, // Asigna el ID del módulo a cada pieza
             };
             console.log(pieceData);
@@ -258,6 +261,7 @@ function Pieces() {
                             <FormCreatePieces
                                 key={`FormCreatePieces${1}`}
                                 register={register}
+                                control={control}
                                 index={1}
                                 errors={errors}
                                 tables={tables}
@@ -455,6 +459,14 @@ function Pieces() {
                                                     ) : (
                                                         ""
                                                     )}
+                                                    {piece.pantographed && (
+                                                        <>
+                                                            <br />
+                                                            <strong>
+                                                                Pantografiado
+                                                            </strong>
+                                                        </>
+                                                    )}
                                                 </>
                                             ) : piece.veneer2 ? (
                                                 <>
@@ -489,6 +501,14 @@ function Pieces() {
                                                     ) : (
                                                         ""
                                                     )}
+                                                    {piece.pantographed && (
+                                                        <>
+                                                            <br />
+                                                            <strong>
+                                                                Pantografiado
+                                                            </strong>
+                                                        </>
+                                                    )}
                                                 </>
                                             ) : piece.melamine ? (
                                                 <>
@@ -510,6 +530,14 @@ function Pieces() {
                                                         2 && (
                                                         <strong>2 lados</strong>
                                                     )}{" "}
+                                                    {piece.pantographed && (
+                                                        <>
+                                                            <br />
+                                                            <strong>
+                                                                Pantografiado
+                                                            </strong>
+                                                        </>
+                                                    )}
                                                 </>
                                             ) : (
                                                 "No indica"

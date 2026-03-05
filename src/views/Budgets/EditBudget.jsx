@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { Grid, Oval } from "react-loader-spinner";
+import QuillEditor from "../../components/QuillEditor.jsx";
+import Select from "react-select";
+
 import {
   getBudgetById,
   getAllServices,
@@ -13,7 +16,12 @@ import {
   getClientById,
   createClient,
   editBudget,
+  getFurnitureCategories,
+  uploadBudgetImage,
+  deleteBudgetImage,
+  getSystemVariableByKey,
 } from "../../index.js";
+import { useLocation } from "react-router-dom";
 
 function EditBudget() {
   const { budgetId } = useParams();
@@ -21,6 +29,10 @@ function EditBudget() {
   const [submitLoader, setSubmitLoader] = useState(false);
   const [loader, setLoader] = useState(true);
   const [singleFurniture, setSingleFurniture] = useState(null);
+  //categoria mueble
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
   const [totalVeneer, setTotalVeneer] = useState(0);
   const [totalVeneerPolished, setTotalVeneerPolished] = useState(0);
   const [totalVeneerLacqueredOpen, setTotalVeneerLacqueredOpen] = useState(0);
@@ -67,32 +79,158 @@ function EditBudget() {
   const [totalPrice, setTotalPrice] = useState(0);
   const navigate = useNavigate();
 
+  //Editar comentario
+  const [commentsValue, setCommentsValue] = useState("");
+  const [clientCommentValue, setClientCommentValue] = useState("");
+
+  // Estado para imágenes adjuntas (múltiples)
+  // orderedImages: [{ type: 'existing', _id, url, ... } | { type: 'new', file, preview }]
+  const [orderedImages, setOrderedImages] = useState([]);
+  const [deletedImages, setDeletedImages] = useState([]); // Imágenes marcadas para eliminar ({ _id, path })
+  const [imageUploading, setImageUploading] = useState(false);
+
+  // Coeficiente de cálculo (variable del sistema, default 3.8)
+  const [calculationCoefficient, setCalculationCoefficient] = useState(3.8);
+  const [systemCoefficient, setSystemCoefficient] = useState(3.8); // Guardar el valor del sistema para referencia
+  const [coefficientInput, setCoefficientInput] = useState("3.8");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getSystemVariableByKey("budget_calculation_coefficient", controller.signal)
+      .then((variable) => {
+        if (variable?.value != null && variable.value !== "") {
+          const num = Number(variable.value);
+          if (!Number.isNaN(num)) {
+            setSystemCoefficient(num);
+            // Solo setear si no hay valor guardado en el presupuesto
+            // Esto se manejará en getBudgetToSet
+          }
+        }
+      })
+      .catch((err) => {
+        if (err?.name !== "CanceledError" && err?.name !== "AbortError") {
+          console.error("Error al obtener coeficiente de cálculo:", err);
+        }
+      });
+    return () => controller.abort();
+  }, []);
+
+  // Sincronizar coefficientInput cuando cambia calculationCoefficient
+  useEffect(() => {
+    setCoefficientInput(String(calculationCoefficient).replace(",", "."));
+  }, [calculationCoefficient]);
+
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ["bold", "italic", "underline"], // dejamos solo B, I, U
+      [{ list: "ordered" }, { list: "bullet" }], // listas numeradas y con bullets
+    ],
+  };
+
+  const quillFormats = [
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "list",
+    "bullet",
+  ];
+
+  const selectStyles = {
+    control: (base, state) => ({
+      ...base,
+      borderColor: state.isFocused ? "#10b981" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 1px #10b981" : "none",
+      minHeight: "40px",
+      backgroundColor: "#ffffff",
+      color: "#111827",
+    }),
+    menu: (base) => ({ ...base, zIndex: 30 }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#6b7280",
+    }),
+    input: (base) => ({
+      ...base,
+      color: "#111827",
+    }),
+    menuList: (base) => ({ ...base, backgroundColor: "#ffffff" }),
+    option: (base, state) => ({
+      ...base,
+      color: "#111827",
+      backgroundColor: state.isSelected
+        ? "#d1fae5"
+        : state.isFocused
+          ? "#f3f4f6"
+          : "#ffffff",
+    }),
+  };
+
+  const tableOptions = tables.map((table) => ({
+    value: table.name,
+    label: table.name,
+  }));
+
+  const edgeOptions = edges.map((edge) => ({
+    value: edge._id,
+    label: edge.name,
+  }));
+
+  const veneerOptions = veneer.map((item) => ({
+    value: item._id,
+    label: item.name,
+  }));
+
+  const categoryOptions = categories.map((cat) => ({
+    value: cat._id,
+    label: cat.name,
+  }));
+
+  //Volver a presupuestos o presupuestos confirmados según corresponda
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const from = params.get("from");
+
+  const backUrl =
+    from === "confirmed"
+      ? "/reporte-presupuestos-confirmados"
+      : "/ver-presupuestos";
+
   const {
     register,
     unregister,
     handleSubmit,
+    setError,
     setValue,
     getValues,
     watch,
     formState: { errors },
+    control,
   } = useForm();
 
   const getBudgetToSet = () => {
     getBudgetById(budgetId)
       .then((budgetData) => {
-        console.log(budgetData.data);
+        // console.log(budgetData.data);
         setBudget(budgetData.data);
-        setSingleFurniture(budgetData.data.furniture[0]);
-        setTotalVeneer(Number(budgetData.data.veneer[0].veneerM2));
+        const furn = budgetData.data.furniture?.[0] || null;
+        setSingleFurniture(furn);
+
+        setTotalVeneer(Number(budgetData.data.veneer?.[0]?.veneerM2 || 0));
         setTotalVeneerPolished(
-          Number(budgetData.data.veneerPolished[0].veneerPolishedM2)
+          Number(budgetData.data.veneerPolished?.[0]?.veneerPolishedM2 || 0),
         );
         setTotalVeneerLacqueredOpen(
-          Number(budgetData.data.lacqueredOpen[0].lacqueredOpenM2)
+          Number(budgetData.data.lacqueredOpen?.[0]?.lacqueredOpenM2 || 0),
         );
-        setTotalLacqueredAll(Number(budgetData.data.lacquered[0].lacqueredM2));
+        setTotalLacqueredAll(Number(budgetData.data.lacquered?.[0]?.lacqueredM2 || 0));
         setTotalPantographed(
-          Number(budgetData.data.pantographed[0].pantographedM2)
+          Number(budgetData.data.pantographed?.[0]?.pantographedM2 || 0),
         );
 
         //DATA PRINCIPAL DEL MUEBLE
@@ -105,54 +243,55 @@ function EditBudget() {
         //length
         setValue("length", budgetData.data.length);
         //category
-        setValue("category", budgetData.data.category);
+        setValue("category_id", furn?.category?._id || "");
+        setValue("category_name", furn?.category?.name || "");
 
         //FILO LAQUEADO
         setValue(
           "edgeLaqueredM2",
-          budgetData.data.edge_lacquered[0].edgeLaqueredM2
+          budgetData.data.edge_lacquered[0].edgeLaqueredM2,
         );
-        console.log(
-          " budgetData.data.edge_lacquered[0].edgeLaqueredPrice",
-          budgetData.data.edge_lacquered[0].edgeLaqueredPrice
-        );
+        // console.log(
+        //   " budgetData.data.edge_lacquered[0].edgeLaqueredPrice",
+        //   budgetData.data.edge_lacquered[0].edgeLaqueredPrice
+        // );
         setValue(
           "edgeLaqueredPrice",
-          budgetData.data.edge_lacquered[0].edgeLaqueredPrice
+          budgetData.data.edge_lacquered[0].edgeLaqueredPrice,
         );
         setTotalLacqueredEdgeLength(
-          Number(budgetData.data.edge_lacquered[0].totalLacqueredEdgeLength)
+          Number(budgetData.data.edge_lacquered[0].totalLacqueredEdgeLength),
         );
         setValue(
           "edgeThickness",
-          budgetData.data.edge_lacquered[0].edgeLaqueredThickness
+          budgetData.data.edge_lacquered[0].edgeLaqueredThickness,
         );
 
         setMaterialEdgeLaquered(
-          budgetData.data.edge_lacquered[0].edgeLaqueredThickness
+          budgetData.data.edge_lacquered[0].edgeLaqueredThickness,
         );
 
         //FILO LUSTRADO
         setValue(
           "edgePolishedM2",
-          budgetData.data.edge_polished[0].edgePolishedM2
+          budgetData.data.edge_polished[0].edgePolishedM2,
         );
 
         setValue(
           "edgePolishedPrice",
-          budgetData.data.edge_polished[0].edgePolishedPrice
+          budgetData.data.edge_polished[0].edgePolishedPrice,
         );
 
         setTotalPolishedEdgeLength(
-          Number(budgetData.data.edge_polished[0].totalPolishedEdgeLength)
+          Number(budgetData.data.edge_polished[0].totalPolishedEdgeLength),
         );
         setValue(
           "edgePolishedThickness",
-          budgetData.data.edge_polished[0].edgePolishedThickness
+          budgetData.data.edge_polished[0].edgePolishedThickness,
         );
 
         setMaterialEdgePolished(
-          budgetData.data.edge_polished[0].edgePolishedThickness
+          budgetData.data.edge_polished[0].edgePolishedThickness,
         );
 
         //FILO SIN NADA
@@ -170,9 +309,9 @@ function EditBudget() {
               (acc, supply) => {
                 return acc + (supply.price || 0);
               },
-              0
+              0,
             );
-            console.log(budgetData.data.supplies);
+            // console.log(budgetData.data.supplies);
             setTotalSuppliePrice(totalPrice);
           }
         }
@@ -199,7 +338,7 @@ function EditBudget() {
                 const qty = material.qty || 0;
                 return acc + price * qty;
               },
-              0
+              0,
             );
 
             // Asignar los valores calculados
@@ -238,22 +377,29 @@ function EditBudget() {
         setValue("adjustment_price", budgetData.data.adjustment_price || "");
 
         //CLIENTE
-        setClientOption("existing");
-        setValue("clientOption", "existing");
-        if (budgetData.data?.client) {
-          if (budgetData.data.client.length > 0) {
-            budgetData.data.client.forEach((clientEach, index) => {
-              // Asignar el valor de chapa_price
-              setValue(
-                "clientNameInput",
-                clientEach.lastname + " " + clientEach.name || ""
-              );
-              setValue("clientId", clientEach._id || "");
-            });
-          }
+        const clients = Array.isArray(budgetData.data?.client)
+          ? budgetData.data.client
+          : [];
+        if (clients.length > 0) {
+          const clientEach = clients[0];
+          setClientOption("existing");
+          setValue("clientOption", "existing");
+          setValue(
+            "clientNameInput",
+            `${clientEach.lastname || ""} ${clientEach.name || ""}`.trim(),
+          );
+          setValue("clientId", clientEach._id || "");
+        } else {
+          setClientOption("");
+          setValue("clientOption", "");
+          setValue("clientNameInput", "");
+          setValue("clientId", "");
         }
         //COMENTARIOS
         setValue("comments", budgetData.data.comments || "");
+        setCommentsValue(budgetData.data.comments || "");
+        setValue("client_comment", budgetData.data.client_comment || "");
+        setClientCommentValue(budgetData.data.client_comment || "");
         //FECHA DE ENTREGA
         setValue("deliver_date", budgetData.data.deliver_date || "");
         //COLOCACIÓN
@@ -262,7 +408,7 @@ function EditBudget() {
           setValue("placementDays", budgetData.data.placement_days || "");
           setValue("placementPrice", budgetData.data.placement_price || 0);
           setSubtotalPlacement(
-            budgetData.data.placement_price * budgetData.data.placement_days
+            budgetData.data.placement_price * budgetData.data.placement_days,
           );
         } else {
           setValue("placement", "false" || "");
@@ -277,6 +423,21 @@ function EditBudget() {
         }
         //MOSTRAR MÓDULOS
         setValue("showModules", budgetData.data.show_modules || "");
+
+        //COEFICIENTE DE CÁLCULO
+        if (budgetData.data.calculation_coefficient != null) {
+          setCalculationCoefficient(budgetData.data.calculation_coefficient);
+          setCoefficientInput(String(budgetData.data.calculation_coefficient).replace(",", "."));
+        }
+
+        //IMÁGENES ADJUNTAS (client_attachments poblado o legacy client_attachment)
+        const attachments = budgetData.data.client_attachments;
+        const imgs = attachments && Array.isArray(attachments) && attachments.length > 0
+          ? attachments
+          : budgetData.data.client_attachment?.url
+            ? [budgetData.data.client_attachment]
+            : [];
+        setOrderedImages(imgs.map((img) => ({ type: "existing", ...img })));
 
         //PRECIO TOTAL
         setTotalPrice(budgetData.data.total_price);
@@ -323,6 +484,19 @@ function EditBudget() {
         console.error("Este es el error:", error);
       });
   };
+  const getAllCategoriesToSet = () => {
+    getFurnitureCategories()
+      .then((res) => {
+        const cats = Array.isArray(res) ? res : [];
+        setCategories(cats || []);
+      })
+      .catch((error) => {
+        console.error("Error al traer categorías de muebles:", error);
+      })
+      .finally(() => {
+        setCategoriesLoading(false);
+      });
+  };
 
   useEffect(() => {
     getBudgetToSet();
@@ -331,35 +505,36 @@ function EditBudget() {
     getAllEdgesToSet();
     getAllVeneerToSet();
     getAllClientsToSet();
+    getAllCategoriesToSet();
   }, [budgetId, edgeSelect]);
 
   //Servicios: obetener valores
   const enchapadoArtesanalService = services.find(
-    (service) => service._id === "66a5bbab218ee6221506c133"
+    (service) => service._id === "66a5bbab218ee6221506c133",
   );
 
   const laqueadoService = services.find(
-    (service) => service._id === "66a5bb29218ee6221506c125"
+    (service) => service._id === "66a5bb29218ee6221506c125",
   );
 
   const laqueadoOpenService = services.find(
-    (service) => service._id === "66eb0ec94bc129b0fcfb3dea"
+    (service) => service._id === "66eb0ec94bc129b0fcfb3dea",
   );
 
   const lustreService = services.find(
-    (service) => service._id === "66a5bb50218ee6221506c12b"
+    (service) => service._id === "66a5bb50218ee6221506c12b",
   );
 
   const pantografiadoService = services.find(
-    (service) => service._id === "66a5bb88218ee6221506c130"
+    (service) => service._id === "66a5bb88218ee6221506c130",
   );
 
   const filoService = services.find(
-    (service) => service._id === "66a5baea218ee6221506c119"
+    (service) => service._id === "66a5baea218ee6221506c119",
   );
 
   const cortePlacaService = services.find(
-    (service) => service._id === "66a5baf9218ee6221506c11c"
+    (service) => service._id === "66a5baf9218ee6221506c11c",
   );
 
   //AL SELECCIONAR EL FILO OBTENER EL VALOR
@@ -367,19 +542,17 @@ function EditBudget() {
   //filo laqueado
   const handleMaterialEdgeLaqueredOption = (event) => {
     let thickness = Number(event.target.value);
-    console.log("handleMaterialEdgeLaqueredOption");
-    // console.log(option);
+
     if (thickness > 0) {
-      console.log(laqueadoService?.price, totalLacqueredEdgeLength, thickness);
       setMaterialEdgeLaquered(thickness);
       setValue(
         "edgeLaqueredPrice",
         laqueadoService?.price *
-          ((totalLacqueredEdgeLength * thickness) / 1000).toFixed(2)
+          ((totalLacqueredEdgeLength * thickness) / 1000).toFixed(2),
       );
       setValue(
         "edgeLaqueredM2",
-        ((totalLacqueredEdgeLength * thickness) / 1000).toFixed(2)
+        ((totalLacqueredEdgeLength * thickness) / 1000).toFixed(2),
       );
     } else {
       setMaterialEdgeLaquered(0);
@@ -391,24 +564,24 @@ function EditBudget() {
   //filo lustrado
   const handleMaterialEdgePolishedOption = (event) => {
     let thickness = Number(event.target.value);
-    console.log("handleMaterialEdgePolishedOption");
+
     if (thickness > 0) {
-      console.log(
-        "handleMaterialEdgePolishedOption",
-        lustreService?.price,
-        totalPolishedEdgeLength,
-        thickness
-      );
+      // console.log(
+      //   "handleMaterialEdgePolishedOption",
+      //   lustreService?.price,
+      //   totalPolishedEdgeLength,
+      //   thickness
+      // );
       setMaterialEdgePolished(thickness);
       // console.log(totalPolishedEdgeLength);
       setValue(
         "edgePolishedPrice",
         lustreService?.price *
-          ((totalPolishedEdgeLength * thickness) / 1000).toFixed(2)
+          ((totalPolishedEdgeLength * thickness) / 1000).toFixed(2),
       );
       setValue(
         "edgePolishedM2",
-        ((totalPolishedEdgeLength * thickness) / 1000).toFixed(2)
+        ((totalPolishedEdgeLength * thickness) / 1000).toFixed(2),
       );
     } else {
       setMaterialEdgePolished(0);
@@ -417,8 +590,7 @@ function EditBudget() {
   };
 
   //filo común
-  const handleMaterialEdgeOption = (event) => {
-    let option = event.target.value;
+  const handleMaterialEdgeOption = (option) => {
     // console.log("handleMaterialEdgeOption");
 
     let selectedEdge = edges.find((edge) => edge._id === option);
@@ -427,16 +599,16 @@ function EditBudget() {
       setMaterialEdge(selectedEdge.price);
       setValue(
         "edgePrice",
-        Math.round((totalEdgeLength / 100) * selectedEdge.price * 3.8) +
-          filoService?.price * (totalEdgeLength / 100)
+        Math.round((totalEdgeLength / 100) * selectedEdge.price * calculationCoefficient) +
+          filoService?.price * (totalEdgeLength / 100),
       );
       calculateTotalPrice();
     } else {
       setMaterialEdge(1);
       setValue(
         "edgePrice",
-        Math.round((totalEdgeLength / 100) * 1 * 3.8) +
-          filoService?.price * (totalEdgeLength / 100)
+        Math.round((totalEdgeLength / 100) * 1 * calculationCoefficient) +
+          filoService?.price * (totalEdgeLength / 100),
       );
       calculateTotalPrice();
     }
@@ -464,9 +636,7 @@ function EditBudget() {
     setCountMaterial(count);
   }
   // Manejar la selección del material
-  const handleMaterialOption = (index) => (event) => {
-    let option = event.target.value;
-
+  const handleMaterialOption = (index) => (option) => {
     if (option) {
       const selectedTable = tables.find((table) => table.name === option);
       setValue(`materialPrice${index}`, selectedTable.price, {
@@ -478,10 +648,13 @@ function EditBudget() {
   };
   //CALCULAR TOTAL DE LOS MATERIALES
   const materialPrices = watch(
-    Array.from({ length: countMaterial }, (_, index) => `materialPrice${index}`)
+    Array.from(
+      { length: countMaterial },
+      (_, index) => `materialPrice${index}`,
+    ),
   );
   const materialQtys = watch(
-    Array.from({ length: countMaterial }, (_, index) => `materialQty${index}`)
+    Array.from({ length: countMaterial }, (_, index) => `materialQty${index}`),
   );
 
   const calculateTotalMaterialPrice = (materialPrices, materialQtys) => {
@@ -495,7 +668,7 @@ function EditBudget() {
       total += price * qty;
       totalQty += qty;
     }
-    subTotal = subTotal * 3.8 + totalQty * cortePlacaService?.price;
+    subTotal = subTotal * calculationCoefficient + totalQty * cortePlacaService?.price;
     total = total;
     setSubtotalMaterialPrice(subTotal);
     setTotalMaterialPrice(total);
@@ -504,7 +677,7 @@ function EditBudget() {
   // Ejecutar cálculo automáticamente cuando cambien los precios o cantidades
   useEffect(() => {
     calculateTotalMaterialPrice(materialPrices, materialQtys);
-  }, [materialPrices, materialQtys, countMaterial]);
+  }, [materialPrices, materialQtys, countMaterial, calculationCoefficient]);
 
   //CALCULAR TOTAL DE ITEMS EXTRA
 
@@ -529,14 +702,14 @@ function EditBudget() {
   }
 
   const itemExtraPriceValues = watch(
-    Object.keys(getValues()).filter((key) => key.startsWith("itemExtraPrice"))
+    Object.keys(getValues()).filter((key) => key.startsWith("itemExtraPrice")),
   );
 
   // Función para calcular el total de los precios de itemExtraPrice
   const calculateSubTotalItemExtraPrice = () => {
     const total = itemExtraPriceValues.reduce(
       (acc, price) => acc + Number(price || 0),
-      0
+      0,
     );
     return total;
   };
@@ -547,8 +720,7 @@ function EditBudget() {
   }, [itemExtraPriceValues]);
 
   //AL SELECCIONAR LA CHAPA OBTENER EL VALOR
-  const handleChapaOption = (event) => {
-    let option = event.target.value;
+  const handleChapaOption = (option) => {
     // console.log(option);
     if (option) {
       const selectedVeneer = veneer.find((veneer) => veneer._id === option);
@@ -606,7 +778,7 @@ function EditBudget() {
     const filtered = allClients.filter((client) =>
       `${client.lastname} ${client.name}`
         .toLowerCase()
-        .includes(event.target.value.toLowerCase())
+        .includes(event.target.value.toLowerCase()),
     );
     setFilteredClients(filtered);
   };
@@ -616,16 +788,95 @@ function EditBudget() {
     setValue("clientId", client._id);
     setFilteredClients([]);
   };
+
+  // Manejar selección de nuevas imágenes
+  const handleImageSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const maxSize = 10 * 1024 * 1024;
+
+    const validFiles = [];
+    for (const file of files) {
+      if (!validTypes.includes(file.type)) {
+        alert(`"${file.name}" no es válido. Solo se permiten JPEG, PNG, GIF, WebP`);
+        continue;
+      }
+      if (file.size > maxSize) {
+        alert(`"${file.name}" supera los 10MB`);
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) return;
+
+    const readers = validFiles.map((file) => {
+      return new Promise((resolve) => {
+        const r = new FileReader();
+        r.onloadend = () => resolve(r.result);
+        r.readAsDataURL(file);
+      });
+    });
+    Promise.all(readers).then((results) => {
+      const newItems = validFiles.map((file, i) => ({
+        type: "new",
+        file,
+        preview: results[i],
+      }));
+      setOrderedImages((prev) => [...prev, ...newItems]);
+    });
+    e.target.value = "";
+  };
+
+  // Eliminar imagen por índice
+  const handleRemoveImage = (index) => {
+    const item = orderedImages[index];
+    if (item?.type === "existing" && item?._id) {
+      if (
+        window.confirm(
+          "¿Estás seguro de que querés eliminar esta imagen del presupuesto?",
+        )
+      ) {
+        setDeletedImages((prev) => [...prev, { _id: item._id, path: item.path }]);
+      } else {
+        return;
+      }
+    }
+    setOrderedImages((prev) => prev.filter((_, i) => i !== index));
+    const fileInput = document.getElementById("budgetImage");
+    if (fileInput) fileInput.value = "";
+  };
+
+  // Mover imagen hacia arriba
+  const handleMoveImageUp = (index) => {
+    if (index <= 0) return;
+    setOrderedImages((prev) => {
+      const next = [...prev];
+      [next[index - 1], next[index]] = [next[index], next[index - 1]];
+      return next;
+    });
+  };
+
+  // Mover imagen hacia abajo
+  const handleMoveImageDown = (index) => {
+    if (index >= orderedImages.length - 1) return;
+    setOrderedImages((prev) => {
+      const next = [...prev];
+      [next[index], next[index + 1]] = [next[index + 1], next[index]];
+      return next;
+    });
+  };
   //filtro de clientes
   useEffect(() => {
     if (searchTerm === "") {
-      console.log("if");
       setFilteredClients([]);
     } else {
       const results = allClients.filter((client) =>
         `${client.lastname} ${client.name}`
           .toLowerCase()
-          .includes(searchTerm.toLowerCase())
+          .includes(searchTerm.toLowerCase()),
       );
       setFilteredClients(results);
     }
@@ -664,8 +915,8 @@ function EditBudget() {
 
     //suma del total
     let totalPrice =
-      (chapa_price_subtotal * 3.8 || 0) +
-      (enchapado_artesanal_subtotal * 3.8 || 0) +
+      (chapa_price_subtotal * calculationCoefficient || 0) +
+      (enchapado_artesanal_subtotal * calculationCoefficient || 0) +
       (lustrado_subtotal || 0) +
       (laqueado_subtotal || 0) +
       (laqueado_poro_subtotal || 0) +
@@ -673,7 +924,7 @@ function EditBudget() {
       (filo_laqueado_subtotal || 0) +
       (filo_lustrado_subtotal || 0) +
       (filo_subtotal || 0) +
-      (totalSuppliePrice * 3.8 || 0) +
+      (totalSuppliePrice * calculationCoefficient || 0) +
       (subtotalMaterialPrice || 0) +
       (subTotalItemExtraPrice || 0) +
       (subtotalAdjustmentPrice || 0) +
@@ -703,11 +954,21 @@ function EditBudget() {
     subtotalAdjustmentPrice,
     subtotalPlacement,
     subtotalShipmentPrice,
+    calculationCoefficient,
   ]);
   //Función para limpiar el objeto budgetData:
   function removeEmptyFields(obj) {
     // Recorremos las claves del objeto
     for (const key in obj) {
+      // Preservar client_attachments si tiene contenido
+      if (key === "client_attachments" && Array.isArray(obj[key]) && obj[key].length > 0) {
+        continue;
+      }
+      // Preservar client_attachment si tiene contenido (legacy)
+      if (key === "client_attachment" && obj[key] && obj[key].url) {
+        continue;
+      }
+
       if (
         obj[key] &&
         typeof obj[key] === "object" &&
@@ -715,6 +976,10 @@ function EditBudget() {
       ) {
         // Si es un objeto, hacemos la limpieza recursivamente
         removeEmptyFields(obj[key]);
+        // Si el objeto quedó vacío después de la limpieza, eliminarlo
+        if (Object.keys(obj[key]).length === 0) {
+          delete obj[key];
+        }
       } else if (
         obj[key] === undefined ||
         obj[key] === "" ||
@@ -727,10 +992,69 @@ function EditBudget() {
     return obj;
   }
 
+  //Helper cambio de categoria
+
+  const heightWatch = watch("height");
+  const lengthWatch = watch("length");
+  const widthWatch = watch("width");
+  const categoryNameWatch = watch("category_name");
+  const categoryIdWatch = watch("category_id");
+
+  function appendCategoryParameter(
+    commentsHtml,
+    categoryId,
+    categoryName,
+    parameterHtml,
+  ) {
+    if (!parameterHtml) return commentsHtml || "";
+
+    const markerStart = `<!--cat-params:${categoryId}-->`;
+    const markerEnd = `<!--/cat-params:${categoryId}-->`;
+
+    // si ya fue insertado para esa categoría, no repetir
+    if ((commentsHtml || "").includes(markerStart)) return commentsHtml || "";
+
+    const block = `
+    <p><br/></p>
+    <hr/>
+    <p><strong>Parámetros (${categoryName || "Categoría"}):</strong></p>
+    ${markerStart}
+    ${parameterHtml}
+    ${markerEnd}
+  `;
+
+    const base = commentsHtml || "";
+    return base + block;
+  }
+
+  const handleCategoryChange = (categoryId) => {
+    const cat = categories.find((c) => c._id === categoryId);
+
+    // 1) setear fields del form
+    setValue("category_id", categoryId, { shouldValidate: true });
+    setValue("category_name", cat?.name || "", { shouldValidate: true });
+
+    // 2) actualizar singleFurniture si querés que el "mueble" refleje categoría nueva
+    setSingleFurniture((prev) =>
+      prev ? { ...prev, category: cat || prev.category } : prev,
+    );
+
+    // 3) append parámetros al comentario SIN borrar lo anterior
+    const nextComments = appendCategoryParameter(
+      commentsValue,
+      cat?._id,
+      cat?.name,
+      cat?.parameter,
+    );
+
+    setCommentsValue(nextComments);
+    setValue("comments", nextComments, { shouldValidate: true });
+  };
+
   //FORMULARIO EDITAR PRESUPUESTO
   const onSubmit = async (data, event) => {
     event.preventDefault();
-    console.log(data);
+    // console.log(data);
     //SET LOADER
     setSubmitLoader(true);
 
@@ -772,7 +1096,7 @@ function EditBudget() {
     // Convertimos el objeto `supplies` en una lista de objetos
     const suppliesList = Object.values(supplies);
 
-    console.log(suppliesList);
+    // console.log(suppliesList);
 
     // Carga cliente
     let clientData;
@@ -783,12 +1107,20 @@ function EditBudget() {
           ...data,
         }).then((res) => {
           clientData = res.data;
-          console.log("¡Creaste cliente!");
+          // console.log("¡Creaste cliente!");
         });
       } catch (error) {
         console.error(error);
       }
     } else if (clientOption === "existing") {
+      if (!data.clientId) {
+        setError("clientId", {
+          type: "manual",
+          message: "Seleccioná un cliente",
+        });
+        setSubmitLoader(false);
+        return;
+      }
       try {
         await getClientById(data.clientId).then((res) => {
           clientData = res.data;
@@ -796,6 +1128,14 @@ function EditBudget() {
       } catch (error) {
         console.error(error);
       }
+    }
+    if (clientOption && !clientData) {
+      setError("clientOption", {
+        type: "manual",
+        message: "No se pudo cargar el cliente",
+      });
+      setSubmitLoader(false);
+      return;
     }
 
     // Creación del objeto materials
@@ -873,6 +1213,70 @@ function EditBudget() {
     // Transformar el objeto extraItems en una lista (opcional)
     const extraItemsList = Object.values(extraItems);
 
+    // Manejar imágenes adjuntas (respetando el orden de orderedImages)
+    let clientAttachments = [];
+
+    // Eliminar del servidor las imágenes marcadas para borrar
+    for (const delImg of deletedImages) {
+      if (delImg.path) {
+        try {
+          const filename = delImg.path.split("/").pop();
+          await deleteBudgetImage(filename);
+        } catch (deleteError) {
+          console.warn("No se pudo eliminar la imagen:", deleteError);
+        }
+      }
+    }
+
+    const newItems = orderedImages.filter((x) => x.type === "new");
+    if (newItems.length > 0) {
+      try {
+        setImageUploading(true);
+        const uploadPromises = newItems.map((item) => uploadBudgetImage(item.file));
+        const uploadResults = await Promise.all(uploadPromises);
+        let uploadIdx = 0;
+        clientAttachments = orderedImages.map((item) => {
+          if (item.type === "existing") {
+            return {
+              _id: item._id,
+              url: item.url,
+              original_name: item.original_name,
+              mime_type: item.mime_type,
+              size: item.size,
+              path: item.path,
+            };
+          }
+          const r = uploadResults[uploadIdx++];
+          return {
+            url: r.url,
+            original_name: r.original_name,
+            mime_type: r.mime_type,
+            size: r.size,
+            path: r.path,
+          };
+        });
+      } catch (error) {
+        console.error("Error subiendo imágenes:", error);
+        alert("Error al subir las imágenes: " + error.message);
+        setSubmitLoader(false);
+        setImageUploading(false);
+        return;
+      } finally {
+        setImageUploading(false);
+      }
+    } else {
+      clientAttachments = orderedImages
+        .filter((x) => x.type === "existing")
+        .map((img) => ({
+          _id: img._id,
+          url: img.url,
+          original_name: img.original_name,
+          mime_type: img.mime_type,
+          size: img.size,
+          path: img.path,
+        }));
+    }
+
     // Objeto final para crear el presupuesto
     const budgetData = {
       budget_number: budget.budget_number,
@@ -931,6 +1335,8 @@ function EditBudget() {
       total_price: totalPrice,
       deliver_date: data.deliver_date,
       comments: data.comments,
+      client_comment: data.client_comment,
+      client_attachments: clientAttachments,
       client: clientData,
       placement: data.placement,
       placement_days: data.placementDays,
@@ -938,13 +1344,12 @@ function EditBudget() {
       shipment: data.shipment,
       shipment_price: Number(data.shipmentPrice),
       show_modules: data.showModules,
+      calculation_coefficient: calculationCoefficient,
     };
     const cleanedBudgetData = removeEmptyFields(budgetData);
-    console.log(cleanedBudgetData);
 
     try {
       await editBudget(cleanedBudgetData, budget._id);
-      console.log("Presupuesto editado", cleanedBudgetData);
       navigate("/ver-presupuestos");
     } catch (error) {
       console.error("Error editando presupuesto front:", error);
@@ -967,7 +1372,7 @@ function EditBudget() {
           </h1>{" "}
           <div className="flex items-center gap-4">
             <Link
-              to={`/ver-presupuestos`}
+              to={backUrl}
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center align-middle items-center gap-2"
             >
               <img
@@ -1019,58 +1424,121 @@ function EditBudget() {
             <h2 className="text-2xl font-semibold mb-2">Datos del Mueble</h2>
             <div className="flex gap-8 bg-emerald-600 text-white w-fit pt-1 pb-2 px-4 my-4 rounded">
               <div className="flex flex-col">
-                {" "}
                 <p className="mb-1">
-                  <span className="font-bold">Alto:</span>{" "}
-                  {singleFurniture?.height}
+                  <span className="font-bold">Alto:</span> {heightWatch}
                 </p>
                 <input
-                  name={`height`}
                   type="text"
-                  className="border border-gray-300 rounded-md p-1"
-                  value={singleFurniture?.height}
-                  {...register(`height`)}
+                  className="border border-gray-300 rounded-md p-1 text-black"
+                  {...register("height")}
                 />
               </div>
+
               <div className="flex flex-col">
                 <p className="mb-1">
-                  <span className="font-bold">Largo:</span>{" "}
-                  {singleFurniture?.length}
+                  <span className="font-bold">Largo:</span>
                 </p>
                 <input
-                  name={`length`}
                   type="text"
-                  className="border border-gray-300 rounded-md p-1"
-                  value={singleFurniture?.length}
-                  {...register(`length`)}
+                  className="border border-gray-300 rounded-md p-1 text-black"
+                  {...register("length")}
                 />
               </div>
+
               <div className="flex flex-col">
                 <p className="mb-1">
-                  <span className="font-bold">Profundidad:</span>{" "}
-                  {singleFurniture?.width}
+                  <span className="font-bold">Profundidad:</span>
                 </p>
                 <input
-                  name={`width`}
                   type="text"
-                  className="border border-gray-300 rounded-md p-1"
-                  value={singleFurniture?.width}
-                  {...register(`width`)}
+                  className="border border-gray-300 rounded-md p-1 text-black"
+                  {...register("width")}
                 />
               </div>
+
               <div className="flex flex-col">
                 <p className="mb-1">
                   <span className="font-bold">Categoría:</span>{" "}
-                  {singleFurniture?.category}
-                </p>{" "}
+                </p>
+                <Select
+                  inputId="category_id"
+                  instanceId="category_id"
+                  placeholder={
+                    categoriesLoading ? "Cargando..." : "Elegir categoría"
+                  }
+                  isClearable
+                  isDisabled={categoriesLoading}
+                  options={categoryOptions}
+                  value={
+                    categoryOptions.find(
+                      (option) => option.value === categoryIdWatch,
+                    ) || null
+                  }
+                  onChange={(option) =>
+                    handleCategoryChange(option?.value || "")
+                  }
+                  styles={selectStyles}
+                />
+
+                <input type="hidden" {...register("category_id")} />
+                <input type="hidden" {...register("category_name")} />
+              </div>
+            </div>
+            {/* Coeficiente de cálculo editable */}
+            <div className="flex flex-row gap-4 items-center my-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
+              <div className="flex flex-col w-1/4">
+                <label
+                  htmlFor="calculationCoefficient"
+                  className="font-semibold text-gray-700 mb-1"
+                >
+                  Coeficiente de cálculo
+                </label>
                 <input
-                  name={`category`}
+                  name="calculationCoefficient"
+                  id="calculationCoefficient"
                   type="text"
-                  className="border border-gray-300 rounded-md p-1"
-                  value={singleFurniture?.category}
-                  {...register(`category`)}
+                  inputMode="decimal"
+                  pattern="[0-9]*\.?[0-9]*"
+                  className="border border-gray-300 rounded-md p-2"
+                  value={coefficientInput}
+                  onChange={(e) => {
+                    // Reemplazar coma por punto y permitir solo números y un punto
+                    let raw = e.target.value.replace(",", ".");
+                    // Remover cualquier carácter que no sea número o punto
+                    raw = raw.replace(/[^0-9.]/g, "");
+                    // Asegurar que solo haya un punto
+                    const parts = raw.split(".");
+                    if (parts.length > 2) {
+                      raw = parts[0] + "." + parts.slice(1).join("");
+                    }
+                    // Actualizar el input siempre para permitir escribir
+                    setCoefficientInput(raw);
+                    // Si hay un valor válido, actualizar también el estado principal
+                    if (raw !== "" && raw !== ".") {
+                      const value = parseFloat(raw);
+                      if (!isNaN(value) && value >= 0) {
+                        setCalculationCoefficient(value);
+                      }
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // Al perder el foco, asegurar que el valor sea válido
+                    const raw = e.target.value.replace(",", ".");
+                    const value = parseFloat(raw);
+                    if (isNaN(value) || value < 0 || raw === "" || raw === ".") {
+                      setCalculationCoefficient(systemCoefficient);
+                      setCoefficientInput(String(systemCoefficient).replace(",", "."));
+                    } else {
+                      setCalculationCoefficient(value);
+                      setCoefficientInput(String(value).replace(",", "."));
+                    }
+                  }}
                 />
               </div>
+              <p className="text-sm text-gray-500 w-3/4">
+                Este valor se usa para calcular el precio de materiales, insumos, chapas y filos.
+                Valor del sistema: {systemCoefficient}. Podés modificarlo para este presupuesto en particular.
+              </p>
             </div>
             <div className="flex gap-16 w-full">
               <div className="w-1/2">
@@ -1086,11 +1554,11 @@ function EditBudget() {
                       </span>{" "}
                       {totalVeneer} m<sup>2</sup> Precio:
                       {formatCurrency(
-                        enchapadoArtesanalService?.price * totalVeneer
+                        enchapadoArtesanalService?.price * totalVeneer,
                       ).toLocaleString("es-ES")}
                       {setValue(
                         "veneerPrice",
-                        enchapadoArtesanalService?.price * totalVeneer
+                        enchapadoArtesanalService?.price * totalVeneer,
                       )}
                     </p>
                     <input
@@ -1118,11 +1586,11 @@ function EditBudget() {
                       <span className="font-bold">Lustrado en m2:</span>{" "}
                       {totalVeneerPolished} m<sup>2</sup> Precio:
                       {formatCurrency(
-                        lustreService?.price * totalVeneerPolished
+                        lustreService?.price * totalVeneerPolished,
                       )}
                       {setValue(
                         "veneerPolishedPrice",
-                        lustreService?.price * totalVeneerPolished
+                        lustreService?.price * totalVeneerPolished,
                       )}
                     </p>
                     <input
@@ -1150,11 +1618,11 @@ function EditBudget() {
                       <span className="font-bold">Laqueado en m2:</span>{" "}
                       {totalLacqueredAll} m<sup>2</sup> Precio:
                       {formatCurrency(
-                        laqueadoService?.price * totalLacqueredAll
+                        laqueadoService?.price * totalLacqueredAll,
                       )}
                       {setValue(
                         "lacqueredPrice",
-                        laqueadoService?.price * totalLacqueredAll
+                        laqueadoService?.price * totalLacqueredAll,
                       )}
                     </p>
                     <input
@@ -1182,11 +1650,11 @@ function EditBudget() {
                       </span>{" "}
                       {totalVeneerLacqueredOpen} m<sup>2</sup> Precio:
                       {formatCurrency(
-                        laqueadoOpenService?.price * totalVeneerLacqueredOpen
+                        laqueadoOpenService?.price * totalVeneerLacqueredOpen,
                       )}
                       {setValue(
                         "lacqueredOpenPrice",
-                        laqueadoOpenService?.price * totalVeneerLacqueredOpen
+                        laqueadoOpenService?.price * totalVeneerLacqueredOpen,
                       )}
                     </p>
                     <input
@@ -1216,11 +1684,11 @@ function EditBudget() {
                       <span className="font-bold">Pantografiado en m2:</span>{" "}
                       {totalPantographed} m<sup>2</sup> Precio:
                       {formatCurrency(
-                        pantografiadoService?.price * totalPantographed
+                        pantografiadoService?.price * totalPantographed,
                       )}
                       {setValue(
                         "pantographedPrice",
-                        pantografiadoService?.price * totalPantographed
+                        pantografiadoService?.price * totalPantographed,
                       )}
                     </p>
                     <input
@@ -1382,14 +1850,14 @@ function EditBudget() {
                           {totalEdgeLength.toFixed(2)} m Precio:
                           {formatCurrency(
                             totalEdgeLength * materialEdge +
-                              filoService?.price * totalEdgeLength
+                              filoService?.price * totalEdgeLength,
                           )}
                           {setValue(
                             "edgePrice",
                             Math.round(
-                              totalEdgeLength * materialEdge * 3.8 +
-                                filoService?.price * totalEdgeLength
-                            )
+                              totalEdgeLength * materialEdge * calculationCoefficient +
+                                filoService?.price * totalEdgeLength,
+                            ),
                           )}
                         </span>
                       </p>
@@ -1406,20 +1874,32 @@ function EditBudget() {
                       />
 
                       <div className="flex flex-col w-1/3 ">
-                        <select
-                          name={`edgeSelect`}
-                          id={`edgeSelect`}
-                          className="border border-gray-300 rounded-md p-2"
-                          {...register(`edgeSelect`)}
-                          onChange={handleMaterialEdgeOption}
-                        >
-                          <option value="">Elegir una opción</option>
-                          {edges.map((edge) => (
-                            <option key={edge._id} value={edge._id}>
-                              {edge.name}
-                            </option>
-                          ))}
-                        </select>
+                        <Controller
+                          name="edgeSelect"
+                          control={control}
+                          defaultValue=""
+                          render={({ field }) => (
+                            <Select
+                              inputId="edgeSelect"
+                              instanceId="edgeSelect-edit"
+                              placeholder="Elegir una opción"
+                              isClearable
+                              options={edgeOptions}
+                              value={
+                                edgeOptions.find(
+                                  (option) => option.value === field.value,
+                                ) || null
+                              }
+                              onChange={(option) => {
+                                const value = option?.value || "";
+                                field.onChange(value);
+                                setEdgeSelect(value);
+                                handleMaterialEdgeOption(value);
+                              }}
+                              styles={selectStyles}
+                            />
+                          )}
+                        />
                         {errors[`edgeSelect`] && (
                           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                             {errors[`edgeSelect`].message}
@@ -1554,20 +2034,31 @@ function EditBudget() {
                         <label htmlFor={`materialTable${index}`}>
                           Seleccionar placa
                         </label>
-                        <select
+                        <Controller
                           name={`materialTable${index}`}
-                          id={`materialTable${index}`}
-                          className="border border-gray-300 rounded-md p-2"
-                          {...register(`materialTable${index}`)}
-                          onChange={handleMaterialOption(index)}
-                        >
-                          <option value="">Elegir una opción</option>
-                          {tables.map((table) => (
-                            <option key={table._id} value={table.name}>
-                              {table.name}
-                            </option>
-                          ))}
-                        </select>
+                          control={control}
+                          defaultValue=""
+                          render={({ field }) => (
+                            <Select
+                              inputId={`materialTable${index}`}
+                              instanceId={`materialTable${index}`}
+                              placeholder="Elegir una opción"
+                              isClearable
+                              options={tableOptions}
+                              value={
+                                tableOptions.find(
+                                  (option) => option.value === field.value,
+                                ) || null
+                              }
+                              onChange={(option) => {
+                                const value = option?.value || "";
+                                field.onChange(value);
+                                handleMaterialOption(index)(value);
+                              }}
+                              styles={selectStyles}
+                            />
+                          )}
+                        />
                         {errors[`materialTable${index}`] && (
                           <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                             {errors[`materialTable${index}`].message}
@@ -1670,23 +2161,32 @@ function EditBudget() {
                     <div className="flex flex-col w-1/4  ">
                       {" "}
                       <label htmlFor={`veneerSelect`}>Elegir chapa</label>
-                      <select
-                        name={`veneerSelect`}
-                        id={`veneerSelect`}
-                        className="border-solid border-2 border-opacity mb-2 rounded-md"
-                        {...register(`veneerSelect`)}
-                        onChange={(e) => {
-                          handleChapaOption(e);
-                          calculateTotalPrice();
-                        }}
-                      >
-                        <option value="">Elegir una opción</option>
-                        {veneer.map((veneer) => (
-                          <option key={veneer._id} value={veneer._id}>
-                            {veneer.name}
-                          </option>
-                        ))}
-                      </select>
+                      <Controller
+                        name="veneerSelect"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <Select
+                            inputId="veneerSelect"
+                            instanceId="veneerSelect-edit"
+                            placeholder="Elegir una opción"
+                            isClearable
+                            options={veneerOptions}
+                            value={
+                              veneerOptions.find(
+                                (option) => option.value === field.value,
+                              ) || null
+                            }
+                            onChange={(option) => {
+                              const value = option?.value || "";
+                              field.onChange(value);
+                              handleChapaOption(value);
+                              calculateTotalPrice();
+                            }}
+                            styles={selectStyles}
+                          />
+                        )}
+                      />
                       {errors[`veneerSelect`] && (
                         <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
                           {errors[`veneerSelect`].message}
@@ -1832,7 +2332,15 @@ function EditBudget() {
                         {errors.clientId.message}
                       </span>
                     )}
-                    <input type="hidden" {...register("clientId")} />
+                    <input
+                      type="hidden"
+                      {...register("clientId", {
+                        validate: (value) =>
+                          clientOption !== "existing" ||
+                          (value && value.trim() !== "") ||
+                          "Seleccioná un cliente",
+                      })}
+                    />
                   </div>
                 </>
               ) : (
@@ -1840,22 +2348,55 @@ function EditBudget() {
               )}
               {/* fin carga cliente */}
               <div className="flex flex-col gap-4">
-                <div className="flex flex-col w-full  ">
-                  {" "}
-                  <label htmlFor={`comments`}>Comentarios</label>
-                  <textarea
-                    name={`comments`}
-                    type="text"
-                    className="border border-gray-300 rounded-md p-2 resize-none"
-                    rows={6}
-                    {...register(`comments`)}
+                <div className="flex flex-col w-full">
+                  <label htmlFor="comments" className="mb-2">
+                    Comentarios
+                  </label>
+
+                  <QuillEditor
+                    theme="snow"
+                    value={commentsValue}
+                    onChange={(value) => {
+                      setCommentsValue(value);
+                      setValue("comments", value, { shouldValidate: true });
+                    }}
+                    className="bg-white"
+                    modules={quillModules}
+                    formats={quillFormats}
                   />
-                  {errors[`comments`] && (
+
+                  {errors.comments && (
                     <span className="text-xs xl:text-base text-red-700 mt-2 block text-left -translate-y-4">
-                      {errors[`comments`].message}
+                      {errors.comments.message}
                     </span>
                   )}
                 </div>
+                <div className="flex flex-col w-full">
+                  <label htmlFor="client_comment" className="mb-2">
+                    Comentario para el cliente (opcional)
+                  </label>
+
+                  <input
+                    type="hidden"
+                    id="client_comment"
+                    {...register("client_comment")}
+                  />
+
+                  <QuillEditor
+                    theme="snow"
+                    value={clientCommentValue}
+                    onChange={(value) => {
+                      setClientCommentValue(value);
+                      setValue("client_comment", value, {
+                        shouldValidate: true,
+                      });
+                    }}
+                    className="bg-white"
+                    modules={quillModules}
+                    formats={quillFormats}
+                  />
+                </div>
+
                 <div className="flex flex-col w-full   ">
                   {" "}
                   <label htmlFor={`deliver_date`}>Fecha de entrega</label>
@@ -1870,6 +2411,87 @@ function EditBudget() {
                       {errors[`deliver_date`].message}
                     </span>
                   )}
+                </div>
+
+                {/* Imágenes adjuntas del presupuesto */}
+                <div className="flex flex-col w-full mt-4">
+                  <label
+                    htmlFor="budgetImage"
+                    className="mb-2 font-semibold text-lg text-emerald-700 uppercase"
+                  >
+                    Imágenes adjuntas (opcional)
+                  </label>
+
+                  {/* Mostrar todas las imágenes con orden */}
+                  {orderedImages.length > 0 && (
+                    <div className="mb-4 p-4 border border-gray-300 rounded-md bg-gray-50">
+                      <p className="text-sm text-gray-600 mb-2 font-semibold">
+                        Imágenes ({orderedImages.length}) — ordená con las flechas:
+                      </p>
+                      <div className="flex flex-wrap gap-4">
+                        {orderedImages.map((item, index) => (
+                          <div key={item._id || index} className="relative inline-block flex flex-col items-center">
+                            <div className="flex items-center gap-1 mb-1">
+                              <button
+                                type="button"
+                                onClick={() => handleMoveImageUp(index)}
+                                disabled={index === 0}
+                                className="p-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                                title="Mover antes"
+                              >
+                                ▲
+                              </button>
+                              <span className="text-xs font-semibold text-emerald-700 min-w-[24px] text-center">
+                                {index + 1}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleMoveImageDown(index)}
+                                disabled={index === orderedImages.length - 1}
+                                className="p-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                                title="Mover después"
+                              >
+                                ▼
+                              </button>
+                            </div>
+                            <div className="relative">
+                              <img
+                                src={item.type === "existing" ? item.url : item.preview}
+                                alt={item.type === "existing" ? "Imagen del presupuesto" : `Vista previa ${index + 1}`}
+                                className="max-w-[300px] max-h-[200px] object-contain border border-gray-300 rounded-md"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveImage(index)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600"
+                                title="Eliminar imagen"
+                              >
+                                ×
+                              </button>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {item.type === "existing"
+                                ? item.original_name
+                                : `${item.file?.name} (${((item.file?.size || 0) / 1024).toFixed(1)} KB)`}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Input para nuevas imágenes */}
+                  <p className="text-sm text-gray-500 mb-2">
+                    Podés agregar más fotos o imágenes de referencia (máx. 10MB cada una)
+                  </p>
+                  <input
+                    type="file"
+                    id="budgetImage"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    onChange={handleImageSelect}
+                    multiple
+                    className="border border-gray-300 rounded-md p-2 bg-white"
+                  />
                 </div>
               </div>
               <div className="flex flex-row gap-4">
@@ -1967,7 +2589,7 @@ function EditBudget() {
               <p className="text-right text-2xl font-bold my-10 w-full">
                 Total: {formatCurrency(totalPrice)}
               </p>
-              {!submitLoader ? (
+              {!submitLoader && !imageUploading ? (
                 <button
                   type="submit"
                   className="bg-orange text-white font-medium py-2 px-6 rounded-lg shadow-md mt-6 transition duration-200 w-full"
@@ -1975,10 +2597,10 @@ function EditBudget() {
                   Editar presupuesto
                 </button>
               ) : (
-                <div className="flex justify-center w-full mt-8">
+                <div className="flex flex-col justify-center items-center w-full mt-8">
                   <div className="flex justify-center bg-lightblue rounded-md px-2 py-1 mb-2 w-1/6 m-auto">
                     <Oval
-                      visible={submitLoader}
+                      visible={submitLoader || imageUploading}
                       height="30"
                       width="30"
                       color="#fff"
@@ -1989,6 +2611,9 @@ function EditBudget() {
                       wrapperClass=""
                     />
                   </div>
+                  {imageUploading && (
+                    <p className="text-sm text-gray-600">Subiendo imágenes...</p>
+                  )}
                 </div>
               )}
             </div>

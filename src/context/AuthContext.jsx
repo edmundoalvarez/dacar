@@ -16,7 +16,9 @@ const AuthContextProvider = ({ children }) => {
       const decoded = jwtDecode(auth);
       setUser({
         email: decoded.user.email,
+        username: decoded.user.username,
         id: decoded.user._id,
+        role: decoded.user.role,
       });
       // console.log(decoded.user);
     }

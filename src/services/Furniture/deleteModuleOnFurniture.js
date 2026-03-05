@@ -1,17 +1,16 @@
 import axios from "axios";
 import config from "../../config.json";
-/* import Cookies from "js-cookie";
-const token = Cookies.get("token");
-const userId = Cookies.get("userId"); */
+import Cookies from "js-cookie";
 
 //ELIMINAR UNA PIEZA
 async function deleteModuleOnFurniture(furnitureId, moduleId) {
+  const token = Cookies.get("token");
   const res = await axios.patch(
     `${config.apiFurnitures}/modulo-en-mueble/${furnitureId}/${moduleId}`,
     {
       headers: {
         "Content-Type": "application/json",
-        /*       auth: token, */
+        auth: token,
       },
     }
   );
