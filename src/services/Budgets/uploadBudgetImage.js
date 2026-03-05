@@ -17,7 +17,16 @@ async function uploadBudgetImage(file) {
     body: formData,
   });
 
-  const data = await res.json();
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (parseError) {
+    throw new Error(
+      "El servidor de imágenes no respondió correctamente. " +
+      "Verificá que el servidor PHP esté corriendo en el puerto 8080."
+    );
+  }
 
   if (!res.ok || !data.success) {
     throw new Error(data.message || "Error al subir la imagen");
@@ -42,7 +51,16 @@ async function deleteBudgetImage(filename) {
     body: JSON.stringify({ filename }),
   });
 
-  const data = await res.json();
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (parseError) {
+    throw new Error(
+      "El servidor de imágenes no respondió correctamente. " +
+      "Verificá que el servidor PHP esté corriendo en el puerto 8080."
+    );
+  }
 
   if (!res.ok || !data.success) {
     throw new Error(data.message || "Error al eliminar la imagen");

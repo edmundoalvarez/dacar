@@ -83,12 +83,11 @@ function EditBudget() {
   const [commentsValue, setCommentsValue] = useState("");
   const [clientCommentValue, setClientCommentValue] = useState("");
 
-  // Estado para imagen adjunta
-  const [existingImage, setExistingImage] = useState(null); // Imagen existente del presupuesto
-  const [selectedImage, setSelectedImage] = useState(null); // Nueva imagen seleccionada
-  const [imagePreview, setImagePreview] = useState(null); // Preview de nueva imagen
+  // Estado para imágenes adjuntas (múltiples)
+  // orderedImages: [{ type: 'existing', _id, url, ... } | { type: 'new', file, preview }]
+  const [orderedImages, setOrderedImages] = useState([]);
+  const [deletedImages, setDeletedImages] = useState([]); // Imágenes marcadas para eliminar ({ _id, path })
   const [imageUploading, setImageUploading] = useState(false);
-  const [imageDeleted, setImageDeleted] = useState(false); // Flag para saber si se eliminó la imagen existente
 
   // Coeficiente de cálculo (variable del sistema, default 3.8)
   const [calculationCoefficient, setCalculationCoefficient] = useState(3.8);
@@ -431,10 +430,14 @@ function EditBudget() {
           setCoefficientInput(String(budgetData.data.calculation_coefficient).replace(",", "."));
         }
 
-        //IMAGEN ADJUNTA
-        if (budgetData.data.client_attachment?.url) {
-          setExistingImage(budgetData.data.client_attachment);
-        }
+        //IMÁGENES ADJUNTAS (client_attachments poblado o legacy client_attachment)
+        const attachments = budgetData.data.client_attachments;
+        const imgs = attachments && Array.isArray(attachments) && attachments.length > 0
+          ? attachments
+          : budgetData.data.client_attachment?.url
+            ? [budgetData.data.client_attachment]
+            : [];
+        setOrderedImages(imgs.map((img) => ({ type: "existing", ...img })));
 
         //PRECIO TOTAL
         setTotalPrice(budgetData.data.total_price);
@@ -786,51 +789,84 @@ function EditBudget() {
     setFilteredClients([]);
   };
 
-  // Manejar selección de nueva imagen
+  // Manejar selección de nuevas imágenes
   const handleImageSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Validar tipo de archivo
-      const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const maxSize = 10 * 1024 * 1024;
+
+    const validFiles = [];
+    for (const file of files) {
       if (!validTypes.includes(file.type)) {
-        alert("Solo se permiten imágenes (JPEG, PNG, GIF, WebP)");
-        e.target.value = "";
-        return;
+        alert(`"${file.name}" no es válido. Solo se permiten JPEG, PNG, GIF, WebP`);
+        continue;
       }
-      // Validar tamaño (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert("La imagen no puede superar los 10MB");
-        e.target.value = "";
-        return;
+      if (file.size > maxSize) {
+        alert(`"${file.name}" supera los 10MB`);
+        continue;
       }
-      setSelectedImage(file);
-      // Crear preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      validFiles.push(file);
     }
+
+    if (validFiles.length === 0) return;
+
+    const readers = validFiles.map((file) => {
+      return new Promise((resolve) => {
+        const r = new FileReader();
+        r.onloadend = () => resolve(r.result);
+        r.readAsDataURL(file);
+      });
+    });
+    Promise.all(readers).then((results) => {
+      const newItems = validFiles.map((file, i) => ({
+        type: "new",
+        file,
+        preview: results[i],
+      }));
+      setOrderedImages((prev) => [...prev, ...newItems]);
+    });
+    e.target.value = "";
   };
 
-  // Eliminar nueva imagen seleccionada (antes de guardar)
-  const handleRemoveNewImage = () => {
-    setSelectedImage(null);
-    setImagePreview(null);
+  // Eliminar imagen por índice
+  const handleRemoveImage = (index) => {
+    const item = orderedImages[index];
+    if (item?.type === "existing" && item?._id) {
+      if (
+        window.confirm(
+          "¿Estás seguro de que querés eliminar esta imagen del presupuesto?",
+        )
+      ) {
+        setDeletedImages((prev) => [...prev, { _id: item._id, path: item.path }]);
+      } else {
+        return;
+      }
+    }
+    setOrderedImages((prev) => prev.filter((_, i) => i !== index));
     const fileInput = document.getElementById("budgetImage");
     if (fileInput) fileInput.value = "";
   };
 
-  // Marcar imagen existente para eliminar
-  const handleRemoveExistingImage = async () => {
-    if (
-      window.confirm(
-        "¿Estás seguro de que querés eliminar esta imagen del presupuesto?",
-      )
-    ) {
-      setImageDeleted(true);
-      setExistingImage(null);
-    }
+  // Mover imagen hacia arriba
+  const handleMoveImageUp = (index) => {
+    if (index <= 0) return;
+    setOrderedImages((prev) => {
+      const next = [...prev];
+      [next[index - 1], next[index]] = [next[index], next[index - 1]];
+      return next;
+    });
+  };
+
+  // Mover imagen hacia abajo
+  const handleMoveImageDown = (index) => {
+    if (index >= orderedImages.length - 1) return;
+    setOrderedImages((prev) => {
+      const next = [...prev];
+      [next[index], next[index + 1]] = [next[index + 1], next[index]];
+      return next;
+    });
   };
   //filtro de clientes
   useEffect(() => {
@@ -924,9 +960,13 @@ function EditBudget() {
   function removeEmptyFields(obj) {
     // Recorremos las claves del objeto
     for (const key in obj) {
-      // Preservar client_attachment si tiene contenido
+      // Preservar client_attachments si tiene contenido
+      if (key === "client_attachments" && Array.isArray(obj[key]) && obj[key].length > 0) {
+        continue;
+      }
+      // Preservar client_attachment si tiene contenido (legacy)
       if (key === "client_attachment" && obj[key] && obj[key].url) {
-        continue; // No modificar client_attachment si tiene URL
+        continue;
       }
 
       if (
@@ -1173,58 +1213,68 @@ function EditBudget() {
     // Transformar el objeto extraItems en una lista (opcional)
     const extraItemsList = Object.values(extraItems);
 
-    // Manejar imagen adjunta
-    let clientAttachment = null;
+    // Manejar imágenes adjuntas (respetando el orden de orderedImages)
+    let clientAttachments = [];
 
-    // Si hay una nueva imagen seleccionada, subirla
-    if (selectedImage) {
+    // Eliminar del servidor las imágenes marcadas para borrar
+    for (const delImg of deletedImages) {
+      if (delImg.path) {
+        try {
+          const filename = delImg.path.split("/").pop();
+          await deleteBudgetImage(filename);
+        } catch (deleteError) {
+          console.warn("No se pudo eliminar la imagen:", deleteError);
+        }
+      }
+    }
+
+    const newItems = orderedImages.filter((x) => x.type === "new");
+    if (newItems.length > 0) {
       try {
         setImageUploading(true);
-        const uploadResult = await uploadBudgetImage(selectedImage);
-        clientAttachment = {
-          url: uploadResult.url,
-          original_name: uploadResult.original_name,
-          mime_type: uploadResult.mime_type,
-          size: uploadResult.size,
-          path: uploadResult.path,
-        };
-
-        // Si había una imagen anterior, intentar eliminarla del servidor
-        if (existingImage?.path) {
-          try {
-            const filename = existingImage.path.split("/").pop();
-            await deleteBudgetImage(filename);
-          } catch (deleteError) {
-            console.warn(
-              "No se pudo eliminar la imagen anterior:",
-              deleteError,
-            );
+        const uploadPromises = newItems.map((item) => uploadBudgetImage(item.file));
+        const uploadResults = await Promise.all(uploadPromises);
+        let uploadIdx = 0;
+        clientAttachments = orderedImages.map((item) => {
+          if (item.type === "existing") {
+            return {
+              _id: item._id,
+              url: item.url,
+              original_name: item.original_name,
+              mime_type: item.mime_type,
+              size: item.size,
+              path: item.path,
+            };
           }
-        }
+          const r = uploadResults[uploadIdx++];
+          return {
+            url: r.url,
+            original_name: r.original_name,
+            mime_type: r.mime_type,
+            size: r.size,
+            path: r.path,
+          };
+        });
       } catch (error) {
-        console.error("Error subiendo imagen:", error);
-        alert("Error al subir la imagen: " + error.message);
+        console.error("Error subiendo imágenes:", error);
+        alert("Error al subir las imágenes: " + error.message);
         setSubmitLoader(false);
         setImageUploading(false);
         return;
       } finally {
         setImageUploading(false);
       }
-    } else if (imageDeleted) {
-      // Se marcó para eliminar la imagen existente
-      clientAttachment = null;
-      // Intentar eliminar del servidor
-      if (existingImage?.path) {
-        try {
-          const filename = existingImage.path.split("/").pop();
-          await deleteBudgetImage(filename);
-        } catch (deleteError) {
-          console.warn("No se pudo eliminar la imagen:", deleteError);
-        }
-      }
-    } else if (existingImage) {
-      // Mantener la imagen existente
-      clientAttachment = existingImage;
+    } else {
+      clientAttachments = orderedImages
+        .filter((x) => x.type === "existing")
+        .map((img) => ({
+          _id: img._id,
+          url: img.url,
+          original_name: img.original_name,
+          mime_type: img.mime_type,
+          size: img.size,
+          path: img.path,
+        }));
     }
 
     // Objeto final para crear el presupuesto
@@ -1286,7 +1336,7 @@ function EditBudget() {
       deliver_date: data.deliver_date,
       comments: data.comments,
       client_comment: data.client_comment,
-      client_attachment: clientAttachment,
+      client_attachments: clientAttachments,
       client: clientData,
       placement: data.placement,
       placement_days: data.placementDays,
@@ -2363,83 +2413,85 @@ function EditBudget() {
                   )}
                 </div>
 
-                {/* Imagen adjunta del presupuesto */}
+                {/* Imágenes adjuntas del presupuesto */}
                 <div className="flex flex-col w-full mt-4">
                   <label
                     htmlFor="budgetImage"
                     className="mb-2 font-semibold text-lg text-emerald-700 uppercase"
                   >
-                    Imagen adjunta (opcional)
+                    Imágenes adjuntas (opcional)
                   </label>
 
-                  {/* Mostrar imagen existente */}
-                  {existingImage && !imageDeleted && (
+                  {/* Mostrar todas las imágenes con orden */}
+                  {orderedImages.length > 0 && (
                     <div className="mb-4 p-4 border border-gray-300 rounded-md bg-gray-50">
                       <p className="text-sm text-gray-600 mb-2 font-semibold">
-                        Imagen actual:
+                        Imágenes ({orderedImages.length}) — ordená con las flechas:
                       </p>
-                      <div className="relative inline-block">
-                        <img
-                          src={existingImage.url}
-                          alt="Imagen del presupuesto"
-                          className="max-w-[300px] max-h-[200px] object-contain border border-gray-300 rounded-md"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleRemoveExistingImage}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600"
-                          title="Eliminar imagen"
-                        >
-                          ×
-                        </button>
+                      <div className="flex flex-wrap gap-4">
+                        {orderedImages.map((item, index) => (
+                          <div key={item._id || index} className="relative inline-block flex flex-col items-center">
+                            <div className="flex items-center gap-1 mb-1">
+                              <button
+                                type="button"
+                                onClick={() => handleMoveImageUp(index)}
+                                disabled={index === 0}
+                                className="p-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                                title="Mover antes"
+                              >
+                                ▲
+                              </button>
+                              <span className="text-xs font-semibold text-emerald-700 min-w-[24px] text-center">
+                                {index + 1}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleMoveImageDown(index)}
+                                disabled={index === orderedImages.length - 1}
+                                className="p-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                                title="Mover después"
+                              >
+                                ▼
+                              </button>
+                            </div>
+                            <div className="relative">
+                              <img
+                                src={item.type === "existing" ? item.url : item.preview}
+                                alt={item.type === "existing" ? "Imagen del presupuesto" : `Vista previa ${index + 1}`}
+                                className="max-w-[300px] max-h-[200px] object-contain border border-gray-300 rounded-md"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveImage(index)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600"
+                                title="Eliminar imagen"
+                              >
+                                ×
+                              </button>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {item.type === "existing"
+                                ? item.original_name
+                                : `${item.file?.name} (${((item.file?.size || 0) / 1024).toFixed(1)} KB)`}
+                            </p>
+                          </div>
+                        ))}
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {existingImage.original_name}
-                      </p>
                     </div>
                   )}
 
-                  {/* Input para nueva imagen */}
+                  {/* Input para nuevas imágenes */}
                   <p className="text-sm text-gray-500 mb-2">
-                    {existingImage && !imageDeleted
-                      ? "Subí una nueva imagen para reemplazar la actual"
-                      : "Podés adjuntar una foto o imagen de referencia del presupuesto (máx. 10MB)"}
+                    Podés agregar más fotos o imágenes de referencia (máx. 10MB cada una)
                   </p>
                   <input
                     type="file"
                     id="budgetImage"
                     accept="image/jpeg,image/png,image/gif,image/webp"
                     onChange={handleImageSelect}
+                    multiple
                     className="border border-gray-300 rounded-md p-2 bg-white"
                   />
-
-                  {/* Preview de nueva imagen */}
-                  {imagePreview && (
-                    <div className="mt-4 relative inline-block">
-                      <p className="text-sm text-gray-600 mb-2">
-                        Nueva imagen seleccionada:
-                      </p>
-                      <div className="relative inline-block">
-                        <img
-                          src={imagePreview}
-                          alt="Vista previa"
-                          className="max-w-[300px] max-h-[200px] object-contain border border-gray-300 rounded-md"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleRemoveNewImage}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600"
-                          title="Cancelar nueva imagen"
-                        >
-                          ×
-                        </button>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {selectedImage?.name} (
-                        {(selectedImage?.size / 1024).toFixed(1)} KB)
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
               <div className="flex flex-row gap-4">
@@ -2560,7 +2612,7 @@ function EditBudget() {
                     />
                   </div>
                   {imageUploading && (
-                    <p className="text-sm text-gray-600">Subiendo imagen...</p>
+                    <p className="text-sm text-gray-600">Subiendo imágenes...</p>
                   )}
                 </div>
               )}

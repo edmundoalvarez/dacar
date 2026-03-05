@@ -246,8 +246,15 @@ export const generatePDF = async (elementId, budget) => {
 
     pdf.addImage(imgData, "PNG", x, y, scaledWidth, scaledHeight);
 
-    const attachmentUrl = budget?.client_attachment?.url;
-    if (attachmentUrl) {
+    const attachments = budget?.client_attachments?.length
+      ? budget.client_attachments
+      : budget?.client_attachment?.url
+        ? [budget.client_attachment]
+        : [];
+
+    for (const att of attachments) {
+      const attachmentUrl = att?.url;
+      if (!attachmentUrl) continue;
       try {
         const headerResult = await captureHeaderImage();
 

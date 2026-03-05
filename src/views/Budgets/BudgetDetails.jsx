@@ -392,36 +392,50 @@ function BudgetDetails() {
               </p>
             </div>
 
-            {/* Imagen adjunta (miniatura) */}
-            {budget.client_attachment?.url && (
-              <div
-                className="mt-6 border-t-2 border-gray-300 pt-4"
-                data-attachment-preview="true"
-              >
-                <p className="text-sm font-semibold text-[#726352] mb-2">
-                  Imagen adjunta
-                </p>
-                <div className="flex items-center gap-4">
-                  <a
-                    href={budget.client_attachment.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block"
-                  >
-                    <img
-                      src={budget.client_attachment.url}
-                      alt="Imagen adjunta del presupuesto"
-                      className="w-[180px] h-[140px] object-contain border border-gray-300 rounded-md shadow-sm hover:shadow-md transition-shadow bg-white"
-                    />
-                  </a>
-                  {budget.client_attachment.original_name && (
-                    <p className="text-xs text-gray-500">
-                      {budget.client_attachment.original_name}
-                    </p>
-                  )}
+            {/* Imágenes adjuntas (miniaturas) */}
+            {(() => {
+              const attachments = budget.client_attachments?.length
+                ? budget.client_attachments
+                : budget.client_attachment?.url
+                  ? [budget.client_attachment]
+                  : [];
+              if (attachments.length === 0) return null;
+              return (
+                <div
+                  className="mt-6 border-t-2 border-gray-300 pt-4"
+                  data-attachment-preview="true"
+                >
+                  <p className="text-sm font-semibold text-[#726352] mb-2">
+                    Imágenes adjuntas ({attachments.length})
+                  </p>
+                  <div className="flex flex-wrap gap-4">
+                    {attachments.map((att, idx) => (
+                      att?.url && (
+                        <div key={att._id || idx} className="flex flex-col">
+                          <a
+                            href={att.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block"
+                          >
+                            <img
+                              src={att.url}
+                              alt={`Imagen adjunta ${idx + 1}`}
+                              className="w-[180px] h-[140px] object-contain border border-gray-300 rounded-md shadow-sm hover:shadow-md transition-shadow bg-white"
+                            />
+                          </a>
+                          {att.original_name && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {att.original_name}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         )}
       </div>

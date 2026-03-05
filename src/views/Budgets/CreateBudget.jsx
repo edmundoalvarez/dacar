@@ -75,9 +75,9 @@ function CreateBudget() {
   const [commentValue, setCommentValue] = useState("");
   const [clientCommentValue, setClientCommentValue] = useState("");
 
-  // Estado para imagen adjunta
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  // Estado para imágenes adjuntas (múltiples)
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [imageUploading, setImageUploading] = useState(false);
 
   // Coeficiente de cálculo (variable del sistema, default 3.8)
@@ -461,40 +461,79 @@ function CreateBudget() {
     setFilteredClients([]);
   };
 
-  // Manejar selección de imagen
+  // Manejar selección de múltiples imágenes
   const handleImageSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Validar tipo de archivo
-      const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const maxSize = 10 * 1024 * 1024;
+
+    const validFiles = [];
+    for (const file of files) {
       if (!validTypes.includes(file.type)) {
-        alert("Solo se permiten imágenes (JPEG, PNG, GIF, WebP)");
-        e.target.value = "";
-        return;
+        alert(`"${file.name}" no es válido. Solo se permiten JPEG, PNG, GIF, WebP`);
+        continue;
       }
-      // Validar tamaño (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert("La imagen no puede superar los 10MB");
-        e.target.value = "";
-        return;
+      if (file.size > maxSize) {
+        alert(`"${file.name}" supera los 10MB`);
+        continue;
       }
-      setSelectedImage(file);
-      // Crear preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      validFiles.push(file);
     }
+
+    if (validFiles.length === 0) return;
+
+    const readers = validFiles.map((file) => {
+      return new Promise((resolve) => {
+        const r = new FileReader();
+        r.onloadend = () => resolve(r.result);
+        r.readAsDataURL(file);
+      });
+    });
+    Promise.all(readers).then((results) => {
+      setSelectedImages((prev) => [...prev, ...validFiles]);
+      setImagePreviews((prev) => [...prev, ...results]);
+    });
+    e.target.value = "";
   };
 
-  // Eliminar imagen seleccionada
-  const handleRemoveImage = () => {
-    setSelectedImage(null);
-    setImagePreview(null);
-    // Limpiar el input
+  // Eliminar imagen seleccionada por índice
+  const handleRemoveImage = (index) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
     const fileInput = document.getElementById("budgetImage");
     if (fileInput) fileInput.value = "";
+  };
+
+  // Mover imagen hacia arriba (primera = 1)
+  const handleMoveImageUp = (index) => {
+    if (index <= 0) return;
+    setSelectedImages((prev) => {
+      const next = [...prev];
+      [next[index - 1], next[index]] = [next[index], next[index - 1]];
+      return next;
+    });
+    setImagePreviews((prev) => {
+      const next = [...prev];
+      [next[index - 1], next[index]] = [next[index], next[index - 1]];
+      return next;
+    });
+  };
+
+  // Mover imagen hacia abajo
+  const handleMoveImageDown = (index) => {
+    if (index >= selectedImages.length - 1) return;
+    setSelectedImages((prev) => {
+      const next = [...prev];
+      [next[index], next[index + 1]] = [next[index + 1], next[index]];
+      return next;
+    });
+    setImagePreviews((prev) => {
+      const next = [...prev];
+      [next[index], next[index + 1]] = [next[index + 1], next[index]];
+      return next;
+    });
   };
 
   //AL SELECCIONAR EL FILO OBTENER EL VALOR
@@ -764,9 +803,13 @@ function CreateBudget() {
   function removeEmptyFields(obj) {
     // Recorremos las claves del objeto
     for (const key in obj) {
-      // Preservar client_attachment si tiene contenido
+      // Preservar client_attachments si tiene contenido
+      if (key === "client_attachments" && Array.isArray(obj[key]) && obj[key].length > 0) {
+        continue;
+      }
+      // Preservar client_attachment si tiene contenido (legacy)
       if (key === "client_attachment" && obj[key] && obj[key].url) {
-        continue; // No modificar client_attachment si tiene URL
+        continue;
       }
 
       if (
@@ -958,22 +1001,23 @@ function CreateBudget() {
       console.error("Error ", error);
     }
 
-    // Subir imagen si hay una seleccionada
-    let clientAttachment = null;
-    if (selectedImage) {
+    // Subir imágenes si hay alguna seleccionada
+    let clientAttachments = [];
+    if (selectedImages.length > 0) {
       try {
         setImageUploading(true);
-        const uploadResult = await uploadBudgetImage(selectedImage);
-        clientAttachment = {
-          url: uploadResult.url,
-          original_name: uploadResult.original_name,
-          mime_type: uploadResult.mime_type,
-          size: uploadResult.size,
-          path: uploadResult.path,
-        };
+        const uploadPromises = selectedImages.map((file) => uploadBudgetImage(file));
+        const uploadResults = await Promise.all(uploadPromises);
+        clientAttachments = uploadResults.map((r) => ({
+          url: r.url,
+          original_name: r.original_name,
+          mime_type: r.mime_type,
+          size: r.size,
+          path: r.path,
+        }));
       } catch (error) {
-        console.error("Error subiendo imagen:", error);
-        alert("Error al subir la imagen: " + error.message);
+        console.error("Error subiendo imágenes:", error);
+        alert("Error al subir las imágenes: " + error.message);
         setSubmitLoader(false);
         setImageUploading(false);
         return;
@@ -1041,7 +1085,7 @@ function CreateBudget() {
       deliver_date: data.deliver_date,
       comments: data.comments,
       client_comment: data.client_comment,
-      client_attachment: clientAttachment,
+      client_attachments: clientAttachments,
       client: clientData,
       placement: data.placement,
       placement_days: data.placementDays,
@@ -2238,49 +2282,77 @@ function CreateBudget() {
                   )}
                 </div>
 
-                {/* Imagen adjunta del presupuesto */}
+                {/* Imágenes adjuntas del presupuesto */}
                 <div className="flex flex-col w-full mt-4">
                   <label
                     htmlFor="budgetImage"
                     className="mb-2 font-semibold text-lg text-emerald-700 uppercase"
                   >
-                    Imagen adjunta (opcional)
+                    Imágenes adjuntas (opcional)
                   </label>
                   <p className="text-sm text-gray-500 mb-2">
-                    Podés adjuntar una foto o imagen de referencia del
-                    presupuesto (máx. 10MB)
+                    Podés adjuntar varias fotos o imágenes de referencia del
+                    presupuesto (máx. 10MB cada una)
                   </p>
                   <input
                     type="file"
                     id="budgetImage"
                     accept="image/jpeg,image/png,image/gif,image/webp"
                     onChange={handleImageSelect}
+                    multiple
                     className="border border-gray-300 rounded-md p-2 bg-white"
                   />
-                  {imagePreview && (
-                    <div className="mt-4 relative inline-block">
-                      <p className="text-sm text-gray-600 mb-2">
-                        Vista previa:
+                  {imagePreviews.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-4">
+                      <p className="text-sm text-gray-600 mb-2 w-full">
+                        Vista previa ({imagePreviews.length} imagen{imagePreviews.length !== 1 ? "es" : ""}) — ordená con las flechas:
                       </p>
-                      <div className="relative inline-block">
-                        <img
-                          src={imagePreview}
-                          alt="Vista previa"
-                          className="max-w-[300px] max-h-[200px] object-contain border border-gray-300 rounded-md"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleRemoveImage}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600"
-                          title="Eliminar imagen"
-                        >
-                          ×
-                        </button>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {selectedImage?.name} (
-                        {(selectedImage?.size / 1024).toFixed(1)} KB)
-                      </p>
+                      {imagePreviews.map((preview, index) => (
+                        <div key={index} className="relative inline-block flex flex-col items-center">
+                          <div className="flex items-center gap-1 mb-1">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveImageUp(index)}
+                              disabled={index === 0}
+                              className="p-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                              title="Mover antes"
+                            >
+                              ▲
+                            </button>
+                            <span className="text-xs font-semibold text-emerald-700 min-w-[24px] text-center">
+                              {index + 1}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveImageDown(index)}
+                              disabled={index === imagePreviews.length - 1}
+                              className="p-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                              title="Mover después"
+                            >
+                              ▼
+                            </button>
+                          </div>
+                          <div className="relative">
+                            <img
+                              src={preview}
+                              alt={`Vista previa ${index + 1}`}
+                              className="max-w-[300px] max-h-[200px] object-contain border border-gray-300 rounded-md"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600"
+                              title="Eliminar imagen"
+                            >
+                              ×
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {selectedImages[index]?.name} (
+                            {(selectedImages[index]?.size / 1024).toFixed(1)} KB)
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -2405,7 +2477,7 @@ function CreateBudget() {
                     />
                   </div>
                   {imageUploading && (
-                    <p className="text-sm text-gray-600">Subiendo imagen...</p>
+                    <p className="text-sm text-gray-600">Subiendo imágenes...</p>
                   )}
                 </div>
               )}
