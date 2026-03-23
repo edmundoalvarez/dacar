@@ -7,6 +7,7 @@ async function deleteModuleOnFurniture(furnitureId, moduleId) {
   const token = Cookies.get("token");
   const res = await axios.patch(
     `${config.apiFurnitures}/modulo-en-mueble/${furnitureId}/${moduleId}`,
+    {},
     {
       headers: {
         "Content-Type": "application/json",

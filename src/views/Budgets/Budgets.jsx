@@ -372,15 +372,17 @@ function Budgets() {
 
     const supplies = Array.isArray(budget?.supplies) ? budget.supplies : [];
     supplies.forEach((supplie) => {
-      const lengthValue =
-        supplie.length !== undefined && supplie.length !== null
-          ? `${supplie.length}m`
-          : "";
-      const units =
-        lengthValue ||
-        (supplie.qty !== undefined && supplie.qty !== null
-          ? supplie.qty
-          : "");
+      const hasQty =
+        supplie.qty !== undefined && supplie.qty !== null && supplie.qty !== "";
+      const hasLength =
+        supplie.length !== undefined &&
+        supplie.length !== null &&
+        supplie.length !== "";
+      const qtyValue = hasQty ? supplie.qty : "";
+      const lengthValue = hasLength ? `${supplie.length}m` : "";
+
+      // Priorizar cantidad en unidades; usar metros solo si no hay cantidad.
+      const units = qtyValue !== "" ? qtyValue : lengthValue;
       addItem("Insumo", supplie.name || "—", units);
     });
 
