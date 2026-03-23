@@ -1,18 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { Grid, Oval } from "react-loader-spinner";
 import QuillEditor from "../../components/QuillEditor.jsx";
 import Select from "react-select";
 import {
-  getFurnitureById,
+  getFurnitureWithBudgetCalcs,
   getAllTables,
   getAllEdgesSupplies,
   getAllVeneerSupplies,
   FormCreateClient,
   getAllClients,
   getAllServices,
-  getAllSuppliesExceptTables,
   createClient,
   getClientById,
   createBudget,
@@ -22,11 +21,17 @@ import {
   getSystemVariableByKey,
 } from "../../index.js";
 
-//importar helpers de funciones
-import { calculateTotalVeneer } from "../../helpers/Budgets/calculateTotalVeneer.js"; //calcular enchapados
-import { calculateTotalMelamine } from "../../helpers/Budgets/calculateTotalMelamine.js";
-import { calculateTotalEdges } from "../../helpers/Budgets/calculateTotalEdges.js";
-import { formatComments } from "../../helpers/Budgets/formatComments.js";
+const normalizeHtml = (html) => (typeof html === "string" ? html.trim() : "");
+
+const buildInitialComments = (parameterHtml, existingCommentHtml = "") => {
+  const param = normalizeHtml(parameterHtml);
+  const existing = normalizeHtml(existingCommentHtml);
+
+  if (!param) return existing;
+  if (existing) return existing;
+
+  return param;
+};
 
 function CreateBudget() {
   const {
@@ -49,8 +54,17 @@ function CreateBudget() {
   const [tables, setTables] = useState([]);
   const [edges, setEdges] = useState([]);
   const [veneer, setVeneer] = useState([]);
-  const [supplies, setSupplies] = useState([]);
   const [clientOption, setClientOption] = useState("");
+  // Totales calculados por el backend
+  const [totalVeneer, setTotalVeneer] = useState(0);
+  const [totalVeneerPolished, setTotalVeneerPolished] = useState(0);
+  const [totalVeneerLacqueredOpen, setTotalVeneerLacqueredOpen] = useState(0);
+  const [totalLacqueredAll, setTotalLacqueredAll] = useState(0);
+  const [totalPantographed, setTotalPantographed] = useState(0);
+  const [totalEdgeLength, setTotalEdgeLength] = useState(0);
+  const [totalLacqueredEdgeLength, setTotalLacqueredEdgeLength] = useState(0);
+  const [totalPolishedEdgeLength, setTotalPolishedEdgeLength] = useState(0);
+  const [consolidatedSupplies, setConsolidatedSupplies] = useState([]);
   const [allClients, setAllClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredClients, setFilteredClients] = useState([]);
@@ -69,7 +83,6 @@ function CreateBudget() {
   const [subtotalPlacement, setSubtotalPlacement] = useState(0);
   const [subtotalShipmentPrice, setSubtotalShipmentPrice] = useState(0);
   const [hasUserEditedComments, setHasUserEditedComments] = useState(false);
-  const commentsValue = watch("comments"); // opcional, útil para detectar cambios
 
   //Editor de texto
   const [commentValue, setCommentValue] = useState("");
@@ -134,33 +147,20 @@ function CreateBudget() {
     }),
   };
 
-  const tableOptions = tables.map((table) => ({
-    value: table.name,
-    label: table.name,
-  }));
+  const tableOptions = useMemo(
+    () => tables.map((table) => ({ value: table.name, label: table.name })),
+    [tables]
+  );
 
-  const edgeOptions = edges.map((edge) => ({
-    value: edge._id,
-    label: edge.name,
-  }));
+  const edgeOptions = useMemo(
+    () => edges.map((edge) => ({ value: edge._id, label: edge.name })),
+    [edges]
+  );
 
-  const veneerOptions = veneer.map((item) => ({
-    value: item._id,
-    label: item.name,
-  }));
-
-  const normalizeHtml = (html) => (typeof html === "string" ? html.trim() : "");
-
-  const buildInitialComments = (parameterHtml, existingCommentHtml = "") => {
-    const param = normalizeHtml(parameterHtml);
-    const existing = normalizeHtml(existingCommentHtml);
-
-    if (!param) return existing; // no hay parámetros -> no tocamos
-    if (existing) return existing; // si ya había comentarios guardados, respetarlos
-
-    // Comentario preescrito (solo parámetros)
-    return param;
-  };
+  const veneerOptions = useMemo(
+    () => veneer.map((item) => ({ value: item._id, label: item.name })),
+    [veneer]
+  );
 
   const navigate = useNavigate();
 
@@ -185,28 +185,30 @@ function CreateBudget() {
   }, []);
 
   const getFurnituresToSet = () => {
-    getFurnitureById(idFurniture)
-      .then((furnituresData) => {
-        const furniture = furnituresData?.data;
+    getFurnitureWithBudgetCalcs(idFurniture)
+      .then((res) => {
+        const furniture = res?.data?.furniture;
+        const calcs = res?.data?.calculations;
+
         setSingleFurniture(furniture);
+        setShowSupplies(calcs?.showSupplies ?? true);
 
-        const modules = furniture?.modules_furniture || [];
-        const allModulesEmpty = modules.every(
-          (module) => (module.supplies_module || []).length === 0
-        );
-        setShowSupplies(!allModulesEmpty);
+        setTotalVeneer(calcs?.totalVeneer ?? 0);
+        setTotalVeneerPolished(calcs?.totalVeneerPolished ?? 0);
+        setTotalVeneerLacqueredOpen(calcs?.totalVeneerLacqueredOpen ?? 0);
+        setTotalLacqueredAll(calcs?.totalLacqueredAll ?? 0);
+        setTotalPantographed(calcs?.totalPantographed ?? 0);
+        setTotalEdgeLength(calcs?.totalEdgeLength ?? 0);
+        setTotalLacqueredEdgeLength(calcs?.totalLacqueredEdgeLength ?? 0);
+        setTotalPolishedEdgeLength(calcs?.totalPolishedEdgeLength ?? 0);
+        setTotalSuppliePrice(calcs?.totalSuppliePrice ?? 0);
+        setConsolidatedSupplies(calcs?.consolidatedSupplies ?? []);
 
-        // 1) De dónde sale el parámetro de categoria:
-        // Si guardás parameter en mueble, usá furniture.parameter
-        // Si viene de la categoría populada, usá furniture.category?.parameter
         const parameterHtml =
           furniture?.parameter || furniture?.category?.parameter || "";
-        // 2) Solo precargar si el usuario todavía no tocó comentarios
-        // y si el form todavía no tiene comentarios seteados
         const currentComments = normalizeHtml(getValues("comments"));
         if (!hasUserEditedComments && !currentComments) {
           const initial = buildInitialComments(parameterHtml, currentComments);
-
           setCommentValue(initial);
           setValue("comments", initial, { shouldValidate: true });
         }
@@ -273,49 +275,40 @@ function CreateBudget() {
       });
   };
 
-  // TRAER INSUMOS: para tener el precio y multiplicar
-  const getAllSuppliesToSet = () => {
-    getAllSuppliesExceptTables()
-      .then((supplieData) => {
-        setSupplies(supplieData.data);
-        // console.log(supplieData.data);
-      })
-      .catch((error) => {
-        console.error("Este es el error:", error);
-      });
-  };
-  //Servicios: obetener valores
-  const enchapadoArtesanalService = services.find(
-    (service) => service._id === "66a5bbab218ee6221506c133"
-  );
-
-  const laqueadoService = services.find(
-    (service) => service._id === "66a5bb29218ee6221506c125"
-  );
-
-  const laqueadoOpenService = services.find(
-    (service) => service._id === "66eb0ec94bc129b0fcfb3dea"
-  );
-
-  const lustreService = services.find(
-    (service) => service._id === "66a5bb50218ee6221506c12b"
-  );
-
-  const pantografiadoService = services.find(
-    (service) => service._id === "66a5bb88218ee6221506c130"
-  );
-
-  const filoService = services.find(
-    (service) => service._id === "66a5baea218ee6221506c119"
-  );
-
-  const cortePlacaService = services.find(
-    (service) => service._id === "66a5baf9218ee6221506c11c"
+  //Servicios: obtener valores
+  const {
+    enchapadoArtesanalService,
+    laqueadoService,
+    laqueadoOpenService,
+    lustreService,
+    pantografiadoService,
+    filoService,
+    cortePlacaService,
+  } = useMemo(
+    () => ({
+      enchapadoArtesanalService: services.find(
+        (s) => s._id === "66a5bbab218ee6221506c133"
+      ),
+      laqueadoService: services.find(
+        (s) => s._id === "66a5bb29218ee6221506c125"
+      ),
+      laqueadoOpenService: services.find(
+        (s) => s._id === "66eb0ec94bc129b0fcfb3dea"
+      ),
+      lustreService: services.find((s) => s._id === "66a5bb50218ee6221506c12b"),
+      pantografiadoService: services.find(
+        (s) => s._id === "66a5bb88218ee6221506c130"
+      ),
+      filoService: services.find((s) => s._id === "66a5baea218ee6221506c119"),
+      cortePlacaService: services.find(
+        (s) => s._id === "66a5baf9218ee6221506c11c"
+      ),
+    }),
+    [services]
   );
 
   useEffect(() => {
     getFurnituresToSet();
-    getAllSuppliesToSet();
     getAllTablesToSet();
     getAllEdgesToSet();
     getAllVeneerToSet();
@@ -336,72 +329,8 @@ function CreateBudget() {
     }
   }, [searchTerm, allClients]);
 
-  //CÁLCULO DE TOTAL PIEZAS ENCHAPADAS EN METROS CUADRADOS
-  const {
-    totalVeneer,
-    totalVeneer2,
-    totalVeneerPolished,
-    totalVeneerLacqueredOpen,
-  } = calculateTotalVeneer(singleFurniture?.modules_furniture);
-
-  //CÁLCULO DE TOTAL PIEZAS LAQUEADAS EN METROS CUADRADOS
-  const calculateTotalLacquered = (modules) => {
-    let totalLacquered = 0;
-
-    modules?.forEach((module) => {
-      module.pieces.forEach((piece) => {
-        if (piece.lacqueredPiece) {
-          // console.log("piezas", piece.name, "piezas", piece.lacqueredPiece);
-          if (piece.lacqueredPieceSides === 1) {
-            totalLacquered += piece.length * piece.width * piece.qty;
-          }
-          if (piece.lacqueredPieceSides === 2) {
-            totalLacquered += piece.length * piece.width * 2 * piece.qty;
-          }
-        }
-      });
-    });
-    // console.log("totalLacquered", totalLacquered);
-    return {
-      totalLacquered,
-    };
-  };
-  const { totalLacquered } = calculateTotalLacquered(
-    singleFurniture?.modules_furniture
-  );
-
-  //CÁLCULO DE TOTAL PIEZAS MELAMINA EN METROS CUADRADOS
-  const { totalMelamine, totalMelamineLacquered } = calculateTotalMelamine(
-    singleFurniture?.modules_furniture
-  );
-
-  //CÁLCULO DE TOTAL PIEZAS PANTOGRAFIADAS EN METROS CUADRADOS
-  const calculateTotalPantographed = (modules) => {
-    let totalPantographed = 0;
-
-    modules?.forEach((module) => {
-      module.pieces.forEach((piece) => {
-        if (piece.pantographed) {
-          totalPantographed += piece.length * piece.width * piece.qty;
-        }
-      });
-    });
-
-    return {
-      totalPantographed,
-    };
-  };
-  const { totalPantographed } = calculateTotalPantographed(
-    singleFurniture?.modules_furniture
-  );
-
-  //sumar total de laqueado
-  let totalLacqueredAll = totalLacquered + totalMelamineLacquered;
-
-  //ORDENAR POR NOMBRE LOS MÓDULOS
-  const sortedModules = singleFurniture?.modules_furniture?.sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
+  // Los módulos ya vienen ordenados por nombre desde el backend
+  const sortedModules = singleFurniture?.modules_furniture;
 
   //CANTIDAD DE PLACAS
   function counterMaterial(e) {
@@ -446,13 +375,6 @@ function CreateBudget() {
   };
   const handleSearchTermChange = (event) => {
     setSearchTerm(event.target.value);
-    // Aquí puedes filtrar los clientes basados en `event.target.value`
-    const filtered = allClients.filter((client) =>
-      `${client.lastname} ${client.name}`
-        .toLowerCase()
-        .includes(event.target.value.toLowerCase())
-    );
-    setFilteredClients(filtered);
   };
 
   const handleClientSelect = (client) => {
@@ -614,43 +536,6 @@ function CreateBudget() {
     }
   };
 
-  // obtener el valor de corte de placa
-  function getServicePriceById(id, servicesArray) {
-    const service = servicesArray.find((service) => service._id === id);
-    return service ? service.price : null;
-  }
-
-  const cortePlacaId = "66a5baf9218ee6221506c11c";
-  const cortePlacaPrice = getServicePriceById(cortePlacaId, services);
-
-  //CALCULAR TOTAL DEL PRECIO DE LOS INSUSMOS
-  const calculateTotalSuppliePrice = () => {
-    if (!singleFurniture?.modules_furniture) return 0; // Aseguramos que no sea undefined
-
-    let total = 0;
-
-    // Recorremos los módulos y suministros para calcular el total
-    singleFurniture.modules_furniture.forEach((module) => {
-      module.supplies_module.forEach((supply) => {
-        const supplyDetails = supplies.find((s) => s._id === supply.supplie_id);
-
-        if (supplyDetails) {
-          // Calculamos el precio (precio por cantidad)
-          const price = supplyDetails.price * supply.supplie_qty;
-          total += price;
-        }
-      });
-    });
-
-    return total;
-  };
-
-  useEffect(() => {
-    // Calculamos el total de los insumos
-    const total = calculateTotalSuppliePrice();
-    setTotalSuppliePrice(total); // Actualizamos el estado con el total calculado
-  }, [singleFurniture, supplies]); // Dependencias necesarias para recalcular cuando cambian los módulos o insumos
-
   //CALCULAR TOTAL DE LOS MATERIALES
   const materialPrices = watch(
     Array.from({ length: countMaterial }, (_, index) => `materialPrice${index}`)
@@ -671,7 +556,6 @@ function CreateBudget() {
       totalQty += qty;
     }
     subTotal = subTotal * calculationCoefficient + totalQty * cortePlacaService?.price;
-    total = total;
     setSubtotalMaterialPrice(subTotal);
     setTotalMaterialPrice(total);
   };
@@ -739,10 +623,6 @@ function CreateBudget() {
     // Aquí puedes usar setState para guardar el valor si es necesario
   }, [placementDays, placementPrice]);
 
-  //CÁLCULO TOTAL DE FILO
-  const { totalEdgeLength, totalLacqueredEdgeLength, totalPolishedEdgeLength } =
-    calculateTotalEdges(singleFurniture?.modules_furniture);
-
   //CALCULAR TOTAL COMPLETO
   const calculateTotalPrice = () => {
     let enchapado_artesanal_subtotal = Number(getValues("veneerPrice")) || 0;
@@ -781,10 +661,7 @@ function CreateBudget() {
   const edgePriceValue = getValues("edgePrice");
   useEffect(() => {
     calculateTotalPrice();
-    calculateTotalSuppliePrice();
   }, [
-    singleFurniture,
-    supplies,
     services,
     veneerPriceValue,
     chapaPriceValue,
@@ -1477,63 +1354,64 @@ function CreateBudget() {
                 ) : (
                   ""
                 )}
-                {/* FILO  laqueado*/}
-                {totalLacqueredEdgeLength > 0 ? (
-                  <>
-                    <div className="flex gap-y-4">
-                      <div>
+                {/* FILOS */}
+                <div className="flex flex-col gap-4">
+                  {/* FILO laqueado */}
+                  {totalLacqueredEdgeLength > 0 && (
+                    <div className="flex items-start gap-6">
+                      <div className="flex-1">
                         <p className="font-bold">Filo Laqueado:</p>
-                        <div className="flex flex-col w-2/3  ">
-                          {materialEdgeLaquered > 0 ? (
-                            <>
-                              <p className="mb-1">
-                                {(
-                                  (totalLacqueredEdgeLength *
-                                    materialEdgeLaquered) /
-                                  1000
-                                ).toFixed(2)}{" "}
-                                m<sup>2</sup> Precio:
-                                {formatCurrency(
-                                  laqueadoService?.price *
-                                    (
-                                      (totalLacqueredEdgeLength *
-                                        materialEdgeLaquered) /
-                                      1000
-                                    ).toFixed(2)
-                                )}
-                              </p>
-                              <input
-                                name={"edgeLaqueredM2"}
-                                type="hidden"
-                                value={(
-                                  (totalLacqueredEdgeLength *
-                                    materialEdgeLaquered) /
-                                  1000
-                                ).toFixed(2)}
-                                {...register("edgeLaqueredM2")}
-                              />
-
-                              <input
-                                name={`edgeLaqueredPrice`}
-                                type="hidden"
-                                value={
-                                  laqueadoService?.price *
+                        {materialEdgeLaquered > 0 ? (
+                          <>
+                            <p className="mb-1">
+                              {(
+                                (totalLacqueredEdgeLength *
+                                  materialEdgeLaquered) /
+                                1000
+                              ).toFixed(2)}{" "}
+                              m<sup>2</sup> Precio:
+                              {formatCurrency(
+                                laqueadoService?.price *
                                   (
                                     (totalLacqueredEdgeLength *
                                       materialEdgeLaquered) /
                                     1000
                                   ).toFixed(2)
-                                }
-                                {...register(`edgeLaqueredPrice`)}
-                              />
-                            </>
-                          ) : (
-                            <p className="text-red-500">Indicar grosor</p>
-                          )}
-                        </div>
+                              )}
+                            </p>
+                            <input
+                              name={"edgeLaqueredM2"}
+                              type="hidden"
+                              value={(
+                                (totalLacqueredEdgeLength *
+                                  materialEdgeLaquered) /
+                                1000
+                              ).toFixed(2)}
+                              {...register("edgeLaqueredM2")}
+                            />
+                            <input
+                              name={`edgeLaqueredPrice`}
+                              type="hidden"
+                              value={
+                                laqueadoService?.price *
+                                (
+                                  (totalLacqueredEdgeLength *
+                                    materialEdgeLaquered) /
+                                  1000
+                                ).toFixed(2)
+                              }
+                              {...register(`edgeLaqueredPrice`)}
+                            />
+                          </>
+                        ) : (
+                          <p className="text-red-500">Indicar grosor</p>
+                        )}
                       </div>
-                      <div className="flex flex-col w-2/4 ml-2">
-                        <label htmlFor="edgeThickness" className="mb-2">
+                      <div className="flex flex-col w-72">
+                        <label
+                          htmlFor="edgeThickness"
+                          className="mb-1 text-sm font-medium text-gray-700"
+                        >
                           Grosor de la placa (cm)
                         </label>
                         <input
@@ -1558,66 +1436,64 @@ function CreateBudget() {
                         )}
                       </div>
                     </div>
-                  </>
-                ) : (
-                  ""
-                )}
-                {/* FILO  lustrado*/}
-                {totalPolishedEdgeLength > 0 ? (
-                  <>
-                    <div className="flex gap-y-4">
-                      <div>
+                  )}
+
+                  {/* FILO lustrado */}
+                  {totalPolishedEdgeLength > 0 && (
+                    <div className="flex items-start gap-6">
+                      <div className="flex-1">
                         <p className="font-bold">Filo Lustrado:</p>
-                        <div className="flex flex-col w-2/3  ">
-                          {materialEdgePolished > 0 ? (
-                            <>
-                              <p className="mb-1">
-                                {(
-                                  (totalPolishedEdgeLength *
-                                    materialEdgePolished) /
-                                  1000
-                                ).toFixed(2)}{" "}
-                                m<sup>2</sup> Precio:
-                                {formatCurrency(
-                                  lustreService?.price *
-                                    (
-                                      (totalPolishedEdgeLength *
-                                        materialEdgePolished) /
-                                      1000
-                                    ).toFixed(2)
-                                )}
-                              </p>
-                              <input
-                                name={`edgePolishedM2`}
-                                type="hidden"
-                                value={(
-                                  (totalPolishedEdgeLength *
-                                    materialEdgePolished) /
-                                  1000
-                                ).toFixed(2)}
-                                {...register(`edgePolishedM2`)}
-                              />
-                              <input
-                                name={`edgePolishedPrice`}
-                                type="hidden"
-                                value={
-                                  lustreService?.price *
+                        {materialEdgePolished > 0 ? (
+                          <>
+                            <p className="mb-1">
+                              {(
+                                (totalPolishedEdgeLength *
+                                  materialEdgePolished) /
+                                1000
+                              ).toFixed(2)}{" "}
+                              m<sup>2</sup> Precio:
+                              {formatCurrency(
+                                lustreService?.price *
                                   (
                                     (totalPolishedEdgeLength *
                                       materialEdgePolished) /
                                     1000
                                   ).toFixed(2)
-                                }
-                                {...register(`edgePolishedPrice`)}
-                              />
-                            </>
-                          ) : (
-                            <p className="text-red-500">Indicar grosor</p>
-                          )}
-                        </div>
+                              )}
+                            </p>
+                            <input
+                              name={`edgePolishedM2`}
+                              type="hidden"
+                              value={(
+                                (totalPolishedEdgeLength *
+                                  materialEdgePolished) /
+                                1000
+                              ).toFixed(2)}
+                              {...register(`edgePolishedM2`)}
+                            />
+                            <input
+                              name={`edgePolishedPrice`}
+                              type="hidden"
+                              value={
+                                lustreService?.price *
+                                (
+                                  (totalPolishedEdgeLength *
+                                    materialEdgePolished) /
+                                  1000
+                                ).toFixed(2)
+                              }
+                              {...register(`edgePolishedPrice`)}
+                            />
+                          </>
+                        ) : (
+                          <p className="text-red-500">Indicar grosor</p>
+                        )}
                       </div>
-                      <div className="flex flex-col w-2/4 ml-2">
-                        <label htmlFor="edgePolishedThickness" className="mb-2">
+                      <div className="flex flex-col w-72">
+                        <label
+                          htmlFor="edgePolishedThickness"
+                          className="mb-1 text-sm font-medium text-gray-700"
+                        >
                           Grosor de la placa (cm)
                         </label>
                         <input
@@ -1642,19 +1518,14 @@ function CreateBudget() {
                         )}
                       </div>
                     </div>
-                  </>
-                ) : (
-                  ""
-                )}
-                {/* FILO  sin nada*/}
-                {totalEdgeLength > 0 ? (
-                  <>
-                    <div className="flex gap-4">
-                      <p className="flex flex-col mb-1 w-2/3">
-                        <span className="font-bold w-full">
-                          Filo total (sin laquear):
-                        </span>{" "}
-                        <span>
+                  )}
+
+                  {/* FILO sin nada */}
+                  {totalEdgeLength > 0 && (
+                    <div className="flex items-start gap-6">
+                      <div className="flex-1">
+                        <p className="font-bold">Filo total (sin laquear):</p>
+                        <p>
                           {(totalEdgeLength / 100).toFixed(2)} m Precio:
                           {formatCurrency(
                             (totalEdgeLength / 100) * materialEdge +
@@ -1667,23 +1538,23 @@ function CreateBudget() {
                                 filoService?.price * (totalEdgeLength / 100)
                             )
                           )}
-                        </span>
-                      </p>
-                      <input
-                        className="border border-gray-300 rounded-md p-2"
-                        name={`edgeM2`}
-                        type="hidden"
-                        value={(totalEdgeLength / 100).toFixed(2)}
-                        {...register(`edgeM2`)}
-                      />
-                      <input
-                        className="border border-gray-300 rounded-md p-2"
-                        name={`edgePrice`}
-                        type="hidden"
-                        {...register(`edgePrice`)}
-                      />
-
-                      <div className="flex flex-col w-1/3 ">
+                        </p>
+                        <input
+                          name={`edgeM2`}
+                          type="hidden"
+                          value={(totalEdgeLength / 100).toFixed(2)}
+                          {...register(`edgeM2`)}
+                        />
+                        <input
+                          name={`edgePrice`}
+                          type="hidden"
+                          {...register(`edgePrice`)}
+                        />
+                      </div>
+                      <div className="flex flex-col w-72">
+                        <label className="mb-1 text-sm font-medium text-gray-700">
+                          Tipo de filo
+                        </label>
                         <Controller
                           name="edgeSelect"
                           control={control}
@@ -1716,10 +1587,8 @@ function CreateBudget() {
                         )}
                       </div>
                     </div>
-                  </>
-                ) : (
-                  ""
-                )}
+                  )}
+                </div>
               </div>
 
               {/* INSUMOS */}
@@ -1730,110 +1599,57 @@ function CreateBudget() {
                     {formatCurrency(totalSuppliePrice)}
                   </h2>
                   <div className="flex flex-wrap">
-                    {sortedModules && sortedModules?.length > 0 && (
+                    {consolidatedSupplies.length > 0 && (
                       <div className="w-full">
                         <div className="rounded-lg overflow-hidden border-2 border-emerald-600">
-                          {(() => {
-                            let totalSupplieCost = 0; // Inicializar variable para el total
-
-                            const consolidatedSupplies = sortedModules?.reduce(
-                              (acc, module) => {
-                                module?.supplies_module?.forEach((supply) => {
-                                  const key = supply?.supplie_name;
-
-                                  if (!acc[key]) {
-                                    acc[key] = {
-                                      name: supply?.supplie_name,
-                                      qty: 0,
-                                      length: supply?.supplie_length,
-                                      price: 0,
-                                    };
-                                  }
-
-                                  // Sumar la cantidad de insumos
-                                  acc[key].qty += Number(supply?.supplie_qty);
-
-                                  // Obtener detalles del suministro
-                                  const supplyDetails = supplies?.find(
-                                    (s) => s._id === supply?.supplie_id
-                                  );
-                                  if (supplyDetails) {
-                                    const calculatedPrice =
-                                      supplyDetails?.price *
-                                      supply?.supplie_qty *
-                                      (supply?.supplie_name === "Barral"
-                                        ? supply?.supplie_length
-                                        : 1);
-                                    acc[key].price += calculatedPrice;
-
-                                    // Sumar al total general
-                                    totalSupplieCost += calculatedPrice;
-                                  }
-                                });
-                                return acc;
-                              },
-                              {}
-                            );
-
-                            return Object.values(consolidatedSupplies).map(
-                              (supply, index) => (
-                                <div
-                                  key={index}
-                                  className={`mb-0 p-4 ${
-                                    index % 2 === 0 ? "bg-gray-200" : "bg-white"
-                                  }`}
-                                >
-                                  {/* Detalles de cada insumo */}
-                                  <p>
-                                    <span className="font-bold">Nombre:</span>{" "}
-                                    {supply.name}
-                                  </p>
-                                  <input
-                                    name={`supplieName${index}`}
-                                    type="hidden"
-                                    value={supply.name}
-                                    {...register(`supplieName${index}`)}
-                                  />
-                                  <p>
-                                    <span className="font-bold">Cantidad:</span>{" "}
-                                    {supply.qty}
-                                  </p>
-                                  <input
-                                    name={`supplieQty${index}`}
-                                    type="hidden"
-                                    value={supply.qty}
-                                    {...register(`supplieQty${index}`)}
-                                  />
-                                  {/* <p>
-                                    <span className="font-bold">Largo:</span>{" "}
-                                    {supply.length}
-                                  </p> */}
-                                  <input
-                                    name={`supplieLength${index}`}
-                                    type="hidden"
-                                    value={supply.length}
-                                    {...register(`supplieLength${index}`)}
-                                  />
-                                  <p>
-                                    <span className="font-bold">
-                                      Precio total:
-                                    </span>{" "}
-                                    {formatCurrency(supply.price)}
-                                    {setValue(
-                                      `suppliePrice${index}`,
-                                      supply.price
-                                    )}
-                                  </p>
-                                  <input
-                                    name={`suppliePrice${index}`}
-                                    type="hidden"
-                                    value={supply.price}
-                                    {...register(`suppliePrice${index}`)}
-                                  />
-                                </div>
-                              )
-                            );
-                          })()}
+                          {consolidatedSupplies.map((supply, index) => (
+                            <div
+                              key={index}
+                              className={`mb-0 p-4 ${
+                                index % 2 === 0 ? "bg-gray-200" : "bg-white"
+                              }`}
+                            >
+                              <p>
+                                <span className="font-bold">Nombre:</span>{" "}
+                                {supply.name}
+                              </p>
+                              <input
+                                name={`supplieName${index}`}
+                                type="hidden"
+                                value={supply.name}
+                                {...register(`supplieName${index}`)}
+                              />
+                              <p>
+                                <span className="font-bold">Cantidad:</span>{" "}
+                                {supply.qty}
+                              </p>
+                              <input
+                                name={`supplieQty${index}`}
+                                type="hidden"
+                                value={supply.qty}
+                                {...register(`supplieQty${index}`)}
+                              />
+                              <input
+                                name={`supplieLength${index}`}
+                                type="hidden"
+                                value={supply.length}
+                                {...register(`supplieLength${index}`)}
+                              />
+                              <p>
+                                <span className="font-bold">
+                                  Precio total:
+                                </span>{" "}
+                                {formatCurrency(supply.price)}
+                                {setValue(`suppliePrice${index}`, supply.price)}
+                              </p>
+                              <input
+                                name={`suppliePrice${index}`}
+                                type="hidden"
+                                value={supply.price}
+                                {...register(`suppliePrice${index}`)}
+                              />
+                            </div>
+                          ))}
 
                           {/* Agregar campos ocultos para los nombres de los módulos */}
                           {sortedModules?.map((module, moduleIndex) => (

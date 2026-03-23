@@ -8,7 +8,7 @@ import React, {
 import { Link } from "react-router-dom";
 import debounce from "lodash.debounce";
 import { Grid, Oval } from "react-loader-spinner";
-import { getAllServicesList, deleteService } from "../../index.js";
+import { getAllServicesList } from "../../index.js";
 
 function ServicesFurniture() {
   const ENV = import.meta.env.VITE_ENV;
@@ -22,10 +22,6 @@ function ServicesFurniture() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 50;
-
-  // Eliminar servicio
-  const [openModalToDelete, setOpenModalToDelete] = useState(false);
-  const [serviceToDelete, setServiceToDelete] = useState(null);
 
   // AbortController de la request en curso + “sequence id”
   const controllerRef = useRef(null);
@@ -110,24 +106,6 @@ function ServicesFurniture() {
       setCurrentPage((p) => p + 1);
     }
   };
-
-  // Eliminar servicio
-  function handleDeleteService(serviceId) {
-    setOpenModalToDelete(true);
-    setServiceToDelete(serviceId);
-  }
-
-  function deleteSingleService(serviceId) {
-    deleteService(serviceId)
-      .then(() => {
-        // refrescar respetando término y página actuales
-        getServicesToSet(searchTerm, currentPage, { showMainLoader: true });
-      })
-      .catch((error) => console.error(error));
-
-    setOpenModalToDelete(false);
-    setServiceToDelete(null);
-  }
 
   const formatCurrency = (value) =>
     new Intl.NumberFormat("es-AR", {
@@ -215,30 +193,17 @@ function ServicesFurniture() {
                       {formatCurrency(service.price)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex gap-2">
-                        <Link
-                          to={`/editar-servicio/${service._id}`}
-                          className="text-white bg-orange rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
-                        >
-                          <img
-                            src="./../icon_edit.svg"
-                            alt="Editar"
-                            className="w-[20px]"
-                          />
-                          <p className="m-0 leading-loose">Editar</p>
-                        </Link>
-                        <button
-                          className="text-white bg-red-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
-                          onClick={() => handleDeleteService(service._id)}
-                        >
-                          <img
-                            src="./../icon_delete.svg"
-                            alt="Eliminar"
-                            className="w-[18px]"
-                          />
-                          <p className="m-0 leading-loose">Eliminar</p>
-                        </button>
-                      </div>
+                      <Link
+                        to={`/editar-servicio/${service._id}`}
+                        className="text-white bg-orange rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                      >
+                        <img
+                          src="./../icon_edit.svg"
+                          alt="Editar"
+                          className="w-[20px]"
+                        />
+                        <p className="m-0 leading-loose">Editar</p>
+                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -288,31 +253,6 @@ function ServicesFurniture() {
         </div>
       </div>
 
-      {/* Modal eliminar */}
-      {openModalToDelete && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white p-10 rounded-lg shadow-lg flex justify-center items-center flex-col">
-            <h2 className="text-xl text-center mb-4">
-              ¿Seguro que desea eliminar el servicio? <br /> Esto puede generar
-              errores al presupuestar.
-            </h2>
-            <div className="flex gap-4">
-              <button
-                className="bg-red-500 text-white py-2 px-4 rounded"
-                onClick={() => deleteSingleService(serviceToDelete)}
-              >
-                Eliminar
-              </button>
-              <button
-                className="bg-gray-300 text-black py-2 px-4 rounded"
-                onClick={() => setOpenModalToDelete(false)}
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

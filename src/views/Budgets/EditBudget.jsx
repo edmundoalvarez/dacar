@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { Grid, Oval } from "react-loader-spinner";
@@ -171,25 +171,25 @@ function EditBudget() {
     }),
   };
 
-  const tableOptions = tables.map((table) => ({
-    value: table.name,
-    label: table.name,
-  }));
+  const tableOptions = useMemo(
+    () => tables.map((table) => ({ value: table.name, label: table.name })),
+    [tables]
+  );
 
-  const edgeOptions = edges.map((edge) => ({
-    value: edge._id,
-    label: edge.name,
-  }));
+  const edgeOptions = useMemo(
+    () => edges.map((edge) => ({ value: edge._id, label: edge.name })),
+    [edges]
+  );
 
-  const veneerOptions = veneer.map((item) => ({
-    value: item._id,
-    label: item.name,
-  }));
+  const veneerOptions = useMemo(
+    () => veneer.map((item) => ({ value: item._id, label: item.name })),
+    [veneer]
+  );
 
-  const categoryOptions = categories.map((cat) => ({
-    value: cat._id,
-    label: cat.name,
-  }));
+  const categoryOptions = useMemo(
+    () => categories.map((cat) => ({ value: cat._id, label: cat.name })),
+    [categories]
+  );
 
   //Volver a presupuestos o presupuestos confirmados según corresponda
   const location = useLocation();
@@ -404,22 +404,22 @@ function EditBudget() {
         setValue("deliver_date", budgetData.data.deliver_date || "");
         //COLOCACIÓN
         if (budgetData.data.placement) {
-          setValue("placement", "true" || "");
+          setValue("placement", "true");
           setValue("placementDays", budgetData.data.placement_days || "");
           setValue("placementPrice", budgetData.data.placement_price || 0);
           setSubtotalPlacement(
             budgetData.data.placement_price * budgetData.data.placement_days,
           );
         } else {
-          setValue("placement", "false" || "");
+          setValue("placement", "false");
         }
 
         //ENVÍO
         if (budgetData.data.shipment) {
-          setValue("shipment", "true" || "");
+          setValue("shipment", "true");
           setValue("shipmentPrice", budgetData.data.shipment_price || "");
         } else {
-          setValue("shipment", "false" || "");
+          setValue("shipment", "false");
         }
         //MOSTRAR MÓDULOS
         setValue("showModules", budgetData.data.show_modules || "");
@@ -506,35 +506,38 @@ function EditBudget() {
     getAllVeneerToSet();
     getAllClientsToSet();
     getAllCategoriesToSet();
-  }, [budgetId, edgeSelect]);
+  }, [budgetId]);
 
-  //Servicios: obetener valores
-  const enchapadoArtesanalService = services.find(
-    (service) => service._id === "66a5bbab218ee6221506c133",
-  );
-
-  const laqueadoService = services.find(
-    (service) => service._id === "66a5bb29218ee6221506c125",
-  );
-
-  const laqueadoOpenService = services.find(
-    (service) => service._id === "66eb0ec94bc129b0fcfb3dea",
-  );
-
-  const lustreService = services.find(
-    (service) => service._id === "66a5bb50218ee6221506c12b",
-  );
-
-  const pantografiadoService = services.find(
-    (service) => service._id === "66a5bb88218ee6221506c130",
-  );
-
-  const filoService = services.find(
-    (service) => service._id === "66a5baea218ee6221506c119",
-  );
-
-  const cortePlacaService = services.find(
-    (service) => service._id === "66a5baf9218ee6221506c11c",
+  //Servicios: obtener valores
+  const {
+    enchapadoArtesanalService,
+    laqueadoService,
+    laqueadoOpenService,
+    lustreService,
+    pantografiadoService,
+    filoService,
+    cortePlacaService,
+  } = useMemo(
+    () => ({
+      enchapadoArtesanalService: services.find(
+        (s) => s._id === "66a5bbab218ee6221506c133"
+      ),
+      laqueadoService: services.find(
+        (s) => s._id === "66a5bb29218ee6221506c125"
+      ),
+      laqueadoOpenService: services.find(
+        (s) => s._id === "66eb0ec94bc129b0fcfb3dea"
+      ),
+      lustreService: services.find((s) => s._id === "66a5bb50218ee6221506c12b"),
+      pantografiadoService: services.find(
+        (s) => s._id === "66a5bb88218ee6221506c130"
+      ),
+      filoService: services.find((s) => s._id === "66a5baea218ee6221506c119"),
+      cortePlacaService: services.find(
+        (s) => s._id === "66a5baf9218ee6221506c11c"
+      ),
+    }),
+    [services]
   );
 
   //AL SELECCIONAR EL FILO OBTENER EL VALOR
@@ -669,7 +672,6 @@ function EditBudget() {
       totalQty += qty;
     }
     subTotal = subTotal * calculationCoefficient + totalQty * cortePlacaService?.price;
-    total = total;
     setSubtotalMaterialPrice(subTotal);
     setTotalMaterialPrice(total);
   };
@@ -774,13 +776,6 @@ function EditBudget() {
   };
   const handleSearchTermChange = (event) => {
     setSearchTerm(event.target.value);
-    // Aquí puedes filtrar los clientes basados en `event.target.value`
-    const filtered = allClients.filter((client) =>
-      `${client.lastname} ${client.name}`
-        .toLowerCase()
-        .includes(event.target.value.toLowerCase()),
-    );
-    setFilteredClients(filtered);
   };
 
   const handleClientSelect = (client) => {
@@ -1709,43 +1704,44 @@ function EditBudget() {
                 ) : (
                   ""
                 )}
-                {/* FILO  laqueado*/}
-                {totalLacqueredEdgeLength > 0 ? (
-                  <>
-                    <div className="flex gap-4 my-6">
-                      <div className="flex flex-col w-2/3">
-                        <p className="font-bold w-full ">Filo Laqueado:</p>
-                        <div>
-                          {materialEdgeLaquered > 0 ? (
-                            <>
-                              <p className="mb-1">
-                                {(
-                                  (totalLacqueredEdgeLength *
-                                    materialEdgeLaquered) /
-                                  1000
-                                ).toFixed(2)}{" "}
-                                m<sup>2</sup> Precio:
-                                {formatCurrency(getValues("edgeLaqueredPrice"))}
-                              </p>
-                              <input
-                                name={"edgeLaqueredM2"}
-                                type="hidden"
-                                {...register("edgeLaqueredM2")}
-                              />
-
-                              <input
-                                name={`edgeLaqueredPrice`}
-                                type="hidden"
-                                {...register(`edgeLaqueredPrice`)}
-                              />
-                            </>
-                          ) : (
-                            <p className="text-red-500">Indicar grosor</p>
-                          )}
-                        </div>
+                {/* FILOS */}
+                <div className="flex flex-col gap-4">
+                  {/* FILO laqueado */}
+                  {totalLacqueredEdgeLength > 0 && (
+                    <div className="flex items-start gap-6">
+                      <div className="flex-1">
+                        <p className="font-bold">Filo Laqueado:</p>
+                        {materialEdgeLaquered > 0 ? (
+                          <>
+                            <p className="mb-1">
+                              {(
+                                (totalLacqueredEdgeLength *
+                                  materialEdgeLaquered) /
+                                1000
+                              ).toFixed(2)}{" "}
+                              m<sup>2</sup> Precio:
+                              {formatCurrency(getValues("edgeLaqueredPrice"))}
+                            </p>
+                            <input
+                              name={"edgeLaqueredM2"}
+                              type="hidden"
+                              {...register("edgeLaqueredM2")}
+                            />
+                            <input
+                              name={`edgeLaqueredPrice`}
+                              type="hidden"
+                              {...register(`edgeLaqueredPrice`)}
+                            />
+                          </>
+                        ) : (
+                          <p className="text-red-500">Indicar grosor</p>
+                        )}
                       </div>
-                      <div className="flex flex-col w-1/3 ">
-                        <label htmlFor="edgeThickness" className="mb-0">
+                      <div className="flex flex-col w-72">
+                        <label
+                          htmlFor="edgeThickness"
+                          className="mb-1 text-sm font-medium text-gray-700"
+                        >
                           Grosor de la placa (cm)
                         </label>
                         <input
@@ -1770,46 +1766,44 @@ function EditBudget() {
                         )}
                       </div>
                     </div>
-                  </>
-                ) : (
-                  ""
-                )}
-                {/* FILO  lustrado*/}
-                {totalPolishedEdgeLength > 0 ? (
-                  <>
-                    <div className="flex gap-y-4">
-                      <div>
+                  )}
+
+                  {/* FILO lustrado */}
+                  {totalPolishedEdgeLength > 0 && (
+                    <div className="flex items-start gap-6">
+                      <div className="flex-1">
                         <p className="font-bold">Filo Lustrado:</p>
-                        <div className="flex flex-col w-2/3  ">
-                          {materialEdgePolished > 0 ? (
-                            <>
-                              <p className="mb-1">
-                                {(
-                                  (totalPolishedEdgeLength *
-                                    materialEdgePolished) /
-                                  1000
-                                ).toFixed(2)}{" "}
-                                m<sup>2</sup> Precio:
-                                {formatCurrency(getValues("edgePolishedPrice"))}
-                              </p>
-                              <input
-                                name={`edgePolishedM2`}
-                                type="hidden"
-                                {...register(`edgePolishedM2`)}
-                              />
-                              <input
-                                name={`edgePolishedPrice`}
-                                type="hidden"
-                                {...register(`edgePolishedPrice`)}
-                              />
-                            </>
-                          ) : (
-                            <p className="text-red-500">Indicar grosor</p>
-                          )}
-                        </div>
+                        {materialEdgePolished > 0 ? (
+                          <>
+                            <p className="mb-1">
+                              {(
+                                (totalPolishedEdgeLength *
+                                  materialEdgePolished) /
+                                1000
+                              ).toFixed(2)}{" "}
+                              m<sup>2</sup> Precio:
+                              {formatCurrency(getValues("edgePolishedPrice"))}
+                            </p>
+                            <input
+                              name={`edgePolishedM2`}
+                              type="hidden"
+                              {...register(`edgePolishedM2`)}
+                            />
+                            <input
+                              name={`edgePolishedPrice`}
+                              type="hidden"
+                              {...register(`edgePolishedPrice`)}
+                            />
+                          </>
+                        ) : (
+                          <p className="text-red-500">Indicar grosor</p>
+                        )}
                       </div>
-                      <div className="flex flex-col w-1/3 ml-2">
-                        <label htmlFor="edgePolishedThickness" className="mb-2">
+                      <div className="flex flex-col w-72">
+                        <label
+                          htmlFor="edgePolishedThickness"
+                          className="mb-1 text-sm font-medium text-gray-700"
+                        >
                           Grosor de la placa (cm)
                         </label>
                         <input
@@ -1834,19 +1828,14 @@ function EditBudget() {
                         )}
                       </div>
                     </div>
-                  </>
-                ) : (
-                  ""
-                )}
-                {/* FILO  sin nada*/}
-                {totalEdgeLength > 0 ? (
-                  <>
-                    <div className="flex gap-4">
-                      <p className="flex flex-col mb-1 w-2/3">
-                        <span className="font-bold w-full">
-                          Filo total (sin laquear):
-                        </span>{" "}
-                        <span>
+                  )}
+
+                  {/* FILO sin nada */}
+                  {totalEdgeLength > 0 && (
+                    <div className="flex items-start gap-6">
+                      <div className="flex-1">
+                        <p className="font-bold">Filo total (sin laquear):</p>
+                        <p>
                           {totalEdgeLength.toFixed(2)} m Precio:
                           {formatCurrency(
                             totalEdgeLength * materialEdge +
@@ -1859,21 +1848,23 @@ function EditBudget() {
                                 filoService?.price * totalEdgeLength,
                             ),
                           )}
-                        </span>
-                      </p>
-                      <input
-                        name={`edgeM2`}
-                        type="hidden"
-                        value={totalEdgeLength.toFixed(2)}
-                        {...register(`edgeM2`)}
-                      />
-                      <input
-                        name={`edgePrice`}
-                        type="hidden"
-                        {...register(`edgePrice`)}
-                      />
-
-                      <div className="flex flex-col w-1/3 ">
+                        </p>
+                        <input
+                          name={`edgeM2`}
+                          type="hidden"
+                          value={totalEdgeLength.toFixed(2)}
+                          {...register(`edgeM2`)}
+                        />
+                        <input
+                          name={`edgePrice`}
+                          type="hidden"
+                          {...register(`edgePrice`)}
+                        />
+                      </div>
+                      <div className="flex flex-col w-72">
+                        <label className="mb-1 text-sm font-medium text-gray-700">
+                          Tipo de filo
+                        </label>
                         <Controller
                           name="edgeSelect"
                           control={control}
@@ -1907,10 +1898,8 @@ function EditBudget() {
                         )}
                       </div>
                     </div>
-                  </>
-                ) : (
-                  ""
-                )}
+                  )}
+                </div>
               </div>
               {/* INSUMOS */}
               {showSupplies ? (

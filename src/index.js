@@ -11,6 +11,7 @@ export { createFurniture } from "./services/Furniture/createFurniture.js";
 export { getAllFurnitures } from "./services/Furniture/getAllFurnitures.js";
 export { getAllFurnituresList } from "./services/Furniture/getAllFurnituresList.js";
 export { getFurnitureById } from "./services/Furniture/getFurnitureById.js";
+export { getFurnitureWithBudgetCalcs } from "./services/Furniture/getFurnitureWithBudgetCalcs.js";
 export { updateModuleOfFurniture } from "./services/Furniture/updateModuleOfFurniture.js";
 export { deleteModuleOnFurniture } from "./services/Furniture/deleteModuleOnFurniture.js";
 export { updateFurniture } from "./services/Furniture/updateFurniture.js";
