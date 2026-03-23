@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import { getBudgetById, getSystemVariableByKey } from "../../index.js";
 import { Grid } from "react-loader-spinner";
 import { generatePDF } from "../../helpers/Budgets/budgetDetailPdf.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
-import { useLocation } from "react-router-dom";
 import parse from "html-react-parser";
 import { formatComments } from "../../helpers/Budgets/formatComments.js";
 
@@ -59,6 +58,9 @@ function BudgetDetails() {
       });
     return () => controller.abort();
   }, []);
+
+  const isMultiBudget =
+    Array.isArray(budget.furniture_items) && budget.furniture_items.length > 0;
 
   const totalPriceInUnits = budget.total_price;
   const iva = totalPriceInUnits * 0.21;
@@ -202,80 +204,161 @@ function BudgetDetails() {
                 </tr>
               </thead>
               <tbody className="bg-white border-2 border-gray-700">
-                {budget.furniture?.map((furn, idx) => (
-                  <tr
-                    key={idx}
-                    className=" text-left border-b-2 border-gray-700"
-                  >
-                    <td className="px-2 py-4 max-w-[150px] w-[150px] text-sm align-top text-gray-700 break-words">
-                      {categoryName}
-                    </td>
-                    <td className="px-2 py-4 text-left text-sm align-top text-gray-700 border-r-2 border-r-black border-l-2 border-l-black">
-                      <div className="w-full max-w-[700px] text-left">
-                        {budget.comments ? (
-                          <div className="mb-2 break-words comments-html text-left">
-                            {parse(formatComments(budget.comments || ""))}
+                {isMultiBudget ? (
+                  // ── MULTI-FURNITURE rows ────────────────────────────────────
+                  budget.furniture_items.map((item, idx) => {
+                    const itemCatName =
+                      item.furniture?.category?.name ||
+                      item.category ||
+                      "-";
+                    const furn = item.furniture || {};
+                    return (
+                      <>
+                        {/* Description row */}
+                        <tr key={`desc-${idx}`} className="text-left border-b-2 border-gray-700">
+                          <td className="px-2 py-4 max-w-[150px] w-[150px] text-sm align-top text-gray-700 break-words">
+                            <span className="font-semibold text-emerald-700">
+                              {idx + 1}.
+                            </span>{" "}
+                            {itemCatName}
+                          </td>
+                          <td className="px-2 py-4 text-left text-sm align-top text-gray-700 border-r-2 border-r-black border-l-2 border-l-black">
+                            <p className="font-semibold text-gray-800 mb-1">
+                              {item.furniture_name}
+                            </p>
+                            <div className="w-full max-w-[700px] text-left">
+                              {item.comments ? (
+                                <div className="mb-2 break-words comments-html text-left">
+                                  {parse(formatComments(item.comments))}
+                                </div>
+                              ) : (
+                                <p className="mb-2 text-gray-400">-</p>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700">
+                            {formatCurrency(item.subtotal_price)}
+                          </td>
+                        </tr>
+                        {/* Modules row */}
+                        <tr key={`mods-${idx}`} className="text-left text-sm align-middle text-gray-700 border-b-2 border-gray-700">
+                          <td className="px-2 py-4 max-w-[150px] w-[150px] text-sm align-middle text-gray-700 border-r-2 border-r-black break-words">
+                            DETALLES DE MÓDULOS
+                          </td>
+                          <td colSpan={3} className="px-6 py-4">
+                            {itemCatName || (furn.width && furn.height && furn.length) ? (
+                              <p className="mb-0">
+                                <span className="font-bold">
+                                  {furn?.category?.name
+                                    ? furn.category.name.toUpperCase()
+                                    : ""}
+                                </span>{" "}
+                                {furn.width && furn.height && furn.length ? (
+                                  <>
+                                    de {furn.width} (ancho) x {furn.height} (alto) x{" "}
+                                    {furn.length} (profundidad).
+                                  </>
+                                ) : (
+                                  ""
+                                )}
+                              </p>
+                            ) : (
+                              ""
+                            )}
+                            {item.show_modules && furn.modules_furniture?.length > 0 && (
+                              <ul className="mb-0">
+                                {furn.modules_furniture.map((mod, mIdx) => (
+                                  <li key={mIdx}>
+                                    {mod.name} - {mod.height} (alto) x {mod.length} (largo) x{" "}
+                                    {mod.width} (profundidad)
+                                    {mod.description ? ` - ${mod.description}` : ""}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </td>
+                        </tr>
+                      </>
+                    );
+                  })
+                ) : (
+                  // ── SINGLE-FURNITURE rows (original behavior) ───────────────
+                  <>
+                    {budget.furniture?.map((furn, idx) => (
+                      <tr
+                        key={idx}
+                        className=" text-left border-b-2 border-gray-700"
+                      >
+                        <td className="px-2 py-4 max-w-[150px] w-[150px] text-sm align-top text-gray-700 break-words">
+                          {categoryName}
+                        </td>
+                        <td className="px-2 py-4 text-left text-sm align-top text-gray-700 border-r-2 border-r-black border-l-2 border-l-black">
+                          <div className="w-full max-w-[700px] text-left">
+                            {budget.comments ? (
+                              <div className="mb-2 break-words comments-html text-left">
+                                {parse(formatComments(budget.comments || ""))}
+                              </div>
+                            ) : (
+                              <p className="mb-2 break-words whitespace-pre-line">
+                                - No hay comentarios -
+                              </p>
+                            )}
                           </div>
-                        ) : (
-                          <p className="mb-2 break-words whitespace-pre-line">
-                            - No hay comentarios -
-                          </p>
-                        )}
-                      </div>
-                    </td>
-
-                    <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700 ">
-                      {formatCurrency(totalPriceInUnits)}
-                    </td>
-                  </tr>
-                ))}
-                {budget.furniture?.map((furn, idx) => (
-                  <tr
-                    key={idx}
-                    className=" text-left text-sm align-middle text-gray-700 border-b-2 border-gray-700"
-                  >
-                    <td className="px-2 py-4 max-w-[150px] w-[150px] text-sm align-middle text-gray-[#9C846A] border-r-2 border-r-black break-words">
-                      DETALLES DE MÓDULOS
-                    </td>
-                    <td colSpan={3} className="px-6 py-4">
-                      {categoryName ||
-                      (furn.width && furn.height && furn.length) ? (
-                        <p className="mb-0">
-                          <span className="font-bold">
-                            {furn?.category?.name
-                              ? furn.category.name.toUpperCase()
-                              : ""}
-                          </span>{" "}
-                          {furn.width && furn.height && furn.length ? (
+                        </td>
+                        <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700 ">
+                          {formatCurrency(totalPriceInUnits)}
+                        </td>
+                      </tr>
+                    ))}
+                    {budget.furniture?.map((furn, idx) => (
+                      <tr
+                        key={idx}
+                        className=" text-left text-sm align-middle text-gray-700 border-b-2 border-gray-700"
+                      >
+                        <td className="px-2 py-4 max-w-[150px] w-[150px] text-sm align-middle text-gray-[#9C846A] border-r-2 border-r-black break-words">
+                          DETALLES DE MÓDULOS
+                        </td>
+                        <td colSpan={3} className="px-6 py-4">
+                          {categoryName ||
+                          (furn.width && furn.height && furn.length) ? (
+                            <p className="mb-0">
+                              <span className="font-bold">
+                                {furn?.category?.name
+                                  ? furn.category.name.toUpperCase()
+                                  : ""}
+                              </span>{" "}
+                              {furn.width && furn.height && furn.length ? (
+                                <>
+                                  de {furn.width} (ancho) x {furn.height} (alto) x{" "}
+                                  {furn.length} (profundidad).
+                                </>
+                              ) : (
+                                ""
+                              )}
+                            </p>
+                          ) : (
+                            ""
+                          )}
+                          {budget?.show_modules ? (
                             <>
-                              de {furn.width} (ancho) x {furn.height} (alto) x{" "}
-                              {furn.length} (profundidad).
+                              <ul className="mb-0">
+                                {furn.modules_furniture.map((module, idx) => (
+                                  <li key={idx}>
+                                    {module.name} - {module.height} (alto) x{" "}
+                                    {module.length} (largo) x {module.width}{" "}
+                                    (profundidad) - {module.description}
+                                  </li>
+                                ))}
+                              </ul>
                             </>
                           ) : (
                             ""
                           )}
-                        </p>
-                      ) : (
-                        ""
-                      )}
-                      {budget?.show_modules ? (
-                        <>
-                          <ul className="mb-0">
-                            {furn.modules_furniture.map((module, idx) => (
-                              <li key={idx}>
-                                {module.name} - {module.height} (alto) x{" "}
-                                {module.length} (largo) x {module.width}{" "}
-                                (profundidad) - {module.description}
-                              </li>
-                            ))}
-                          </ul>
-                        </>
-                      ) : (
-                        ""
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                )}
 
                 {budget.client_comment ? (
                   <>

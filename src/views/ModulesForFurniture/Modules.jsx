@@ -234,9 +234,9 @@ function Modules() {
 
   return (
     <>
-      <div className="pb-8 px-16 bg-gray-100 min-h-screen">
-        <div className="flex gap-4 justify-between items-center mb-8 bg-gray-800 p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
-          <h1 className="text-4xl font-semibold text-white">Módulos</h1>
+      <div className="pb-8 px-4 sm:px-8 lg:px-16 bg-gray-100 min-h-screen">
+        <div className="flex flex-wrap gap-4 justify-between items-center mb-8 bg-gray-800 p-4 sm:p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white">Módulos</h1>
 
           {/* Búsqueda */}
           <div className="flex items-center gap-4">
@@ -245,7 +245,7 @@ function Modules() {
               value={searchTerm}
               onChange={handleChange}
               placeholder="Buscar por nombre o descripción"
-              className="border border-gray-300 p-2 rounded-lg ml-auto shadow-md w-[400px]"
+              className="border border-gray-300 p-2 rounded-lg ml-auto shadow-md w-full sm:w-[300px] lg:w-[400px]"
             />
             <Oval
               visible={searchLoader}
@@ -283,9 +283,9 @@ function Modules() {
         )}
 
         <div className="overflow-x-auto mt-4">
-          <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white">
+          <div className="overflow-x-auto overflow-y-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white max-h-[70vh]">
             <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-gray-700">
+              <thead className="bg-gray-700 sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
                     Nombre

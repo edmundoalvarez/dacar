@@ -169,6 +169,7 @@ export { Budgets } from "./views/Budgets/Budgets";
 export { BudgetDetails } from "./views/Budgets/BudgetDetails";
 export { EditBudget } from "./views/Budgets/EditBudget";
 export { ConfirmedBudgetsReport } from "./views/Budgets/ConfirmedBudgetsReport";
+export { SelectFurnitures } from "./views/Budgets/SelectFurnitures";
 
 //CLIENTS
 export { Clients } from "./views/Clients/Clients";

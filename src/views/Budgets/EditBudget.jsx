@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { Grid, Oval } from "react-loader-spinner";
 import QuillEditor from "../../components/QuillEditor.jsx";
@@ -21,7 +21,114 @@ import {
   deleteBudgetImage,
   getSystemVariableByKey,
 } from "../../index.js";
-import { useLocation } from "react-router-dom";
+
+// ── Helper component: accordion for a single furniture item in edit mode ──────
+function MultiFurnitureEditAccordion({ item, index, fmtCurrency }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const furn = item.furniture || {};
+  const catName = furn.category?.name || item.category || "—";
+
+  return (
+    <div className="border border-gray-200 rounded-lg bg-white shadow-sm overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setCollapsed((c) => !c)}
+        className="w-full flex items-center justify-between px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors border-b border-gray-200"
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-lg font-semibold text-gray-800">
+            {index + 1}. {item.furniture_name}
+          </span>
+          {catName !== "—" && (
+            <span className="bg-emerald-100 text-emerald-800 text-xs font-medium px-2 py-0.5 rounded">
+              {catName}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-semibold text-emerald-700">
+            Subtotal: {fmtCurrency(item.subtotal_price)}
+          </span>
+          <svg
+            className={`w-5 h-5 text-gray-500 transition-transform ${collapsed ? "" : "rotate-180"}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </button>
+
+      {!collapsed && (
+        <div className="p-6">
+          {/* Dimensions */}
+          <div className="flex gap-8 bg-emerald-600 text-white w-fit py-1 px-4 rounded mb-4">
+            {furn.height && <p><span className="font-bold">Alto:</span> {furn.height}</p>}
+            {furn.length && <p><span className="font-bold">Largo:</span> {furn.length}</p>}
+            {furn.width && <p><span className="font-bold">Prof.:</span> {furn.width}</p>}
+          </div>
+
+          {/* Descripción del mueble */}
+          {item.comments ? (
+            <div className="mb-4">
+              <p className="font-semibold text-sm text-gray-600 mb-1">Descripción:</p>
+              <div
+                className="text-sm text-gray-700 border border-gray-200 rounded p-3 bg-gray-50"
+                dangerouslySetInnerHTML={{ __html: item.comments }}
+              />
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400 italic mb-4">Sin descripción para este mueble.</p>
+          )}
+
+          {/* Acabados resumen */}
+          <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+            {item.veneer?.veneerM2 > 0 && (
+              <p><span className="font-bold">Enchapado:</span> {item.veneer.veneerM2} m² — {fmtCurrency(item.veneer.veneerPrice)}</p>
+            )}
+            {item.lacquered?.lacqueredM2 > 0 && (
+              <p><span className="font-bold">Laqueado:</span> {item.lacquered.lacqueredM2} m² — {fmtCurrency(item.lacquered.lacqueredPrice)}</p>
+            )}
+            {item.edge_lacquered?.edgeLaqueredM2 > 0 && (
+              <p><span className="font-bold">Filo laqueado:</span> {item.edge_lacquered.edgeLaqueredM2} m² — {fmtCurrency(item.edge_lacquered.edgeLaqueredPrice)}</p>
+            )}
+            {item.edge_no_lacquered?.edgeM2 > 0 && (
+              <p><span className="font-bold">Filo sin laquear:</span> {item.edge_no_lacquered.edgeM2} m² — {fmtCurrency(item.edge_no_lacquered.edgePrice)}</p>
+            )}
+            {item.adjustment_price > 0 && (
+              <p><span className="font-bold">Ajuste ({item.adjustment_reason}):</span> {fmtCurrency(item.adjustment_price)}</p>
+            )}
+          </div>
+
+          {/* Materials */}
+          {item.materials?.length > 0 && (
+            <div className="mt-4">
+              <p className="font-semibold text-sm text-gray-700 mb-1">Placas:</p>
+              <ul className="text-sm text-gray-600 list-disc list-inside">
+                {item.materials.map((m, i) => (
+                  <li key={i}>{m.table} × {m.qty} — {fmtCurrency(m.price * m.qty)}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Modules */}
+          {item.show_modules && furn.modules_furniture?.length > 0 && (
+            <div className="mt-4">
+              <p className="font-semibold text-sm text-gray-700 mb-1">Módulos:</p>
+              <ul className="text-sm text-gray-600 list-disc list-inside">
+                {furn.modules_furniture.map((mod, i) => (
+                  <li key={i}>{mod.name} — {mod.height}×{mod.length}×{mod.width}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function EditBudget() {
   const { budgetId } = useParams();
@@ -1357,6 +1464,201 @@ function EditBudget() {
       minimumFractionDigits: 2,
     }).format(value);
   };
+
+  // ── MULTI-FURNITURE EDIT RENDER ───────────────────────────────────────────
+  const isMultiBudget =
+    Array.isArray(budget.furniture_items) && budget.furniture_items.length > 0;
+
+  if (isMultiBudget) {
+    const fmtCurrency = (v) =>
+      new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency: "ARS",
+        minimumFractionDigits: 2,
+      }).format(v ?? 0);
+
+    return (
+      <>
+        <div className="pb-8 px-16 bg-gray-100 min-h-screen">
+          <div className="shadow-sm flex gap-4 justify-between items-center mb-8 bg-gray-800 p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500">
+            <h1 className="text-4xl font-semibold text-white">
+              Editar Presupuesto N°{budget.budget_number}
+            </h1>
+            <div className="flex items-center gap-4">
+              <Link
+                to={backUrl}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center align-middle items-center gap-2"
+              >
+                <img src="./../icon_back.svg" alt="Volver" className="w-[18px]" />
+                <p className="m-0 leading-loose">Volver</p>
+              </Link>
+              <Link
+                to="/"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center align-middle items-center gap-2"
+              >
+                <img src="./../icon_home.svg" alt="Inicio" className="w-[20px]" />
+                <p className="m-0 leading-loose">Ir a Inicio</p>
+              </Link>
+            </div>
+          </div>
+
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.target.tagName !== "TEXTAREA")
+                e.preventDefault();
+            }}
+            className="flex flex-col gap-6"
+          >
+            {/* Acordeones de muebles (info de cada uno) */}
+            <div className="flex flex-col gap-4">
+              {budget.furniture_items.map((item, idx) => (
+                <MultiFurnitureEditAccordion
+                  key={idx}
+                  item={item}
+                  index={idx}
+                  fmtCurrency={fmtCurrency}
+                  register={register}
+                />
+              ))}
+            </div>
+
+            {/* Campos compartidos */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col gap-6">
+              <h2 className="text-2xl font-semibold border-b border-emerald-500 pb-3">
+                Datos del Presupuesto
+              </h2>
+
+              {/* Comentarios compartidos */}
+              <div className="w-full">
+                <label className="block font-semibold mb-2">Comentarios</label>
+                <QuillEditor
+                  value={clientCommentValue}
+                  onChange={(val) => {
+                    setClientCommentValue(val);
+                    setValue("client_comment", val, { shouldValidate: true });
+                  }}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  placeholder="Comentarios para el cliente..."
+                />
+                <input type="hidden" {...register("client_comment")} />
+              </div>
+
+              {/* Fecha de entrega */}
+              <div className="flex flex-col w-1/3 gap-2">
+                <label className="font-semibold">Fecha de entrega</label>
+                <input
+                  type="text"
+                  className="border border-gray-300 rounded-md p-2"
+                  {...register("deliver_date")}
+                />
+              </div>
+
+              {/* Imágenes adjuntas */}
+              {orderedImages.length > 0 && (
+                <div>
+                  <label className="font-semibold mb-2 block">Imágenes adjuntas</label>
+                  <div className="flex flex-wrap gap-3">
+                    {orderedImages.map((img, i) => (
+                      <div key={img._id || i} className="relative">
+                        <img
+                          src={img.url}
+                          alt={img.original_name || `img-${i}`}
+                          className="w-24 h-24 object-cover rounded border"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Colocación */}
+              <div className="flex flex-col gap-3 w-1/2">
+                <label className="font-semibold">Colocación</label>
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="true"
+                      {...register("placement")}
+                    />
+                    Sí incluye colocación
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="false"
+                      {...register("placement")}
+                    />
+                    No incluye colocación
+                  </label>
+                </div>
+              </div>
+
+              {/* Envío */}
+              <div className="flex flex-col gap-3 w-1/2">
+                <label className="font-semibold">Envío</label>
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="true"
+                      {...register("shipment")}
+                    />
+                    Sí incluye envío
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="false"
+                      {...register("shipment")}
+                    />
+                    No incluye envío
+                  </label>
+                </div>
+              </div>
+
+              {/* Total */}
+              <div className="bg-gray-50 border rounded-lg p-4">
+                <p className="text-xl font-bold text-gray-900">
+                  Total del presupuesto: {fmtCurrency(budget.total_price)}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  El total se calculó al crear el presupuesto. Para recalcular,
+                  creá un nuevo presupuesto.
+                </p>
+              </div>
+
+              {/* Submit */}
+              {!submitLoader ? (
+                <button
+                  type="submit"
+                  className="bg-orange text-white font-medium py-2 px-6 rounded-lg shadow-md transition duration-200 w-full"
+                >
+                  Guardar cambios
+                </button>
+              ) : (
+                <div className="flex justify-center items-center py-4">
+                  <Oval
+                    visible
+                    height="30"
+                    width="30"
+                    color="#fff"
+                    secondaryColor="#fff"
+                    strokeWidth="6"
+                    ariaLabel="oval-loading"
+                    wrapperClass="bg-lightblue rounded-md px-2 py-1"
+                  />
+                </div>
+              )}
+            </div>
+          </form>
+        </div>
+      </>
+    );
+  }
+  // ── END MULTI-FURNITURE EDIT RENDER ──────────────────────────────────────
 
   return (
     <>

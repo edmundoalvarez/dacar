@@ -537,9 +537,9 @@ function Budgets() {
 
   return (
     <>
-      <div className="pb-8 px-16 bg-gray-100 min-h-screen">
-        <div className="flex gap-4 justify-between items-center mb-8 bg-gray-800 p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
-          <h1 className="text-4xl font-semibold text-white">Presupuestos</h1>
+      <div className="pb-8 px-4 sm:px-8 lg:px-16 bg-gray-100 min-h-screen">
+        <div className="flex flex-wrap gap-4 justify-between items-center mb-8 bg-gray-800 p-4 sm:p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white">Presupuestos</h1>
 
           {/* Búsqueda */}
           <div className="flex items-center gap-4">
@@ -548,7 +548,7 @@ function Budgets() {
               value={searchTerm}
               onChange={handleChange}
               placeholder="Buscar por nombre de cliente"
-              className="border border-gray-300 p-2 rounded-lg ml-auto shadow-md w-[400px]"
+              className="border border-gray-300 p-2 rounded-lg ml-auto shadow-md w-full sm:w-[300px] lg:w-[400px]"
             />
             <Oval
               visible={searchLoader}
@@ -561,7 +561,18 @@ function Budgets() {
             />
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Link
+              to="/seleccionar-muebles"
+              className="bg-emerald-700 hover:bg-emerald-600 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center gap-2 items-center"
+            >
+              <img
+                src="./icon_budgets.svg"
+                alt="Crear Presupuesto"
+                className="w-[20px]"
+              />
+              <p className="m-0 leading-loose">Crear Presupuesto</p>
+            </Link>
             <Link
               to="/"
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center gap-2"
@@ -583,9 +594,9 @@ function Budgets() {
         )}
 
         <div className="overflow-x-auto mt-4">
-          <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white">
+          <div className="overflow-x-auto overflow-y-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white max-h-[70vh]">
             <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-gray-700">
+              <thead className="bg-gray-700 sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
                     Número
@@ -623,76 +634,76 @@ function Budgets() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {budget.furniture_name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex justify-center align-middle gap-2">
+                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
+                      <div className="flex justify-center align-middle gap-1.5 px-1">
                         <Link
-                          className="text-white bg-blue-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          className="text-white bg-blue-500 rounded-md px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 shrink-0"
                           to={`/ver-presupuestos/${budget._id}?from=general`}
                         >
                           <img
                             src="./../icon_search.svg"
                             alt="Ver"
-                            className="w-[20px]"
+                            className="w-[16px] shrink-0"
                           />
-                          <p className="m-0 leading-loose">Ver</p>
+                          <p className="m-0 leading-loose text-xs sm:text-sm">Ver</p>
                         </Link>
 
                         <Link
                           to={`/editar-presupuestos/${budget._id}?from=general`}
-                          className="text-white bg-orange rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          className="text-white bg-orange rounded-md px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 shrink-0"
                         >
                           <img
                             src="./../icon_edit.svg"
                             alt="Editar"
-                            className="w-[20px]"
+                            className="w-[16px] shrink-0"
                           />
-                          <p className="m-0 leading-loose">Editar</p>
+                          <p className="m-0 leading-loose text-xs sm:text-sm">Editar</p>
                         </Link>
                         <button
                           onClick={() => handleOpenConfirmBudget(budget)}
-                          className="text-white bg-emerald-700 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          className="text-white bg-emerald-700 rounded-md px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 shrink-0"
                         >
                           <img
-                            src="./../icon_check.svg" // poné el ícono que tengas
+                            src="./../icon_check.svg"
                             alt="Confirmar"
-                            className="w-[16px]"
+                            className="w-[14px] shrink-0"
                           />
-                          <p className="m-0 leading-loose text-sm">Confirmar</p>
+                          <p className="m-0 leading-loose text-xs sm:text-sm">Confirmar</p>
                         </button>
 
                         <button
                           onClick={() => handleDeleteBudget(budget._id)}
-                          className="text-white bg-red-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          className="text-white bg-red-500 rounded-md px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 shrink-0"
                         >
                           <img
                             src="./../icon_delete.svg"
                             alt="Eliminar"
-                            className="w-[18px]"
+                            className="w-[15px] shrink-0"
                           />
-                          <p className="m-0 leading-loose">Eliminar</p>
+                          <p className="m-0 leading-loose text-xs sm:text-sm">Eliminar</p>
                         </button>
                         {/* BOTÓN HISTORIAL */}
                         <button
                           onClick={() => handleOpenHistory(budget)}
-                          className="text-white bg-gray-900 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          className="text-white bg-gray-900 rounded-md px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 shrink-0"
                         >
                           <img
                             src="./../icon_history.svg"
                             alt="Historial"
-                            className="w-[16px]"
+                            className="w-[14px] shrink-0"
                           />
-                          <p className="m-0 leading-loose text-sm">Historial</p>
+                          <p className="m-0 leading-loose text-xs sm:text-sm">Historial</p>
                         </button>
                         <button
                           onClick={() => handleDownloadMaterialOrder(budget)}
-                          className="text-white bg-gray-700 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          className="text-white bg-gray-700 rounded-md px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 shrink-0"
                         >
                           <FontAwesomeIcon
                             icon={faDownload}
-                            className="w-[14px]"
+                            className="w-[12px] shrink-0"
                             size="sm"
                           />
-                          <p className="m-0 leading-loose text-sm">
+                          <p className="m-0 leading-loose text-xs sm:text-sm">
                             O. Pedido Material
                           </p>
                         </button>

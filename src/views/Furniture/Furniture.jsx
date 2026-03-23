@@ -450,9 +450,9 @@ function Furniture() {
 
   return (
     <>
-      <div className="pb-8 px-16 bg-gray-100 min-h-screen">
-        <div className="flex gap-4 justify-between items-center mb-8 bg-gray-800 p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
-          <h1 className="text-4xl font-semibold text-white">Muebles</h1>
+      <div className="pb-8 px-4 sm:px-8 lg:px-16 bg-gray-100 min-h-screen">
+        <div className="flex flex-wrap gap-4 justify-between items-center mb-8 bg-gray-800 p-4 sm:p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white">Muebles</h1>
           {/* Campo de búsqueda */}
           <div className="flex items-center gap-4">
             <input
@@ -460,7 +460,7 @@ function Furniture() {
               value={searchTerm}
               onChange={handleChange}
               placeholder="Buscar por nombre"
-              className="border border-gray-300 p-2 rounded-lg ml-auto shadow-md w-[400px]"
+              className="border border-gray-300 p-2 rounded-lg ml-auto shadow-md w-full sm:w-[300px] lg:w-[400px]"
             />
 
             <Oval
@@ -488,6 +488,17 @@ function Furniture() {
               <p className="m-0 leading-loose">Volver al Inicio</p>
             </Link>
             <Link
+              to="/seleccionar-muebles"
+              className="bg-emerald-700 hover:bg-emerald-600 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center gap-2 items-center"
+            >
+              <img
+                src="./icon_budgets.svg"
+                alt="Crear Presupuesto"
+                className="w-[20px]"
+              />
+              <p className="m-0 leading-loose">Crear Presupuesto</p>
+            </Link>
+            <Link
               to="/crear-mueble"
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center gap-2"
             >
@@ -506,9 +517,9 @@ function Furniture() {
           </div>
         )}
         <div className="overflow-x-auto mt-4">
-          <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white">
+          <div className="overflow-x-auto overflow-y-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white max-h-[70vh]">
             <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-gray-700">
+              <thead className="bg-gray-700 sticky top-0 z-10">
                 <tr>
                   <th
                     scope="col"
@@ -610,47 +621,47 @@ function Furniture() {
                     </td>
 
                     <td>
-                      <div className="flex flex-col gap-2 items-center py-8 w-7/12 m-auto">
-                        <div className="flex flex-row gap-2 w-full">
+                      <div className="flex flex-col gap-1.5 items-center py-4 sm:py-6 w-full px-2 sm:w-10/12 sm:m-auto">
+                        <div className="flex flex-row gap-1.5 w-full">
                           <Link
                             to={`/presupuestar-mueble/${furniture._id}`}
-                            className="w-full text-white bg-emerald-700 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-3"
+                            className="w-full text-white bg-emerald-700 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 sm:gap-3"
                           >
                             <img
                               src="./../icon_budgets.svg"
                               alt="Icono de budgets"
-                              className="w-[18px]"
+                              className="w-[14px] sm:w-[18px] shrink-0"
                             />
-                            <p className="m-0 leading-loose">Presupuestar</p>
+                            <p className="m-0 leading-loose text-xs sm:text-sm">Presupuestar</p>
                           </Link>
                         </div>
 
-                        <div className="flex flex-row gap-2 w-full">
+                        <div className="flex flex-row gap-1.5 w-full">
                           <Link
                             to={`/editar-modulos-mueble/${furniture._id}`}
-                            className="w-1/2 text-white bg-orange rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                            className="w-1/2 text-white bg-orange rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-2"
                           >
                             <img
                               src="./../icon_edit.svg"
                               alt="Icono editar mueble"
-                              className="w-[20px]"
+                              className="w-[13px] sm:w-[18px] shrink-0"
                             />
-                            <p className="m-0 leading-loose">Editar</p>
+                            <p className="m-0 leading-loose text-xs sm:text-sm">Editar</p>
                           </Link>
                           <button
                             onClick={() => handleDeleteFurniture(furniture._id)}
-                            className="w-1/2 text-white bg-red-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                            className="w-1/2 text-white bg-red-500 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-2"
                           >
                             <img
                               src="./../icon_delete.svg"
                               alt="Icono eliminar mueble"
-                              className="w-[18px]"
+                              className="w-[13px] sm:w-[16px] shrink-0"
                             />
-                            <p className="m-0 leading-loose">Eliminar</p>
+                            <p className="m-0 leading-loose text-xs sm:text-sm">Eliminar</p>
                           </button>
                         </div>
 
-                        <div className="flex flex-col gap-2 w-full">
+                        <div className="flex flex-col gap-1.5 w-full">
                           <button
                             onClick={() =>
                               handleDownloadPieces(
@@ -658,14 +669,14 @@ function Furniture() {
                                 furniture.name
                               )
                             }
-                            className="w-full text-white bg-sky-800  rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                            className="w-full text-white bg-sky-800 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 sm:gap-2"
                           >
                             <FontAwesomeIcon
                               icon={faDownload}
-                              className="w-[18px]"
-                              size="lg"
+                              className="w-[13px] sm:w-[16px] shrink-0"
+                              size="sm"
                             />
-                            <p className="m-0 leading-loose">Despiece</p>
+                            <p className="m-0 leading-loose text-xs sm:text-sm">Despiece</p>
                           </button>
                           <button
                             onClick={() =>
@@ -674,29 +685,29 @@ function Furniture() {
                                 furniture.name
                               )
                             }
-                            className="w-FULL text-white bg-gray-700  rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                            className="w-full text-white bg-gray-700 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 sm:gap-2"
                           >
                             <FontAwesomeIcon
                               icon={faDownload}
-                              className="mr-2"
-                              size="lg"
+                              className="w-[13px] sm:w-[16px] shrink-0"
+                              size="sm"
                             />
-                            <p className="m-0 leading-loose">Piezas Sueltas</p>
+                            <p className="m-0 leading-loose text-xs sm:text-sm">Piezas Sueltas</p>
                           </button>
                         </div>
 
                         {/* NUEVO: botón Historial */}
-                        <div className="flex flex-row gap-2 w-full">
+                        <div className="flex flex-row gap-1.5 w-full">
                           <button
                             onClick={() => handleOpenHistory(furniture)}
-                            className="w-full text-white bg-gray-900 rounded-md px-3 py-0.5 flex flex-row justify-center items-center gap-2"
+                            className="w-full text-white bg-gray-900 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center items-center gap-1.5 sm:gap-2"
                           >
                             <img
                               src="./../icon_history.svg"
                               alt="Historial del mueble"
-                              className="w-[16px]"
+                              className="w-[13px] sm:w-[15px] shrink-0"
                             />
-                            <p className="m-0 leading-loose text-sm">
+                            <p className="m-0 leading-loose text-xs sm:text-sm">
                               Historial
                             </p>
                           </button>

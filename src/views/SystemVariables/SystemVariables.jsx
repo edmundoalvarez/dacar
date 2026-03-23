@@ -125,9 +125,9 @@ function SystemVariables() {
   }
 
   return (
-    <div className="pb-8 px-16 bg-gray-100 min-h-screen">
-      <div className="flex gap-4 justify-between items-center mb-8 bg-gray-800 p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
-        <h1 className="text-4xl font-semibold text-white">
+    <div className="pb-8 px-4 sm:px-8 lg:px-16 bg-gray-100 min-h-screen">
+      <div className="flex flex-wrap gap-4 justify-between items-center mb-8 bg-gray-800 p-4 sm:p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
+        <h1 className="text-2xl sm:text-4xl font-semibold text-white">
           Variables del sistema
         </h1>
       </div>
@@ -198,9 +198,9 @@ function SystemVariables() {
         </form>
       </div>
 
-      <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white">
+      <div className="overflow-x-auto overflow-y-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white max-h-[70vh]">
         <table className="min-w-full divide-y divide-gray-200 shadow-sm">
-          <thead className="bg-gray-700">
+          <thead className="bg-gray-700 sticky top-0 z-10">
             <tr>
               <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
                 Clave

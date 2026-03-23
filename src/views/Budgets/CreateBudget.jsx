@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { Grid, Oval } from "react-loader-spinner";
 import QuillEditor from "../../components/QuillEditor.jsx";
@@ -20,6 +20,7 @@ import {
   uploadBudgetImage,
   getSystemVariableByKey,
 } from "../../index.js";
+import { FurnitureBudgetSection } from "./FurnitureBudgetSection.jsx";
 
 const normalizeHtml = (html) => (typeof html === "string" ? html.trim() : "");
 
@@ -47,6 +48,157 @@ function CreateBudget() {
   } = useForm();
 
   const { idFurniture } = useParams();
+  const location = useLocation();
+
+  // ── Multi-furniture mode detection ─────────────────────────────────────────
+  const furnitureIds = location.state?.furnitureIds ?? null;
+  const isMulti = Array.isArray(furnitureIds) && furnitureIds.length > 1;
+
+  // Multi-furniture refs (one per furniture section)
+  const sectionRefs = useRef([]);
+
+  // Clients (declared here so multi useEffects below can use it in deps)
+  const [allClients, setAllClients] = useState([]);
+
+  // Multi-furniture state
+  const [multiSubtotals, setMultiSubtotals] = useState({});
+  const [multiTotalPrice, setMultiTotalPrice] = useState(0);
+  const [multiPlacementDays, setMultiPlacementDays] = useState(0);
+  const [multiPlacementPrice, setMultiPlacementPrice] = useState(0);
+  const [multiPlacementSubtotal, setMultiPlacementSubtotal] = useState(0);
+  const [multiShipmentPrice, setMultiShipmentPrice] = useState(0);
+  const [multiPlacement, setMultiPlacement] = useState("false");
+  const [multiShipment, setMultiShipment] = useState("false");
+  const [multiClientOption, setMultiClientOption] = useState("");
+  const [multiClientData, setMultiClientData] = useState(null);
+  const [multiSearchTerm, setMultiSearchTerm] = useState("");
+  const [multiFilteredClients, setMultiFilteredClients] = useState([]);
+  const [multiDeliverDate, setMultiDeliverDate] = useState("");
+  const [multiClientComment, setMultiClientComment] = useState("");
+  const [multiSubmitLoader, setMultiSubmitLoader] = useState(false);
+
+  const handleMultiSubtotalChange = useCallback((idx, value) => {
+    setMultiSubtotals((prev) => ({ ...prev, [idx]: value }));
+  }, []);
+
+  // Recalculate multi total
+  useEffect(() => {
+    if (!isMulti) return;
+    const furnitureSub = Object.values(multiSubtotals).reduce(
+      (a, b) => a + b,
+      0
+    );
+    const placeSub = Number(multiPlacementDays) * Number(multiPlacementPrice);
+    setMultiPlacementSubtotal(placeSub);
+    setMultiTotalPrice(furnitureSub + placeSub + Number(multiShipmentPrice));
+  }, [
+    multiSubtotals,
+    multiPlacementDays,
+    multiPlacementPrice,
+    multiShipmentPrice,
+    isMulti,
+  ]);
+
+  // Multi client search (reuses allClients state loaded below)
+  useEffect(() => {
+    if (!isMulti) return;
+    if (multiSearchTerm === "") {
+      setMultiFilteredClients([]);
+    } else {
+      setMultiFilteredClients(
+        allClients.filter((c) =>
+          `${c.lastname} ${c.name}`
+            .toLowerCase()
+            .includes(multiSearchTerm.toLowerCase())
+        )
+      );
+    }
+  }, [multiSearchTerm, allClients, isMulti]);
+
+  const handleMultiClientSelect = (client) => {
+    setMultiClientData(client);
+    setMultiSearchTerm(`${client.lastname} ${client.name}`);
+    setMultiFilteredClients([]);
+  };
+
+  const onSubmitMulti = async (e) => {
+    e.preventDefault();
+    setMultiSubmitLoader(true);
+    try {
+      // 1. Collect data from each section
+      const sectionsData = sectionRefs.current.map((r) => r?.collectData());
+
+      // 2. Resolve client
+      let clientData = multiClientData;
+      if (multiClientOption === "new") {
+        const formVals = getValues();
+        const res = await createClient(formVals);
+        clientData = res.data;
+      }
+      if (!clientData) {
+        alert("Seleccioná o cargá un cliente.");
+        setMultiSubmitLoader(false);
+        return;
+      }
+
+      // 3. Upload images if any
+      let clientAttachments = [];
+      if (selectedImages.length > 0) {
+        const uploadPromises = selectedImages.map((f) => uploadBudgetImage(f));
+        const results = await Promise.all(uploadPromises);
+        clientAttachments = results.map((r) => ({
+          url: r.url,
+          original_name: r.original_name,
+          mime_type: r.mime_type,
+          size: r.size,
+          path: r.path,
+        }));
+      }
+
+      // 4. Get last budget number
+      const lastnumber = await getLastBudgetNum();
+
+      // 5. Build budget
+      const furnitureNames = sectionsData
+        .map((s) => s?.furniture_name)
+        .filter(Boolean)
+        .join(", ");
+
+      const budgetData = {
+        budget_number: lastnumber + 1,
+        furniture_name: furnitureNames,
+        furniture: sectionsData.map((s) => s?.furniture).filter(Boolean),
+        materials: [],
+        furniture_items: sectionsData.filter(Boolean),
+        total_price: multiTotalPrice,
+        deliver_date: multiDeliverDate
+          ? (() => {
+              const [y, m, d] = multiDeliverDate.split("-");
+              return `${parseInt(d)}/${parseInt(m)}/${y}`;
+            })()
+          : "",
+        client_comment: multiClientComment,
+        client_attachments: clientAttachments,
+        client: clientData,
+        placement: multiPlacement === "true",
+        placement_days: String(multiPlacementDays),
+        placement_price: Number(multiPlacementPrice),
+        shipment: multiShipment === "true",
+        shipment_price: Number(multiShipmentPrice),
+        calculation_coefficient: calculationCoefficient,
+        status: "true",
+      };
+
+      await createBudget(budgetData);
+      navigate("/ver-presupuestos");
+    } catch (err) {
+      console.error("Error creando presupuesto multi:", err);
+    } finally {
+      setMultiSubmitLoader(false);
+    }
+  };
+  // ── End multi-furniture state ───────────────────────────────────────────────
+
   const [submitLoader, setSubmitLoader] = useState(false);
   const [singleFurniture, setSingleFurniture] = useState(null);
   const [countMaterial, setCountMaterial] = useState(0);
@@ -65,7 +217,6 @@ function CreateBudget() {
   const [totalLacqueredEdgeLength, setTotalLacqueredEdgeLength] = useState(0);
   const [totalPolishedEdgeLength, setTotalPolishedEdgeLength] = useState(0);
   const [consolidatedSupplies, setConsolidatedSupplies] = useState([]);
-  const [allClients, setAllClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredClients, setFilteredClients] = useState([]);
   const [services, setServices] = useState([]);
@@ -308,12 +459,15 @@ function CreateBudget() {
   );
 
   useEffect(() => {
-    getFurnituresToSet();
+    // In multi mode, skip single-furniture fetch but load shared catalog data
+    if (!isMulti) {
+      getFurnituresToSet();
+    }
     getAllTablesToSet();
     getAllEdgesToSet();
     getAllVeneerToSet();
     getAllServicesToSet();
-  }, [idFurniture]);
+  }, [idFurniture, isMulti]);
 
   //filtro de clientes
   useEffect(() => {
@@ -990,6 +1144,389 @@ function CreateBudget() {
       minimumFractionDigits: 2,
     }).format(value);
   };
+
+  // ── MULTI-FURNITURE RENDER ─────────────────────────────────────────────────
+  if (isMulti) {
+    const fmtCurrency = (v) =>
+      new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency: "ARS",
+        minimumFractionDigits: 2,
+      }).format(v ?? 0);
+
+    return (
+      <>
+        <div className="pb-8 px-16 bg-gray-100 min-h-screen">
+          {/* Header */}
+          <div className="shadow-sm flex gap-4 justify-between items-center mb-8 bg-gray-800 p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500">
+            <h1 className="text-4xl font-semibold text-white">
+              Presupuestar {furnitureIds.length} muebles
+            </h1>
+            <div className="flex items-center gap-4">
+              <Link
+                to="/seleccionar-muebles"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center align-middle items-center gap-2"
+              >
+                <img src="./../icon_back.svg" alt="Volver" className="w-[18px]" />
+                <p className="m-0 leading-loose">Volver a selección</p>
+              </Link>
+              <Link
+                to="/"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center align-middle items-center gap-2"
+              >
+                <img src="./../icon_home.svg" alt="Inicio" className="w-[20px]" />
+                <p className="m-0 leading-loose">Ir a Inicio</p>
+              </Link>
+            </div>
+          </div>
+
+          <form
+            onSubmit={onSubmitMulti}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.target.tagName !== "TEXTAREA")
+                e.preventDefault();
+            }}
+            className="flex flex-col gap-6 max-w-full text-gray-700"
+          >
+            {/* Coeficiente compartido */}
+            <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="flex flex-row gap-4 items-center">
+                <div className="flex flex-col w-48">
+                  <label className="font-semibold text-gray-700 mb-1">
+                    Coeficiente de cálculo
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="border border-gray-300 rounded-md p-2"
+                    value={coefficientInput}
+                    onChange={(e) => {
+                      let raw = e.target.value.replace(",", ".");
+                      raw = raw.replace(/[^0-9.]/g, "");
+                      const parts = raw.split(".");
+                      if (parts.length > 2)
+                        raw = parts[0] + "." + parts.slice(1).join("");
+                      setCoefficientInput(raw);
+                      const val = parseFloat(raw);
+                      if (!isNaN(val) && val >= 0) setCalculationCoefficient(val);
+                    }}
+                    onBlur={(e) => {
+                      const val = parseFloat(e.target.value.replace(",", "."));
+                      if (isNaN(val) || val < 0) {
+                        setCalculationCoefficient(3.8);
+                        setCoefficientInput("3.8");
+                      }
+                    }}
+                  />
+                </div>
+                <p className="text-sm text-gray-500">
+                  Se aplica a todos los muebles de este presupuesto.
+                </p>
+              </div>
+            </div>
+
+            {/* Acordeones por mueble */}
+            <div className="flex flex-col gap-4">
+              {furnitureIds.map((fId, idx) => (
+                <FurnitureBudgetSection
+                  key={fId}
+                  ref={(el) => (sectionRefs.current[idx] = el)}
+                  furnitureId={fId}
+                  index={idx}
+                  services={services}
+                  edges={edges}
+                  tables={tables}
+                  veneer={veneer}
+                  calculationCoefficient={calculationCoefficient}
+                  onSubtotalChange={handleMultiSubtotalChange}
+                  selectStyles={selectStyles}
+                  quillModules={quillModules}
+                  quillFormats={quillFormats}
+                />
+              ))}
+            </div>
+
+            {/* ── Sección compartida ── */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col gap-8">
+              <h2 className="text-2xl font-semibold border-b border-emerald-500 pb-3">
+                Datos del Presupuesto
+              </h2>
+
+              {/* Cliente */}
+              <div className="flex flex-col gap-3 w-1/2">
+                <label className="font-semibold text-lg text-emerald-700 uppercase">
+                  ¿Cargar cliente o elegir uno existente?
+                </label>
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="new"
+                      checked={multiClientOption === "new"}
+                      onChange={() => {
+                        setMultiClientOption("new");
+                        setMultiClientData(null);
+                        if (allClients.length === 0) getAllClientsToSet();
+                      }}
+                    />
+                    Cargar cliente
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="existing"
+                      checked={multiClientOption === "existing"}
+                      onChange={() => {
+                        setMultiClientOption("existing");
+                        if (allClients.length === 0) getAllClientsToSet();
+                      }}
+                    />
+                    Elegir uno existente
+                  </label>
+                </div>
+
+                {multiClientOption === "existing" && (
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      placeholder="Buscar cliente por nombre"
+                      value={multiSearchTerm}
+                      onChange={(e) => setMultiSearchTerm(e.target.value)}
+                      className="border border-emerald-600 rounded-md p-2 w-full"
+                    />
+                    {multiFilteredClients.length > 0 && (
+                      <ul className="absolute z-20 border bg-white w-full max-h-40 overflow-y-auto shadow-lg">
+                        {multiFilteredClients.map((c) => (
+                          <li
+                            key={c._id}
+                            onClick={() => handleMultiClientSelect(c)}
+                            className="cursor-pointer p-2 hover:bg-gray-200"
+                          >
+                            {c.lastname} {c.name} - DNI: {c.dni}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {multiClientData && (
+                      <p className="text-sm text-emerald-700 mt-1">
+                        Cliente seleccionado: {multiClientData.lastname}{" "}
+                        {multiClientData.name}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {multiClientOption === "new" && (
+                  <FormCreateClient register={register} errors={errors} />
+                )}
+              </div>
+
+              {/* Comentarios (para el cliente - compartido) */}
+              <div className="w-full">
+                <label className="block font-semibold mb-2">Comentarios</label>
+                <QuillEditor
+                  value={multiClientComment}
+                  onChange={setMultiClientComment}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  placeholder="Comentarios para el cliente..."
+                />
+              </div>
+
+              {/* Fecha de entrega */}
+              <div className="flex flex-col w-1/3 gap-2">
+                <label className="font-semibold">Fecha de entrega</label>
+                <input
+                  type="date"
+                  value={multiDeliverDate}
+                  onChange={(e) => setMultiDeliverDate(e.target.value)}
+                  className="border border-gray-300 rounded-md p-2"
+                />
+              </div>
+
+              {/* Imágenes */}
+              <div className="flex flex-col gap-3">
+                <label className="font-semibold">Imágenes adjuntas</label>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="border border-gray-300 rounded-md p-2 w-1/2"
+                />
+                {imagePreviews.length > 0 && (
+                  <div className="flex flex-wrap gap-3">
+                    {imagePreviews.map((preview, i) => (
+                      <div key={i} className="relative">
+                        <img
+                          src={preview}
+                          alt={`Preview ${i + 1}`}
+                          className="w-24 h-24 object-cover rounded border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(i)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Colocación */}
+              <div className="flex flex-col gap-3 w-1/2">
+                <label className="font-semibold">Colocación</label>
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="true"
+                      checked={multiPlacement === "true"}
+                      onChange={() => setMultiPlacement("true")}
+                    />
+                    Sí incluye colocación
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="false"
+                      checked={multiPlacement === "false"}
+                      onChange={() => setMultiPlacement("false")}
+                    />
+                    No incluye colocación
+                  </label>
+                </div>
+                {multiPlacement === "true" && (
+                  <div className="flex gap-4">
+                    <div className="flex flex-col gap-2 w-1/2">
+                      <label>Días de colocación</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={multiPlacementDays}
+                        onChange={(e) =>
+                          setMultiPlacementDays(e.target.value)
+                        }
+                        className="border border-gray-300 rounded-md p-2"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2 w-1/2">
+                      <label>Precio por día</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={multiPlacementPrice}
+                        onChange={(e) =>
+                          setMultiPlacementPrice(e.target.value)
+                        }
+                        className="border border-gray-300 rounded-md p-2"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Envío */}
+              <div className="flex flex-col gap-3 w-1/2">
+                <label className="font-semibold">Envío</label>
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="true"
+                      checked={multiShipment === "true"}
+                      onChange={() => setMultiShipment("true")}
+                    />
+                    Sí incluye envío
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="false"
+                      checked={multiShipment === "false"}
+                      onChange={() => setMultiShipment("false")}
+                    />
+                    No incluye envío
+                  </label>
+                </div>
+                {multiShipment === "true" && (
+                  <div className="flex flex-col gap-2 w-1/2">
+                    <label>Precio de envío</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={multiShipmentPrice}
+                      onChange={(e) => setMultiShipmentPrice(e.target.value)}
+                      className="border border-gray-300 rounded-md p-2"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Total */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold mb-2 text-gray-800">
+                  Resumen del presupuesto
+                </h3>
+                {Object.entries(multiSubtotals).map(([idx, sub]) => (
+                  <p key={idx} className="text-sm text-gray-600">
+                    Mueble {Number(idx) + 1}:{" "}
+                    <span className="font-medium">{fmtCurrency(sub)}</span>
+                  </p>
+                ))}
+                {multiPlacement === "true" && multiPlacementSubtotal > 0 && (
+                  <p className="text-sm text-gray-600">
+                    Colocación:{" "}
+                    <span className="font-medium">
+                      {fmtCurrency(multiPlacementSubtotal)}
+                    </span>
+                  </p>
+                )}
+                {multiShipment === "true" && Number(multiShipmentPrice) > 0 && (
+                  <p className="text-sm text-gray-600">
+                    Envío:{" "}
+                    <span className="font-medium">
+                      {fmtCurrency(Number(multiShipmentPrice))}
+                    </span>
+                  </p>
+                )}
+                <p className="text-xl font-bold text-gray-900 mt-2 border-t pt-2">
+                  Total: {fmtCurrency(multiTotalPrice)}
+                </p>
+              </div>
+
+              {/* Submit */}
+              {!multiSubmitLoader ? (
+                <button
+                  type="submit"
+                  className="bg-orange text-white font-medium py-2 px-6 rounded-lg shadow-md transition duration-200 w-full"
+                >
+                  Generar presupuesto
+                </button>
+              ) : (
+                <div className="flex justify-center items-center py-4">
+                  <Oval
+                    visible
+                    height="30"
+                    width="30"
+                    color="#fff"
+                    secondaryColor="#fff"
+                    strokeWidth="6"
+                    ariaLabel="oval-loading"
+                    wrapperClass="bg-lightblue rounded-md px-2 py-1"
+                  />
+                </div>
+              )}
+            </div>
+          </form>
+        </div>
+      </>
+    );
+  }
+  // ── END MULTI-FURNITURE RENDER ─────────────────────────────────────────────
 
   if (!singleFurniture)
     return (
