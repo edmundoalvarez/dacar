@@ -34,6 +34,9 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
     selectStyles,
     quillModules,
     quillFormats,
+    isOpen,
+    onToggle,
+    initialValues,
   },
   ref
 ) {
@@ -96,8 +99,8 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
   // ── show modules ────────────────────────────────────────────────────────────
   const [showModules, setShowModules] = useState(false);
 
-  // ── accordion ───────────────────────────────────────────────────────────────
-  const [collapsed, setCollapsed] = useState(true);
+  // ── show despiece ────────────────────────────────────────────────────────────
+  const [showDespiece, setShowDespiece] = useState(false);
 
   // ── subtotal ────────────────────────────────────────────────────────────────
   const [subtotalPrice, setSubtotalPrice] = useState(0);
@@ -149,6 +152,18 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
 
   // ── load furniture data ─────────────────────────────────────────────────────
   useEffect(() => {
+    if (!furnitureId) {
+      // En modo edición sin ID válido, usar datos guardados en initialValues
+      if (initialValues?.furniture) {
+        setFurnitureData(
+          typeof initialValues.furniture === "object"
+            ? initialValues.furniture
+            : null
+        );
+      }
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     getFurnitureWithBudgetCalcs(furnitureId)
       .then((res) => {
@@ -170,6 +185,81 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [furnitureId]);
+
+  // ── pre-populate from initialValues (edit mode) ─────────────────────────────
+  useEffect(() => {
+    if (!initialValues || loading) return;
+
+    // Filo laqueado
+    const thickness = initialValues.edge_lacquered?.edgeLaqueredThickness;
+    if (Number(thickness) > 0) {
+      setEdgeThickness(String(thickness));
+      const m2 = Number(((totalLacqueredEdgeLength * thickness) / 1000).toFixed(2));
+      setMaterialEdgeLaquered(thickness);
+      setEdgeLaqueredM2(m2);
+      setEdgeLaqueredPrice((laqueadoService?.price ?? 0) * m2);
+    }
+
+    // Filo lustrado
+    const thicknessP = initialValues.edge_polished?.edgePolishedThickness;
+    if (Number(thicknessP) > 0) {
+      setEdgePolishedThickness(String(thicknessP));
+      const m2p = Number(((totalPolishedEdgeLength * thicknessP) / 1000).toFixed(2));
+      setMaterialEdgePolished(thicknessP);
+      setEdgePolishedM2(m2p);
+      setEdgePolishedPrice((lustreService?.price ?? 0) * m2p);
+    }
+
+    // Filo sin laquear
+    const edgeSel = initialValues.edge_no_lacquered?.edgeSelect;
+    if (edgeSel) {
+      const selected = edges.find((e) => e._id === edgeSel);
+      const edgeP = selected ? selected.price : 1;
+      setEdgeSelectValue(edgeSel);
+      setMaterialEdge(edgeP);
+      const m2e = Number((totalEdgeLength / 100).toFixed(2));
+      setEdgeM2(m2e);
+      setEdgePrice(
+        Math.round(m2e * edgeP * calculationCoefficient + (filoService?.price ?? 0) * m2e)
+      );
+    }
+
+    // Chapa
+    if (initialValues.chapa?.veneerSelect) setVeneerSelectValue(initialValues.chapa.veneerSelect);
+    if (initialValues.chapa?.chapa_price) setChapaPrice(String(initialValues.chapa.chapa_price));
+
+    // Materiales (placas)
+    if (Array.isArray(initialValues.materials) && initialValues.materials.length > 0) {
+      setCountMaterial(initialValues.materials.length);
+      const rows = {};
+      initialValues.materials.forEach((m, i) => {
+        rows[i] = { table: m.table ?? "", qty: m.qty ?? 0, price: m.price ?? 0 };
+      });
+      setMaterialRows(rows);
+    }
+
+    // Items extra
+    if (Array.isArray(initialValues.extra_items) && initialValues.extra_items.length > 0) {
+      setCountItemExtra(initialValues.extra_items.length);
+      const rows = {};
+      initialValues.extra_items.forEach((e, i) => {
+        rows[i] = { name: e.name ?? "", price: e.price ?? 0 };
+      });
+      setExtraRows(rows);
+    }
+
+    // Ajuste
+    if (initialValues.adjustment_reason) setAdjustmentReason(initialValues.adjustment_reason);
+    if (initialValues.adjustment_price) setAdjustmentPrice(String(initialValues.adjustment_price));
+
+    // Comentarios
+    if (initialValues.comments) setComments(initialValues.comments);
+
+    // Mostrar módulos
+    if (initialValues.show_modules) setShowModules(true);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   // ── edge handlers ───────────────────────────────────────────────────────────
   const handleEdgeLaqueredBlur = useCallback(
@@ -366,6 +456,18 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
 
   // ── expose data via ref ─────────────────────────────────────────────────────
   useImperativeHandle(ref, () => ({
+    collectErrors() {
+      const errs = [];
+      if (totalLacqueredEdgeLength > 0 && materialEdgeLaquered === 0)
+        errs.push("Falta indicar el grosor de placa para el filo laqueado");
+      if (totalPolishedEdgeLength > 0 && materialEdgePolished === 0)
+        errs.push("Falta indicar el grosor de placa para el filo lustrado");
+      if (totalEdgeLength > 0 && !edgeSelectValue)
+        errs.push("No se seleccionó el tipo de filo (sin laquear)");
+      if (totalVeneerPolished > 0 && !(Number(chapaPrice) > 0))
+        errs.push("Falta ingresar el precio de chapa para el lustrado");
+      return errs;
+    },
     collectData() {
       const materialsList = Object.values(materialRows).filter((m) => m.table);
       const extraItemsList = Object.values(extraRows).filter((e) => e.name);
@@ -497,7 +599,7 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
       {/* Accordion header */}
       <button
         type="button"
-        onClick={() => setCollapsed((c) => !c)}
+        onClick={onToggle}
         className="w-full flex items-center justify-between px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors border-b border-gray-200"
       >
         <div className="flex items-center gap-3">
@@ -520,7 +622,7 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
             Subtotal: {fmt(subtotalPrice)}
           </span>
           <svg
-            className={`w-5 h-5 text-gray-500 transition-transform ${collapsed ? "" : "rotate-180"}`}
+            className={`w-5 h-5 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -536,7 +638,7 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
       </button>
 
       {/* Accordion body */}
-      {!collapsed && (
+      {isOpen && (
         <div className="p-6 flex flex-col gap-6 text-gray-700">
           {/* ── Datos del mueble ── */}
           <div className="border-b border-b-emerald-600 pb-6">
@@ -701,14 +803,20 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
                     <div className="flex items-start gap-6">
                       <div className="flex-1">
                         <p className="font-bold">Filo total (sin laquear):</p>
-                        <p>
-                          {(totalEdgeLength / 100).toFixed(2)} m Precio:{" "}
-                          {fmt(
-                            (totalEdgeLength / 100) * materialEdge +
-                              (filoService?.price ?? 0) *
-                                (totalEdgeLength / 100)
-                          )}
-                        </p>
+                        {!edgeSelectValue ? (
+                          <p className="text-orange-500 text-sm">
+                            Seleccioná el tipo de filo
+                          </p>
+                        ) : (
+                          <p>
+                            {(totalEdgeLength / 100).toFixed(2)} m Precio:{" "}
+                            {fmt(
+                              (totalEdgeLength / 100) * materialEdge +
+                                (filoService?.price ?? 0) *
+                                  (totalEdgeLength / 100)
+                            )}
+                          </p>
+                        )}
                       </div>
                       <div className="flex flex-col w-72">
                         <label className="mb-1 text-sm font-medium text-gray-700">
@@ -776,6 +884,11 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
                         placeholder="0"
                         min="0"
                       />
+                      {!(Number(chapaPrice) > 0) && (
+                        <p className="text-orange-500 text-xs mt-1">
+                          Ingresá el precio de chapa
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -992,16 +1105,33 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
 
           {/* ── Despiece por módulo ── */}
           <div className="border border-gray-200 rounded-lg overflow-hidden">
-            {/* Header con checkbox */}
+            {/* Header con checkbox e toggle de visibilidad */}
             <div className="flex items-center justify-between px-4 py-3 bg-gray-700">
-              <p className="font-semibold text-white">
-                Despiece por módulo{" "}
-                {sortedModules.length > 0 && (
-                  <span className="text-gray-300 text-sm font-normal">
-                    ({sortedModules.length} módulos)
-                  </span>
-                )}
-              </p>
+              <div className="flex items-center gap-3">
+                <p className="font-semibold text-white">
+                  Despiece por módulo{" "}
+                  {sortedModules.length > 0 && (
+                    <span className="text-gray-300 text-sm font-normal">
+                      ({sortedModules.length} módulos)
+                    </span>
+                  )}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowDespiece((v) => !v)}
+                  className="flex items-center gap-1.5 text-xs bg-gray-600 hover:bg-gray-500 text-gray-200 px-2.5 py-1 rounded transition-colors"
+                >
+                  <svg
+                    className={`w-3.5 h-3.5 transition-transform ${showDespiece ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                  {showDespiece ? "Ocultar despiece" : "Mostrar despiece"}
+                </button>
+              </div>
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -1016,7 +1146,7 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
               </label>
             </div>
 
-            {sortedModules.length === 0 ? (
+            {showDespiece && (sortedModules.length === 0 ? (
               <p className="px-4 py-4 text-sm text-gray-500 italic bg-white">
                 Este mueble no tiene módulos cargados.
               </p>
@@ -1307,7 +1437,7 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
                   </div>
                 ))}
               </div>
-            )}
+            ))}
           </div>
         </div>
       )}

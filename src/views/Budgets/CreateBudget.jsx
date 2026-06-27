@@ -21,6 +21,7 @@ import {
   getSystemVariableByKey,
 } from "../../index.js";
 import { FurnitureBudgetSection } from "./FurnitureBudgetSection.jsx";
+import ValidationErrorModal from "../../components/ValidationErrorModal.jsx";
 
 const normalizeHtml = (html) => (typeof html === "string" ? html.trim() : "");
 
@@ -61,6 +62,8 @@ function CreateBudget() {
   const [allClients, setAllClients] = useState([]);
 
   // Multi-furniture state
+  const [openFurnitureIndex, setOpenFurnitureIndex] = useState(null);
+  const [validationErrors, setValidationErrors] = useState(null);
   const [multiSubtotals, setMultiSubtotals] = useState({});
   const [multiTotalPrice, setMultiTotalPrice] = useState(0);
   const [multiPlacementDays, setMultiPlacementDays] = useState(0);
@@ -124,6 +127,44 @@ function CreateBudget() {
   const onSubmitMulti = async (e) => {
     e.preventDefault();
     setMultiSubmitLoader(true);
+
+    // ── Validación previa ────────────────────────────────────────────────────
+    const globalErrors = [];
+
+    if (!multiClientOption) {
+      globalErrors.push("Indicá si vas a cargar un cliente nuevo o elegir uno existente");
+    } else if (multiClientOption === "existing" && !multiClientData) {
+      globalErrors.push("Seleccioná un cliente existente de la lista");
+    } else if (multiClientOption === "new") {
+      const formVals = getValues();
+      if (!formVals.client_name?.trim())
+        globalErrors.push("Ingresá el nombre del cliente");
+      if (!formVals.client_lastname?.trim())
+        globalErrors.push("Ingresá el apellido del cliente");
+    }
+
+    if (!multiPlacement) {
+      globalErrors.push("Indicá si el presupuesto incluye colocación");
+    }
+    if (!multiShipment) {
+      globalErrors.push("Indicá si el presupuesto incluye envío");
+    }
+
+    const furnitureErrors = sectionRefs.current.map((ref, idx) => {
+      const sectionErrs = ref?.collectErrors?.() ?? [];
+      const name = ref?.collectData?.()?.furniture_name ?? `Mueble ${idx + 1}`;
+      return { name, index: idx, errors: sectionErrs };
+    });
+
+    const hasFurnitureErrors = furnitureErrors.some((f) => f.errors.length > 0);
+
+    if (globalErrors.length > 0 || hasFurnitureErrors) {
+      setValidationErrors({ global: globalErrors, byFurniture: furnitureErrors });
+      setMultiSubmitLoader(false);
+      return;
+    }
+    // ── Fin validación ───────────────────────────────────────────────────────
+
     try {
       // 1. Collect data from each section
       const sectionsData = sectionRefs.current.map((r) => r?.collectData());
@@ -132,11 +173,24 @@ function CreateBudget() {
       let clientData = multiClientData;
       if (multiClientOption === "new") {
         const formVals = getValues();
-        const res = await createClient(formVals);
-        clientData = res.data;
+        try {
+          const res = await createClient(formVals);
+          clientData = res.data;
+        } catch (clientErr) {
+          console.error("Error creando cliente:", clientErr);
+          setValidationErrors({
+            global: ["No se pudo crear el cliente. Revisá los datos e intentá de nuevo."],
+            byFurniture: [],
+          });
+          setMultiSubmitLoader(false);
+          return;
+        }
       }
       if (!clientData) {
-        alert("Seleccioná o cargá un cliente.");
+        setValidationErrors({
+          global: ["No se pudo cargar el cliente. Seleccioná o cargá uno nuevamente."],
+          byFurniture: [],
+        });
         setMultiSubmitLoader(false);
         return;
       }
@@ -171,12 +225,7 @@ function CreateBudget() {
         materials: [],
         furniture_items: sectionsData.filter(Boolean),
         total_price: multiTotalPrice,
-        deliver_date: multiDeliverDate
-          ? (() => {
-              const [y, m, d] = multiDeliverDate.split("-");
-              return `${parseInt(d)}/${parseInt(m)}/${y}`;
-            })()
-          : "",
+        deliver_date: multiDeliverDate,
         client_comment: multiClientComment,
         client_attachments: clientAttachments,
         client: clientData,
@@ -193,6 +242,10 @@ function CreateBudget() {
       navigate("/ver-presupuestos");
     } catch (err) {
       console.error("Error creando presupuesto multi:", err);
+      setValidationErrors({
+        global: ["Error al guardar el presupuesto. Revisá tu conexión e intentá de nuevo."],
+        byFurniture: [],
+      });
     } finally {
       setMultiSubmitLoader(false);
     }
@@ -1134,6 +1187,11 @@ function CreateBudget() {
       navigate("/ver-presupuestos");
     } catch (error) {
       console.error("Error creando presupuesto:", error);
+      setSubmitLoader(false);
+      setValidationErrors({
+        global: ["Error al guardar el presupuesto. Revisá tu conexión e intentá de nuevo."],
+        byFurniture: [],
+      });
     }
   };
 
@@ -1242,6 +1300,10 @@ function CreateBudget() {
                   selectStyles={selectStyles}
                   quillModules={quillModules}
                   quillFormats={quillFormats}
+                  isOpen={openFurnitureIndex === idx}
+                  onToggle={() =>
+                    setOpenFurnitureIndex((prev) => (prev === idx ? null : idx))
+                  }
                 />
               ))}
             </div>
@@ -1337,9 +1399,10 @@ function CreateBudget() {
               <div className="flex flex-col w-1/3 gap-2">
                 <label className="font-semibold">Fecha de entrega</label>
                 <input
-                  type="date"
+                  type="text"
                   value={multiDeliverDate}
                   onChange={(e) => setMultiDeliverDate(e.target.value)}
+                  placeholder="Ej: 15/04/2025 o a confirmar"
                   className="border border-gray-300 rounded-md p-2"
                 />
               </div>
@@ -1523,6 +1586,14 @@ function CreateBudget() {
             </div>
           </form>
         </div>
+
+        {validationErrors && (
+          <ValidationErrorModal
+            errors={validationErrors}
+            onClose={() => setValidationErrors(null)}
+            onGoToFurniture={(idx) => setOpenFurnitureIndex(idx)}
+          />
+        )}
       </>
     );
   }
@@ -2841,6 +2912,13 @@ function CreateBudget() {
           sortedModules={sortedModules}
         ></ViewModulesFurniture>
       </div>
+
+      {validationErrors && (
+        <ValidationErrorModal
+          errors={validationErrors}
+          onClose={() => setValidationErrors(null)}
+        />
+      )}
     </>
   );
 }

@@ -21,6 +21,8 @@ import {
   deleteBudgetImage,
   getSystemVariableByKey,
 } from "../../index.js";
+import ValidationErrorModal from "../../components/ValidationErrorModal.jsx";
+import { FurnitureBudgetSection } from "./FurnitureBudgetSection.jsx";
 
 // ── Helper component: accordion for a single furniture item in edit mode ──────
 function MultiFurnitureEditAccordion({ item, index, fmtCurrency }) {
@@ -134,7 +136,18 @@ function EditBudget() {
   const { budgetId } = useParams();
   const [budget, setBudget] = useState({});
   const [submitLoader, setSubmitLoader] = useState(false);
+  const [validationErrors, setValidationErrors] = useState(null);
   const [loader, setLoader] = useState(true);
+
+  // ── Multi-furniture edit state ───────────────────────────────────────────
+  const multiSectionRefs = useRef([]);
+  const [openFurnitureIndex, setOpenFurnitureIndex] = useState(null);
+  const [multiSubtotals, setMultiSubtotals] = useState({});
+  const [multiTotalPrice, setMultiTotalPrice] = useState(0);
+  const handleMultiSubtotalChange = useCallback((idx, value) => {
+    setMultiSubtotals((prev) => ({ ...prev, [idx]: value }));
+  }, []);
+  // ── End multi-furniture edit state ───────────────────────────────────────
   const [singleFurniture, setSingleFurniture] = useState(null);
   //categoria mueble
   const [categories, setCategories] = useState([]);
@@ -354,57 +367,30 @@ function EditBudget() {
         setValue("category_name", furn?.category?.name || "");
 
         //FILO LAQUEADO
-        setValue(
-          "edgeLaqueredM2",
-          budgetData.data.edge_lacquered[0].edgeLaqueredM2,
-        );
-        // console.log(
-        //   " budgetData.data.edge_lacquered[0].edgeLaqueredPrice",
-        //   budgetData.data.edge_lacquered[0].edgeLaqueredPrice
-        // );
-        setValue(
-          "edgeLaqueredPrice",
-          budgetData.data.edge_lacquered[0].edgeLaqueredPrice,
-        );
+        const edgeLacquered = budgetData.data.edge_lacquered?.[0];
+        setValue("edgeLaqueredM2", edgeLacquered?.edgeLaqueredM2 ?? 0);
+        setValue("edgeLaqueredPrice", edgeLacquered?.edgeLaqueredPrice ?? 0);
         setTotalLacqueredEdgeLength(
-          Number(budgetData.data.edge_lacquered[0].totalLacqueredEdgeLength),
+          Number(edgeLacquered?.totalLacqueredEdgeLength ?? 0),
         );
-        setValue(
-          "edgeThickness",
-          budgetData.data.edge_lacquered[0].edgeLaqueredThickness,
-        );
-
-        setMaterialEdgeLaquered(
-          budgetData.data.edge_lacquered[0].edgeLaqueredThickness,
-        );
+        setValue("edgeThickness", edgeLacquered?.edgeLaqueredThickness ?? "");
+        setMaterialEdgeLaquered(edgeLacquered?.edgeLaqueredThickness ?? 0);
 
         //FILO LUSTRADO
-        setValue(
-          "edgePolishedM2",
-          budgetData.data.edge_polished[0].edgePolishedM2,
-        );
-
-        setValue(
-          "edgePolishedPrice",
-          budgetData.data.edge_polished[0].edgePolishedPrice,
-        );
-
+        const edgePolished = budgetData.data.edge_polished?.[0];
+        setValue("edgePolishedM2", edgePolished?.edgePolishedM2 ?? 0);
+        setValue("edgePolishedPrice", edgePolished?.edgePolishedPrice ?? 0);
         setTotalPolishedEdgeLength(
-          Number(budgetData.data.edge_polished[0].totalPolishedEdgeLength),
+          Number(edgePolished?.totalPolishedEdgeLength ?? 0),
         );
-        setValue(
-          "edgePolishedThickness",
-          budgetData.data.edge_polished[0].edgePolishedThickness,
-        );
-
-        setMaterialEdgePolished(
-          budgetData.data.edge_polished[0].edgePolishedThickness,
-        );
+        setValue("edgePolishedThickness", edgePolished?.edgePolishedThickness ?? "");
+        setMaterialEdgePolished(edgePolished?.edgePolishedThickness ?? 0);
 
         //FILO SIN NADA
-        setTotalEdgeLength(Number(budgetData.data.edge_no_lacquered[0].edgeM2));
-        setValue("edgeSelect", budgetData.data.edge_no_lacquered[0].edgeSelect);
-        setEdgeSelect(budgetData.data.edge_no_lacquered[0].edgeSelect);
+        const edgeNoLacquered = budgetData.data.edge_no_lacquered?.[0];
+        setTotalEdgeLength(Number(edgeNoLacquered?.edgeM2 ?? 0));
+        setValue("edgeSelect", edgeNoLacquered?.edgeSelect ?? "");
+        setEdgeSelect(edgeNoLacquered?.edgeSelect ?? "");
 
         //INSUMOS
         if (budgetData.data.supplies) {
@@ -1003,6 +989,33 @@ function EditBudget() {
     // console.log(shipmentPriceValue);
   }, [shipmentPriceValue]);
 
+  // ── Recalcular total en modo multi ────────────────────────────────────────
+  const multiPlacementWatch = watch("placement");
+  const multiPlacementDaysWatch = watch("placementDays", 0);
+  const multiPlacementPriceWatch = watch("placementPrice", 0);
+  const multiShipmentWatch = watch("shipment");
+  const multiShipmentPriceWatch = watch("shipmentPrice", 0);
+
+  useEffect(() => {
+    if (!Array.isArray(budget.furniture_items) || budget.furniture_items.length === 0) return;
+    const furnitureSub = Object.values(multiSubtotals).reduce((a, b) => a + b, 0);
+    const placeSub =
+      multiPlacementWatch === "true"
+        ? Number(multiPlacementDaysWatch) * Number(multiPlacementPriceWatch)
+        : 0;
+    const shipSub =
+      multiShipmentWatch === "true" ? Number(multiShipmentPriceWatch) : 0;
+    setMultiTotalPrice(furnitureSub + placeSub + shipSub);
+  }, [
+    budget.furniture_items,
+    multiSubtotals,
+    multiPlacementWatch,
+    multiPlacementDaysWatch,
+    multiPlacementPriceWatch,
+    multiShipmentWatch,
+    multiShipmentPriceWatch,
+  ]);
+
   //CALCULAR TOTAL COMPLETO
   const calculateTotalPrice = () => {
     let enchapado_artesanal_subtotal = Number(getValues("veneerPrice")) || 0;
@@ -1156,9 +1169,121 @@ function EditBudget() {
   //FORMULARIO EDITAR PRESUPUESTO
   const onSubmit = async (data, event) => {
     event.preventDefault();
-    // console.log(data);
     //SET LOADER
     setSubmitLoader(true);
+
+    // ── Validación extra para modo multi (placement/shipment/client sin required en RHF) ──
+    if (isMultiBudget) {
+      const multiGlobalErrors = [];
+      if (!data.placement)
+        multiGlobalErrors.push("Indicá si el presupuesto incluye colocación");
+      if (!data.shipment)
+        multiGlobalErrors.push("Indicá si el presupuesto incluye envío");
+      if (!data.clientId && !clientOption)
+        multiGlobalErrors.push("El presupuesto no tiene un cliente asignado");
+      if (multiGlobalErrors.length > 0) {
+        setValidationErrors({ global: multiGlobalErrors, byFurniture: [] });
+        setSubmitLoader(false);
+        return;
+      }
+    }
+    // ── Fin validación multi ─────────────────────────────────────────────────
+
+    // ── Validación por sección multi (filos/chapa) ───────────────────────────
+    if (isMultiBudget) {
+      const furnitureErrors = multiSectionRefs.current.map((ref, idx) => {
+        const sectionErrs = ref?.collectErrors?.() ?? [];
+        const name = ref?.collectData?.()?.furniture_name ?? `Mueble ${idx + 1}`;
+        return { name, index: idx, errors: sectionErrs };
+      });
+      const hasFurnitureErrors = furnitureErrors.some((f) => f.errors.length > 0);
+      if (hasFurnitureErrors) {
+        setValidationErrors({ global: [], byFurniture: furnitureErrors });
+        setSubmitLoader(false);
+        return;
+      }
+    }
+
+    // ── Submit específico para multi ──────────────────────────────────────────
+    if (isMultiBudget) {
+      const sectionsData = multiSectionRefs.current.map((r) => r?.collectData());
+
+      let clientData;
+      if (clientOption === "existing") {
+        if (!data.clientId) {
+          setError("clientId", { type: "manual", message: "Seleccioná un cliente" });
+          setSubmitLoader(false);
+          return;
+        }
+        try {
+          const res = await getClientById(data.clientId);
+          clientData = res.data;
+        } catch (err) {
+          console.error(err);
+        }
+      } else if (clientOption === "new") {
+        try {
+          const res = await createClient({ ...data });
+          clientData = res.data;
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      if (clientOption && !clientData) {
+        setValidationErrors({ global: ["No se pudo cargar el cliente. Revisá los datos."], byFurniture: [] });
+        setSubmitLoader(false);
+        return;
+      }
+
+      // Imágenes
+      let clientAttachments = [...orderedImages.filter((i) => i.type === "existing")];
+      const newImages = orderedImages.filter((i) => i.type === "new");
+      if (newImages.length > 0) {
+        setImageUploading(true);
+        try {
+          const results = await Promise.all(newImages.map((i) => uploadBudgetImage(i.file)));
+          results.forEach((r) => clientAttachments.push({ url: r.url, original_name: r.original_name, mime_type: r.mime_type, size: r.size, path: r.path }));
+        } catch (err) {
+          setImageUploading(false);
+          setValidationErrors({ global: ["Error al subir las imágenes. Intentá de nuevo."], byFurniture: [] });
+          setSubmitLoader(false);
+          return;
+        }
+        setImageUploading(false);
+      }
+
+      const furnitureNames = sectionsData.map((s) => s?.furniture_name).filter(Boolean).join(", ");
+
+      const multiBudgetData = {
+        budget_number: budget.budget_number,
+        furniture_name: furnitureNames,
+        furniture: sectionsData.map((s) => s?.furniture).filter(Boolean),
+        furniture_items: sectionsData.filter(Boolean),
+        materials: [],
+        total_price: multiTotalPrice,
+        deliver_date: data.deliver_date,
+        client_comment: data.client_comment,
+        client_attachments: clientAttachments,
+        client: clientData || budget.client,
+        placement: data.placement === "true",
+        placement_days: String(data.placementDays || 0),
+        placement_price: Number(data.placementPrice || 0),
+        shipment: data.shipment === "true",
+        shipment_price: Number(data.shipmentPrice || 0),
+        calculation_coefficient: calculationCoefficient,
+        status: budget.status,
+      };
+
+      try {
+        await editBudget(removeEmptyFields(multiBudgetData), budget._id);
+        navigate(backUrl);
+      } catch (error) {
+        console.error("Error editando presupuesto multi:", error);
+        setSubmitLoader(false);
+        setValidationErrors({ global: ["Error al guardar el presupuesto. Revisá tu conexión e intentá de nuevo."], byFurniture: [] });
+      }
+      return;
+    }
 
     // Creación del objeto supplies agrupado por módulos
     const supplies = {};
@@ -1455,6 +1580,11 @@ function EditBudget() {
       navigate("/ver-presupuestos");
     } catch (error) {
       console.error("Error editando presupuesto front:", error);
+      setSubmitLoader(false);
+      setValidationErrors({
+        global: ["Error al guardar el presupuesto. Revisá tu conexión e intentá de nuevo."],
+        byFurniture: [],
+      });
     }
   };
   const formatCurrency = (value) => {
@@ -1510,15 +1640,68 @@ function EditBudget() {
             }}
             className="flex flex-col gap-6"
           >
-            {/* Acordeones de muebles (info de cada uno) */}
+            {/* Coeficiente de cálculo */}
+            <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="flex flex-row gap-4 items-center">
+                <div className="flex flex-col w-48">
+                  <label className="font-semibold text-gray-700 mb-1">
+                    Coeficiente de cálculo
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="border border-gray-300 rounded-md p-2"
+                    value={coefficientInput}
+                    onChange={(e) => {
+                      let raw = e.target.value.replace(",", ".");
+                      raw = raw.replace(/[^0-9.]/g, "");
+                      const parts = raw.split(".");
+                      const cleaned =
+                        parts.length > 2
+                          ? parts[0] + "." + parts.slice(1).join("")
+                          : raw;
+                      setCoefficientInput(cleaned);
+                      const num = parseFloat(cleaned);
+                      if (!Number.isNaN(num) && num > 0)
+                        setCalculationCoefficient(num);
+                    }}
+                    onBlur={() => {
+                      const num = parseFloat(coefficientInput);
+                      if (Number.isNaN(num) || num <= 0) {
+                        setCalculationCoefficient(systemCoefficient);
+                        setCoefficientInput(String(systemCoefficient));
+                      }
+                    }}
+                  />
+                </div>
+                <p className="text-sm text-gray-500 mt-5">
+                  Se aplica a todos los muebles de este presupuesto.
+                </p>
+              </div>
+            </div>
+
+            {/* Acordeones de muebles (editables) */}
             <div className="flex flex-col gap-4">
               {budget.furniture_items.map((item, idx) => (
-                <MultiFurnitureEditAccordion
-                  key={idx}
-                  item={item}
+                <FurnitureBudgetSection
+                  key={item.furniture?._id || idx}
+                  ref={(el) => (multiSectionRefs.current[idx] = el)}
+                  furnitureId={item.furniture?._id || (typeof item.furniture === "string" ? item.furniture : null)}
                   index={idx}
-                  fmtCurrency={fmtCurrency}
-                  register={register}
+                  services={services}
+                  edges={edges}
+                  tables={tables}
+                  veneer={veneer}
+                  calculationCoefficient={calculationCoefficient}
+                  onSubtotalChange={handleMultiSubtotalChange}
+                  selectStyles={selectStyles}
+                  quillModules={quillModules}
+                  quillFormats={quillFormats}
+                  isOpen={openFurnitureIndex === idx}
+                  onToggle={() =>
+                    setOpenFurnitureIndex((prev) => (prev === idx ? null : idx))
+                  }
+                  initialValues={item}
                 />
               ))}
             </div>
@@ -1531,7 +1714,7 @@ function EditBudget() {
 
               {/* Comentarios compartidos */}
               <div className="w-full">
-                <label className="block font-semibold mb-2">Comentarios</label>
+                <label className="block font-semibold mb-2">Comentarios para el cliente</label>
                 <QuillEditor
                   value={clientCommentValue}
                   onChange={(val) => {
@@ -1550,6 +1733,7 @@ function EditBudget() {
                 <label className="font-semibold">Fecha de entrega</label>
                 <input
                   type="text"
+                  placeholder="Ej: 15/04/2025 o a confirmar"
                   className="border border-gray-300 rounded-md p-2"
                   {...register("deliver_date")}
                 />
@@ -1578,22 +1762,36 @@ function EditBudget() {
                 <label className="font-semibold">Colocación</label>
                 <div className="flex gap-6">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      value="true"
-                      {...register("placement")}
-                    />
+                    <input type="radio" value="true" {...register("placement")} />
                     Sí incluye colocación
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      value="false"
-                      {...register("placement")}
-                    />
+                    <input type="radio" value="false" {...register("placement")} />
                     No incluye colocación
                   </label>
                 </div>
+                {multiPlacementWatch === "true" && (
+                  <div className="flex gap-4 mt-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-sm font-medium">Días de colocación</label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="border border-gray-300 rounded-md p-2 w-32"
+                        {...register("placementDays")}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-sm font-medium">Precio por día</label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="border border-gray-300 rounded-md p-2 w-40"
+                        {...register("placementPrice")}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Envío */}
@@ -1601,32 +1799,34 @@ function EditBudget() {
                 <label className="font-semibold">Envío</label>
                 <div className="flex gap-6">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      value="true"
-                      {...register("shipment")}
-                    />
+                    <input type="radio" value="true" {...register("shipment")} />
                     Sí incluye envío
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      value="false"
-                      {...register("shipment")}
-                    />
+                    <input type="radio" value="false" {...register("shipment")} />
                     No incluye envío
                   </label>
                 </div>
+                {multiShipmentWatch === "true" && (
+                  <div className="flex flex-col gap-1 mt-2">
+                    <label className="text-sm font-medium">Precio de envío</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="border border-gray-300 rounded-md p-2 w-48"
+                      {...register("shipmentPrice")}
+                    />
+                  </div>
+                )}
               </div>
 
-              {/* Total */}
-              <div className="bg-gray-50 border rounded-lg p-4">
-                <p className="text-xl font-bold text-gray-900">
-                  Total del presupuesto: {fmtCurrency(budget.total_price)}
+              {/* Total recalculado */}
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                <p className="text-xl font-bold text-emerald-900">
+                  Total del presupuesto: {fmtCurrency(multiTotalPrice)}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  El total se calculó al crear el presupuesto. Para recalcular,
-                  creá un nuevo presupuesto.
+                <p className="text-xs text-emerald-700 mt-1">
+                  Se recalcula en tiempo real según los valores de cada mueble.
                 </p>
               </div>
 
@@ -1655,6 +1855,13 @@ function EditBudget() {
             </div>
           </form>
         </div>
+
+        {validationErrors && (
+          <ValidationErrorModal
+            errors={validationErrors}
+            onClose={() => setValidationErrors(null)}
+          />
+        )}
       </>
     );
   }
@@ -2911,6 +3118,13 @@ function EditBudget() {
           </div>
         </form>
       </div>
+
+      {validationErrors && (
+        <ValidationErrorModal
+          errors={validationErrors}
+          onClose={() => setValidationErrors(null)}
+        />
+      )}
     </>
   );
 }
