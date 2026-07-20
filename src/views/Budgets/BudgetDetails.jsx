@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { getBudgetById, getSystemVariableByKey } from "../../index.js";
+import { getBudgetById, getSystemVariableByKey, editBudget } from "../../index.js";
 import { Grid } from "react-loader-spinner";
 import { generatePDF } from "../../helpers/Budgets/budgetDetailPdf.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -59,11 +59,46 @@ function BudgetDetails() {
     return () => controller.abort();
   }, []);
 
+  // ── IVA ─────────────────────────────────────────────────────────────────────
+  const [ivaEditMode, setIvaEditMode] = useState(false);
+  const [ivaInput, setIvaInput] = useState("");
+  const [ivaSaving, setIvaSaving] = useState(false);
+
+  const handleSaveIva = async () => {
+    const pct = parseFloat(ivaInput);
+    if (Number.isNaN(pct) || pct < 0) return;
+    setIvaSaving(true);
+    try {
+      await editBudget({ iva: pct }, idBudget);
+      setBudget((prev) => ({ ...prev, iva: pct }));
+      setIvaEditMode(false);
+    } catch (err) {
+      console.error("Error al guardar IVA:", err);
+    } finally {
+      setIvaSaving(false);
+    }
+  };
+
+  const handleRemoveIva = async () => {
+    setIvaSaving(true);
+    try {
+      await editBudget({ iva: 0 }, idBudget);
+      setBudget((prev) => ({ ...prev, iva: 0 }));
+      setIvaEditMode(false);
+    } catch (err) {
+      console.error("Error al quitar IVA:", err);
+    } finally {
+      setIvaSaving(false);
+    }
+  };
+  // ── fin IVA ──────────────────────────────────────────────────────────────────
+
   const isMultiBudget =
     Array.isArray(budget.furniture_items) && budget.furniture_items.length > 0;
 
   const totalPriceInUnits = budget.total_price;
-  const iva = totalPriceInUnits * 0.21;
+  const ivaPercent = budget.iva ?? 0;
+  const iva = totalPriceInUnits * (ivaPercent / 100);
   const total = totalPriceInUnits + iva;
 
   const formatCurrency = (value) => {
@@ -109,10 +144,57 @@ function BudgetDetails() {
             </Link>
           </div>
         </div>
-        <div className="flex justify-end mb-4 mr-8">
+        <div className="flex justify-between items-center mb-4 mr-8">
+          {/* Control de IVA */}
+          <div className="flex items-center gap-3 flex-wrap">
+            {ivaEditMode ? (
+              <>
+                <label className="text-sm font-medium text-gray-700">IVA %</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={ivaInput}
+                  onChange={(e) => setIvaInput(e.target.value)}
+                  className="border border-gray-300 rounded-md px-2 py-1 w-24 text-sm"
+                  placeholder="21"
+                />
+                <button
+                  onClick={handleSaveIva}
+                  disabled={ivaSaving}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm px-3 py-1 rounded disabled:opacity-50"
+                >
+                  Guardar
+                </button>
+                <button
+                  onClick={handleRemoveIva}
+                  disabled={ivaSaving}
+                  className="bg-red-500 hover:bg-red-400 text-white text-sm px-3 py-1 rounded disabled:opacity-50"
+                >
+                  Quitar IVA
+                </button>
+                <button
+                  onClick={() => setIvaEditMode(false)}
+                  className="text-gray-500 text-sm px-2 py-1 rounded border border-gray-300 hover:bg-gray-100"
+                >
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  setIvaInput(String(ivaPercent > 0 ? ivaPercent : 21));
+                  setIvaEditMode(true);
+                }}
+                className="bg-gray-700 hover:bg-gray-600 text-white text-sm px-3 py-1.5 rounded"
+              >
+                {ivaPercent > 0 ? `IVA ${ivaPercent}% – Editar` : "Asignar IVA"}
+              </button>
+            )}
+          </div>
+
           <button
             onClick={handleGeneratePDF}
-            className="bg-orange  text-white px-4 py-2 rounded-lg shadow-md hover:bg-[#E57C31] focus:outline-none flex flex-row justify-center align-middle items-center gap-2"
+            className="bg-orange text-white px-4 py-2 rounded-lg shadow-md hover:bg-[#E57C31] focus:outline-none flex flex-row justify-center align-middle items-center gap-2"
           >
             <FontAwesomeIcon icon={faDownload} className="w-[18px]" size="lg" />
             <p className="m-0 leading-loose"> Generar PDF</p>
@@ -237,7 +319,25 @@ function BudgetDetails() {
                             </div>
                           </td>
                           <td className="px-2 py-4 whitespace-nowrap text-sm align-top text-gray-700">
-                            {formatCurrency(item.subtotal_price)}
+                            {(() => {
+                              const itemTotal =
+                                (item.item_total != null
+                                  ? item.item_total
+                                  : (item.subtotal_price || 0) +
+                                    (item.shipment_price || 0) +
+                                    (item.placement_price || 0));
+                              const extras = (item.shipment_price || 0) + (item.placement_price || 0);
+                              return (
+                                <>
+                                  {formatCurrency(itemTotal)}
+                                  {extras > 0 && (
+                                    <p className="text-xs text-gray-400 mt-1">
+                                      (inc. envío/loc.: {formatCurrency(extras)})
+                                    </p>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </td>
                         </tr>
                         {/* Modules row */}
@@ -377,25 +477,27 @@ function BudgetDetails() {
                     </tr>
                   </>
                 ) : null}
-                <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
-                  <td className="px-2 py-4 text-left max-w-[150px] w-[150px] text-sm align-middle border-r-2 border-r-black border-l-2 border-l-black break-words">
-                    COLOCACIÓN
-                  </td>
-                  <td
-                    colSpan={2}
-                    className="uppercase px-6 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black"
-                  >
-                    <strong>
-                      {budget.placement && budget.shipment
-                        ? "INCLUYE COLOCACIÓN Y ENVÍO"
-                        : budget.placement
-                          ? "INCLUYE COLOCACIÓN"
-                          : budget.shipment
-                            ? "INCLUYE ENVÍO"
-                            : "NO INCLUYE COLOCACIÓN NI ENVÍO"}
-                    </strong>
-                  </td>
-                </tr>
+                {!isMultiBudget && (
+                  <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
+                    <td className="px-2 py-4 text-left max-w-[150px] w-[150px] text-sm align-middle border-r-2 border-r-black border-l-2 border-l-black break-words">
+                      COLOCACIÓN
+                    </td>
+                    <td
+                      colSpan={2}
+                      className="uppercase px-6 py-4 text-left whitespace-nowrap text-sm align-midd border-r-2 border-r-black border-l-2 border-l-black"
+                    >
+                      <strong>
+                        {budget.placement && budget.shipment
+                          ? "INCLUYE COLOCACIÓN Y ENVÍO"
+                          : budget.placement
+                            ? "INCLUYE COLOCACIÓN"
+                            : budget.shipment
+                              ? "INCLUYE ENVÍO"
+                              : "NO INCLUYE COLOCACIÓN NI ENVÍO"}
+                      </strong>
+                    </td>
+                  </tr>
+                )}
 
                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
                   <td className="px-2 py-4 text-left max-w-[150px] w-[150px] text-sm align-middle border-r-2 border-r-black border-l-2 border-l-black break-words">
@@ -451,14 +553,16 @@ function BudgetDetails() {
                         {formatCurrency(totalPriceInUnits)}
                       </td>
                     </tr>
-                    <tr className="bg-white border border-gray-700">
-                      <td className="w-3/4 px-6 text-md py-1 border-r border-gray-600 text-[#726352]">
-                        IVA 21%:
-                      </td>
-                      <td className="w-1/4 px-6 text-md py-1 text-[#726352]  text-right">
-                        {formatCurrency(iva)}
-                      </td>
-                    </tr>
+                    {ivaPercent > 0 && (
+                      <tr className="bg-white border border-gray-700">
+                        <td className="w-3/4 px-6 text-md py-1 border-r border-gray-600 text-[#726352]">
+                          IVA {ivaPercent}%:
+                        </td>
+                        <td className="w-1/4 px-6 text-md py-1 text-[#726352] text-right">
+                          {formatCurrency(iva)}
+                        </td>
+                      </tr>
+                    )}
                     <tr className="bg-[#9C846A] text-white font-bold border border-gray-700 w-[200px]">
                       <td className="w-3/4 px-6 text-md py-1 border-r border-gray-600">
                         TOTAL:

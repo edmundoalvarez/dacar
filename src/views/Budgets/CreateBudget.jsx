@@ -84,23 +84,15 @@ function CreateBudget() {
     setMultiSubtotals((prev) => ({ ...prev, [idx]: value }));
   }, []);
 
-  // Recalculate multi total
+  // Recalculate multi total (el envío/locación ya viene dentro de cada item via onSubtotalChange)
   useEffect(() => {
     if (!isMulti) return;
     const furnitureSub = Object.values(multiSubtotals).reduce(
       (a, b) => a + b,
       0
     );
-    const placeSub = Number(multiPlacementDays) * Number(multiPlacementPrice);
-    setMultiPlacementSubtotal(placeSub);
-    setMultiTotalPrice(furnitureSub + placeSub + Number(multiShipmentPrice));
-  }, [
-    multiSubtotals,
-    multiPlacementDays,
-    multiPlacementPrice,
-    multiShipmentPrice,
-    isMulti,
-  ]);
+    setMultiTotalPrice(furnitureSub);
+  }, [multiSubtotals, isMulti]);
 
   // Multi client search (reuses allClients state loaded below)
   useEffect(() => {
@@ -141,13 +133,6 @@ function CreateBudget() {
         globalErrors.push("Ingresá el nombre del cliente");
       if (!formVals.client_lastname?.trim())
         globalErrors.push("Ingresá el apellido del cliente");
-    }
-
-    if (!multiPlacement) {
-      globalErrors.push("Indicá si el presupuesto incluye colocación");
-    }
-    if (!multiShipment) {
-      globalErrors.push("Indicá si el presupuesto incluye envío");
     }
 
     const furnitureErrors = sectionRefs.current.map((ref, idx) => {
@@ -229,12 +214,10 @@ function CreateBudget() {
         client_comment: multiClientComment,
         client_attachments: clientAttachments,
         client: clientData,
-        placement: multiPlacement === "true",
-        placement_days: String(multiPlacementDays),
-        placement_price: Number(multiPlacementPrice),
-        shipment: multiShipment === "true",
-        shipment_price: Number(multiShipmentPrice),
+        placement: false,
+        shipment: false,
         calculation_coefficient: calculationCoefficient,
+        iva: budgetIva,
         status: "true",
       };
 
@@ -300,6 +283,9 @@ function CreateBudget() {
   // Coeficiente de cálculo (variable del sistema, default 3.8)
   const [calculationCoefficient, setCalculationCoefficient] = useState(3.8);
   const [coefficientInput, setCoefficientInput] = useState("3.8");
+
+  // IVA por defecto (variable del sistema, 0 = sin IVA)
+  const [budgetIva, setBudgetIva] = useState(0);
 
   const quillModules = {
     toolbar: [
@@ -383,6 +369,25 @@ function CreateBudget() {
       .catch((err) => {
         if (err?.name !== "CanceledError" && err?.name !== "AbortError") {
           console.error("Error al obtener coeficiente de cálculo:", err);
+        }
+      });
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getSystemVariableByKey("budget_iva", controller.signal)
+      .then((variable) => {
+        if (variable?.value != null && variable.value !== "") {
+          const num = Number(variable.value);
+          if (!Number.isNaN(num)) {
+            setBudgetIva(num);
+          }
+        }
+      })
+      .catch((err) => {
+        if (err?.name !== "CanceledError" && err?.name !== "AbortError") {
+          console.error("Error al obtener IVA por defecto:", err);
         }
       });
     return () => controller.abort();
@@ -1178,6 +1183,7 @@ function CreateBudget() {
       shipment_price: Number(data.shipmentPrice),
       show_modules: data.showModules,
       calculation_coefficient: calculationCoefficient,
+      iva: budgetIva,
     };
 
     const cleanedBudgetData = removeEmptyFields(budgetData);
@@ -1439,123 +1445,20 @@ function CreateBudget() {
                 )}
               </div>
 
-              {/* Colocación */}
-              <div className="flex flex-col gap-3 w-1/2">
-                <label className="font-semibold">Colocación</label>
-                <div className="flex gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      value="true"
-                      checked={multiPlacement === "true"}
-                      onChange={() => setMultiPlacement("true")}
-                    />
-                    Sí incluye colocación
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      value="false"
-                      checked={multiPlacement === "false"}
-                      onChange={() => setMultiPlacement("false")}
-                    />
-                    No incluye colocación
-                  </label>
-                </div>
-                {multiPlacement === "true" && (
-                  <div className="flex gap-4">
-                    <div className="flex flex-col gap-2 w-1/2">
-                      <label>Días de colocación</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={multiPlacementDays}
-                        onChange={(e) =>
-                          setMultiPlacementDays(e.target.value)
-                        }
-                        className="border border-gray-300 rounded-md p-2"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2 w-1/2">
-                      <label>Precio por día</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={multiPlacementPrice}
-                        onChange={(e) =>
-                          setMultiPlacementPrice(e.target.value)
-                        }
-                        className="border border-gray-300 rounded-md p-2"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Envío */}
-              <div className="flex flex-col gap-3 w-1/2">
-                <label className="font-semibold">Envío</label>
-                <div className="flex gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      value="true"
-                      checked={multiShipment === "true"}
-                      onChange={() => setMultiShipment("true")}
-                    />
-                    Sí incluye envío
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      value="false"
-                      checked={multiShipment === "false"}
-                      onChange={() => setMultiShipment("false")}
-                    />
-                    No incluye envío
-                  </label>
-                </div>
-                {multiShipment === "true" && (
-                  <div className="flex flex-col gap-2 w-1/2">
-                    <label>Precio de envío</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={multiShipmentPrice}
-                      onChange={(e) => setMultiShipmentPrice(e.target.value)}
-                      className="border border-gray-300 rounded-md p-2"
-                    />
-                  </div>
-                )}
-              </div>
-
               {/* Total */}
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <h3 className="text-lg font-semibold mb-2 text-gray-800">
                   Resumen del presupuesto
                 </h3>
+                <p className="text-xs text-gray-500 mb-2">
+                  Los precios de envío y locación se configuran por mueble en cada sección.
+                </p>
                 {Object.entries(multiSubtotals).map(([idx, sub]) => (
                   <p key={idx} className="text-sm text-gray-600">
                     Mueble {Number(idx) + 1}:{" "}
                     <span className="font-medium">{fmtCurrency(sub)}</span>
                   </p>
                 ))}
-                {multiPlacement === "true" && multiPlacementSubtotal > 0 && (
-                  <p className="text-sm text-gray-600">
-                    Colocación:{" "}
-                    <span className="font-medium">
-                      {fmtCurrency(multiPlacementSubtotal)}
-                    </span>
-                  </p>
-                )}
-                {multiShipment === "true" && Number(multiShipmentPrice) > 0 && (
-                  <p className="text-sm text-gray-600">
-                    Envío:{" "}
-                    <span className="font-medium">
-                      {fmtCurrency(Number(multiShipmentPrice))}
-                    </span>
-                  </p>
-                )}
                 <p className="text-xl font-bold text-gray-900 mt-2 border-t pt-2">
                   Total: {fmtCurrency(multiTotalPrice)}
                 </p>

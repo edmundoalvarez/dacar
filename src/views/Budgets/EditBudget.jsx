@@ -989,32 +989,12 @@ function EditBudget() {
     // console.log(shipmentPriceValue);
   }, [shipmentPriceValue]);
 
-  // ── Recalcular total en modo multi ────────────────────────────────────────
-  const multiPlacementWatch = watch("placement");
-  const multiPlacementDaysWatch = watch("placementDays", 0);
-  const multiPlacementPriceWatch = watch("placementPrice", 0);
-  const multiShipmentWatch = watch("shipment");
-  const multiShipmentPriceWatch = watch("shipmentPrice", 0);
-
+  // ── Recalcular total en modo multi (envío/locación van por mueble) ────────
   useEffect(() => {
     if (!Array.isArray(budget.furniture_items) || budget.furniture_items.length === 0) return;
     const furnitureSub = Object.values(multiSubtotals).reduce((a, b) => a + b, 0);
-    const placeSub =
-      multiPlacementWatch === "true"
-        ? Number(multiPlacementDaysWatch) * Number(multiPlacementPriceWatch)
-        : 0;
-    const shipSub =
-      multiShipmentWatch === "true" ? Number(multiShipmentPriceWatch) : 0;
-    setMultiTotalPrice(furnitureSub + placeSub + shipSub);
-  }, [
-    budget.furniture_items,
-    multiSubtotals,
-    multiPlacementWatch,
-    multiPlacementDaysWatch,
-    multiPlacementPriceWatch,
-    multiShipmentWatch,
-    multiShipmentPriceWatch,
-  ]);
+    setMultiTotalPrice(furnitureSub);
+  }, [budget.furniture_items, multiSubtotals]);
 
   //CALCULAR TOTAL COMPLETO
   const calculateTotalPrice = () => {
@@ -1172,13 +1152,9 @@ function EditBudget() {
     //SET LOADER
     setSubmitLoader(true);
 
-    // ── Validación extra para modo multi (placement/shipment/client sin required en RHF) ──
+    // ── Validación extra para modo multi ───────────────────────────────────────
     if (isMultiBudget) {
       const multiGlobalErrors = [];
-      if (!data.placement)
-        multiGlobalErrors.push("Indicá si el presupuesto incluye colocación");
-      if (!data.shipment)
-        multiGlobalErrors.push("Indicá si el presupuesto incluye envío");
       if (!data.clientId && !clientOption)
         multiGlobalErrors.push("El presupuesto no tiene un cliente asignado");
       if (multiGlobalErrors.length > 0) {
@@ -1265,11 +1241,8 @@ function EditBudget() {
         client_comment: data.client_comment,
         client_attachments: clientAttachments,
         client: clientData || budget.client,
-        placement: data.placement === "true",
-        placement_days: String(data.placementDays || 0),
-        placement_price: Number(data.placementPrice || 0),
-        shipment: data.shipment === "true",
-        shipment_price: Number(data.shipmentPrice || 0),
+        placement: false,
+        shipment: false,
         calculation_coefficient: calculationCoefficient,
         status: budget.status,
       };
@@ -1756,69 +1729,6 @@ function EditBudget() {
                   </div>
                 </div>
               )}
-
-              {/* Colocación */}
-              <div className="flex flex-col gap-3 w-1/2">
-                <label className="font-semibold">Colocación</label>
-                <div className="flex gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" value="true" {...register("placement")} />
-                    Sí incluye colocación
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" value="false" {...register("placement")} />
-                    No incluye colocación
-                  </label>
-                </div>
-                {multiPlacementWatch === "true" && (
-                  <div className="flex gap-4 mt-2">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-sm font-medium">Días de colocación</label>
-                      <input
-                        type="number"
-                        min="0"
-                        className="border border-gray-300 rounded-md p-2 w-32"
-                        {...register("placementDays")}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-sm font-medium">Precio por día</label>
-                      <input
-                        type="number"
-                        min="0"
-                        className="border border-gray-300 rounded-md p-2 w-40"
-                        {...register("placementPrice")}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Envío */}
-              <div className="flex flex-col gap-3 w-1/2">
-                <label className="font-semibold">Envío</label>
-                <div className="flex gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" value="true" {...register("shipment")} />
-                    Sí incluye envío
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" value="false" {...register("shipment")} />
-                    No incluye envío
-                  </label>
-                </div>
-                {multiShipmentWatch === "true" && (
-                  <div className="flex flex-col gap-1 mt-2">
-                    <label className="text-sm font-medium">Precio de envío</label>
-                    <input
-                      type="number"
-                      min="0"
-                      className="border border-gray-300 rounded-md p-2 w-48"
-                      {...register("shipmentPrice")}
-                    />
-                  </div>
-                )}
-              </div>
 
               {/* Total recalculado */}
               <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">

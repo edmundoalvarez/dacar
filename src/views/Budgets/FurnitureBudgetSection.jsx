@@ -105,6 +105,26 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
   // ── subtotal ────────────────────────────────────────────────────────────────
   const [subtotalPrice, setSubtotalPrice] = useState(0);
 
+  // ── per-section coefficient (override del global) ───────────────────────────
+  const [sectionCoefficient, setSectionCoefficient] = useState(calculationCoefficient);
+  const [sectionCoefficientInput, setSectionCoefficientInput] = useState(
+    String(calculationCoefficient)
+  );
+  const userOverriddenCoef = useRef(false);
+
+  // Sincroniza con el global mientras el usuario no haya tocado el input
+  useEffect(() => {
+    if (!userOverriddenCoef.current) {
+      setSectionCoefficient(calculationCoefficient);
+      setSectionCoefficientInput(String(calculationCoefficient));
+    }
+  }, [calculationCoefficient]);
+
+  // ── envío y colocación por mueble ───────────────────────────────────────────
+  const [itemShipmentPrice, setItemShipmentPrice] = useState(0);
+  const [itemPlacementDays, setItemPlacementDays] = useState(0);
+  const [itemPlacementPricePerDay, setItemPlacementPricePerDay] = useState(0);
+
   // ── services from props ─────────────────────────────────────────────────────
   const {
     enchapadoArtesanalService,
@@ -219,8 +239,12 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
       setMaterialEdge(edgeP);
       const m2e = Number((totalEdgeLength / 100).toFixed(2));
       setEdgeM2(m2e);
+      const coefToUse =
+        initialValues.calculation_coefficient != null
+          ? Number(initialValues.calculation_coefficient)
+          : calculationCoefficient;
       setEdgePrice(
-        Math.round(m2e * edgeP * calculationCoefficient + (filoService?.price ?? 0) * m2e)
+        Math.round(m2e * edgeP * coefToUse + (filoService?.price ?? 0) * m2e)
       );
     }
 
@@ -257,6 +281,25 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
 
     // Mostrar módulos
     if (initialValues.show_modules) setShowModules(true);
+
+    // Coeficiente por mueble (guardado en edición)
+    if (initialValues.calculation_coefficient != null) {
+      const rawCoef = String(initialValues.calculation_coefficient).replace(",", ".");
+      const coef = Number(rawCoef);
+      if (!Number.isNaN(coef) && coef > 0) {
+        setSectionCoefficient(coef);
+        setSectionCoefficientInput(String(coef));
+        userOverriddenCoef.current = true;
+      }
+    }
+
+    // Envío y colocación por mueble
+    if (initialValues.shipment_price != null)
+      setItemShipmentPrice(Number(initialValues.shipment_price) || 0);
+    if (initialValues.placement_days != null)
+      setItemPlacementDays(Number(initialValues.placement_days) || 0);
+    if (initialValues.placement_price_per_day != null)
+      setItemPlacementPricePerDay(Number(initialValues.placement_price_per_day) || 0);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
@@ -310,12 +353,12 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
       setEdgeM2(m2);
       setEdgePrice(
         Math.round(
-          m2 * edgeP * calculationCoefficient +
+          m2 * edgeP * sectionCoefficient +
             (filoService?.price ?? 0) * m2
         )
       );
     },
-    [edges, totalEdgeLength, calculationCoefficient, filoService]
+    [edges, totalEdgeLength, sectionCoefficient, filoService]
   );
 
   // Recalculate edge-no-lacquered price when coefficient or service changes
@@ -324,11 +367,11 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
     setEdgeM2(m2);
     setEdgePrice(
       Math.round(
-        m2 * materialEdge * calculationCoefficient +
+        m2 * materialEdge * sectionCoefficient +
           (filoService?.price ?? 0) * m2
       )
     );
-  }, [totalEdgeLength, materialEdge, calculationCoefficient, filoService]);
+  }, [totalEdgeLength, materialEdge, sectionCoefficient, filoService]);
 
   // ── material handlers ───────────────────────────────────────────────────────
   const handleMaterialTableChange = useCallback(
@@ -362,11 +405,11 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
       totalQty += qty;
     });
     sub =
-      sub * calculationCoefficient +
+      sub * sectionCoefficient +
       totalQty * (cortePlacaService?.price ?? 0);
     setSubtotalMaterialPrice(sub);
     setTotalMaterialPrice(tot);
-  }, [materialRows, calculationCoefficient, cortePlacaService]);
+  }, [materialRows, sectionCoefficient, cortePlacaService]);
 
   // ── extra items handlers ────────────────────────────────────────────────────
   const handleExtraNameChange = useCallback((idx, value) => {
@@ -393,7 +436,7 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
 
   // ── subtotal computation ────────────────────────────────────────────────────
   useEffect(() => {
-    const coef = calculationCoefficient;
+    const coef = sectionCoefficient;
     const enchapado = enchapadoArtesanalService?.price ?? 0;
     const veneerPriceTotal = (totalVeneer / 10000) * enchapado * coef;
     const veneerPolishedPriceTotal =
@@ -429,7 +472,7 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
 
     setSubtotalPrice(sub);
   }, [
-    calculationCoefficient,
+    sectionCoefficient,
     totalVeneer,
     totalVeneerPolished,
     totalVeneerLacqueredOpen,
@@ -449,10 +492,13 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
     pantografiadoService,
   ]);
 
-  // Notify parent of subtotal change
+  // Notify parent of subtotal change (incluye envío y colocación del ítem)
+  const computedPlacementPrice = Number(itemPlacementDays || 0) * Number(itemPlacementPricePerDay || 0);
+  const itemTotal = subtotalPrice + Number(itemShipmentPrice || 0) + computedPlacementPrice;
   useEffect(() => {
-    onSubtotalChange?.(index, subtotalPrice);
-  }, [subtotalPrice, index, onSubtotalChange]);
+    onSubtotalChange?.(index, itemTotal);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subtotalPrice, itemShipmentPrice, itemPlacementDays, itemPlacementPricePerDay, index, onSubtotalChange]);
 
   // ── expose data via ref ─────────────────────────────────────────────────────
   useImperativeHandle(ref, () => ({
@@ -471,6 +517,8 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
     collectData() {
       const materialsList = Object.values(materialRows).filter((m) => m.table);
       const extraItemsList = Object.values(extraRows).filter((e) => e.name);
+      const shipPx = Number(itemShipmentPrice || 0);
+      const placePx = Number(itemPlacementDays || 0) * Number(itemPlacementPricePerDay || 0);
       return {
         furniture_name: furnitureData?.name ?? "",
         furniture: furnitureData,
@@ -533,11 +581,18 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
         adjustment_price: Number(adjustmentPrice) || 0,
         comments: comments,
         subtotal_price: subtotalPrice,
+        shipment_price: shipPx,
+        placement_price: placePx,
+        placement_days: Number(itemPlacementDays || 0),
+        placement_price_per_day: Number(itemPlacementPricePerDay || 0),
+        item_total: subtotalPrice + shipPx + placePx,
         show_modules: showModules,
+        calculation_coefficient: sectionCoefficient,
       };
     },
     getSubtotal() {
-      return subtotalPrice;
+      const plPx = Number(itemPlacementDays || 0) * Number(itemPlacementPricePerDay || 0);
+      return subtotalPrice + Number(itemShipmentPrice || 0) + plPx;
     },
     isLoading() {
       return loading;
@@ -1096,11 +1151,95 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
             />
           </div>
 
+          {/* ── Coeficiente por mueble ── */}
+          <div className="border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <label className="text-sm font-semibold text-gray-700">
+                Coeficiente de cálculo para este mueble:
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={sectionCoefficientInput}
+                onChange={(e) => setSectionCoefficientInput(e.target.value)}
+                onBlur={(e) => {
+                  const val = parseFloat(e.target.value.replace(",", "."));
+                  if (!Number.isNaN(val) && val > 0) {
+                    userOverriddenCoef.current = true;
+                    setSectionCoefficient(val);
+                  }
+                }}
+                className="border border-gray-300 rounded-md px-3 py-1.5 w-28 text-sm"
+              />
+              <span className="text-xs text-gray-500">
+                (Global: {calculationCoefficient})
+              </span>
+            </div>
+          </div>
+
+          {/* ── Envío y colocación por mueble ── */}
+          <div className="border border-gray-200 rounded-lg p-4">
+            <p className="text-sm font-semibold text-gray-700 mb-3">
+              Precio de envío y colocación para este mueble
+            </p>
+            <div className="flex gap-6 flex-wrap">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-600">Precio de envío</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={itemShipmentPrice || ""}
+                  onChange={(e) => setItemShipmentPrice(Number(e.target.value) || 0)}
+                  className="border border-gray-300 rounded-md px-3 py-2 w-40 text-sm"
+                  placeholder="0"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-600">Días de colocación</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={itemPlacementDays || ""}
+                  onChange={(e) => setItemPlacementDays(Number(e.target.value) || 0)}
+                  className="border border-gray-300 rounded-md px-3 py-2 w-32 text-sm"
+                  placeholder="0"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-600">Precio por día</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={itemPlacementPricePerDay || ""}
+                  onChange={(e) => setItemPlacementPricePerDay(Number(e.target.value) || 0)}
+                  className="border border-gray-300 rounded-md px-3 py-2 w-40 text-sm"
+                  placeholder="0"
+                />
+              </div>
+              {(Number(itemShipmentPrice) > 0 || computedPlacementPrice > 0) && (
+                <div className="flex flex-col gap-1 justify-end">
+                  <span className="text-sm text-gray-500">
+                    {Number(itemShipmentPrice) > 0 && <>Envío: {fmt(Number(itemShipmentPrice))}</>}
+                    {computedPlacementPrice > 0 && (
+                      <> &nbsp;| Colocación: {fmt(computedPlacementPrice)} ({itemPlacementDays} días × {fmt(Number(itemPlacementPricePerDay))})</>
+                    )}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* ── Subtotal del mueble ── */}
           <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
             <p className="text-lg font-semibold text-emerald-800">
               Subtotal {furnitureData?.name}: {fmt(subtotalPrice)}
             </p>
+            {(Number(itemShipmentPrice) > 0 || computedPlacementPrice > 0) && (
+              <p className="text-base font-semibold text-emerald-700 mt-1">
+                Total con envío/colocación: {fmt(itemTotal)}
+              </p>
+            )}
           </div>
 
           {/* ── Despiece por módulo ── */}

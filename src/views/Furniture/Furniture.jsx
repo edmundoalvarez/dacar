@@ -16,6 +16,7 @@ import {
   ViewModulesFurniture,
   getFurnitureHistory,
   getFurnitureCategories,
+  cloneFurniture,
 } from "../../index.js";
 
 function Furniture() {
@@ -677,6 +678,20 @@ function Furniture() {
                               size="sm"
                             />
                             <p className="m-0 leading-loose text-xs sm:text-sm">Despiece</p>
+                          </button>
+                          <button
+                            onClick={async () => {
+                              try {
+                                await cloneFurniture(furniture._id);
+                                getAllFurnituresToSet(searchTerm, currentPage);
+                              } catch (err) {
+                                console.error("Error al clonar mueble:", err);
+                                alert("Error al clonar el mueble. Intentá de nuevo.");
+                              }
+                            }}
+                            className="w-full text-white bg-emerald-700 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 sm:gap-2"
+                          >
+                            <p className="m-0 leading-loose text-xs sm:text-sm">Clonar</p>
                           </button>
                           <button
                             onClick={() =>
