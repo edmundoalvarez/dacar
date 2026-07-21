@@ -57,6 +57,8 @@ function Pieces() {
         handleSubmit,
         resetField,
         reset,
+        getValues,
+        setValue,
         formState: { errors },
         control,
     } = useForm();
@@ -266,6 +268,8 @@ function Pieces() {
                                 errors={errors}
                                 tables={tables}
                                 resetField={resetField}
+                                getValues={getValues}
+                                setValue={setValue}
                             ></FormCreatePieces>
                             <div className="flex gap-6 w-1/4">
                                 <button

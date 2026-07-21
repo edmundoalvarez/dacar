@@ -675,6 +675,7 @@ function EditFurnitureSingleModuleComponent({
                   tables={tables}
                   resetField={resetField}
                   setValue={setValue} // Pasa setValue aquí también
+                  getValues={getValues}
                   piece={currentModule.pieces[index]}
                 />
               ))}
