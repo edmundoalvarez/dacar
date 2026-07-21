@@ -46,6 +46,8 @@ function CreateModule() {
     register,
     handleSubmit,
     resetField,
+    getValues,
+    setValue,
     formState: { errors },
     control,
   } = useForm();
@@ -429,6 +431,8 @@ function CreateModule() {
               errors={errors}
               tables={tables}
               resetField={resetField}
+              getValues={getValues}
+              setValue={setValue}
             />
           ))}
         </div>

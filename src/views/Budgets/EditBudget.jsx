@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { Grid, Oval } from "react-loader-spinner";
 import QuillEditor from "../../components/QuillEditor.jsx";
@@ -21,13 +21,133 @@ import {
   deleteBudgetImage,
   getSystemVariableByKey,
 } from "../../index.js";
-import { useLocation } from "react-router-dom";
+import ValidationErrorModal from "../../components/ValidationErrorModal.jsx";
+import { FurnitureBudgetSection } from "./FurnitureBudgetSection.jsx";
+
+// ── Helper component: accordion for a single furniture item in edit mode ──────
+function MultiFurnitureEditAccordion({ item, index, fmtCurrency }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const furn = item.furniture || {};
+  const catName = furn.category?.name || item.category || "—";
+
+  return (
+    <div className="border border-gray-200 rounded-lg bg-white shadow-sm overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setCollapsed((c) => !c)}
+        className="w-full flex items-center justify-between px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors border-b border-gray-200"
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-lg font-semibold text-gray-800">
+            {index + 1}. {item.furniture_name}
+          </span>
+          {catName !== "—" && (
+            <span className="bg-emerald-100 text-emerald-800 text-xs font-medium px-2 py-0.5 rounded">
+              {catName}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-semibold text-emerald-700">
+            Subtotal: {fmtCurrency(item.subtotal_price)}
+          </span>
+          <svg
+            className={`w-5 h-5 text-gray-500 transition-transform ${collapsed ? "" : "rotate-180"}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </button>
+
+      {!collapsed && (
+        <div className="p-6">
+          {/* Dimensions */}
+          <div className="flex gap-8 bg-emerald-600 text-white w-fit py-1 px-4 rounded mb-4">
+            {furn.height && <p><span className="font-bold">Alto:</span> {furn.height}</p>}
+            {furn.length && <p><span className="font-bold">Largo:</span> {furn.length}</p>}
+            {furn.width && <p><span className="font-bold">Prof.:</span> {furn.width}</p>}
+          </div>
+
+          {/* Descripción del mueble */}
+          {item.comments ? (
+            <div className="mb-4">
+              <p className="font-semibold text-sm text-gray-600 mb-1">Descripción:</p>
+              <div
+                className="text-sm text-gray-700 border border-gray-200 rounded p-3 bg-gray-50"
+                dangerouslySetInnerHTML={{ __html: item.comments }}
+              />
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400 italic mb-4">Sin descripción para este mueble.</p>
+          )}
+
+          {/* Acabados resumen */}
+          <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+            {item.veneer?.veneerM2 > 0 && (
+              <p><span className="font-bold">Enchapado:</span> {item.veneer.veneerM2} m² — {fmtCurrency(item.veneer.veneerPrice)}</p>
+            )}
+            {item.lacquered?.lacqueredM2 > 0 && (
+              <p><span className="font-bold">Laqueado:</span> {item.lacquered.lacqueredM2} m² — {fmtCurrency(item.lacquered.lacqueredPrice)}</p>
+            )}
+            {item.edge_lacquered?.edgeLaqueredM2 > 0 && (
+              <p><span className="font-bold">Filo laqueado:</span> {item.edge_lacquered.edgeLaqueredM2} m² — {fmtCurrency(item.edge_lacquered.edgeLaqueredPrice)}</p>
+            )}
+            {item.edge_no_lacquered?.edgeM2 > 0 && (
+              <p><span className="font-bold">Filo sin laquear:</span> {item.edge_no_lacquered.edgeM2} m² — {fmtCurrency(item.edge_no_lacquered.edgePrice)}</p>
+            )}
+            {item.adjustment_price > 0 && (
+              <p><span className="font-bold">Ajuste ({item.adjustment_reason}):</span> {fmtCurrency(item.adjustment_price)}</p>
+            )}
+          </div>
+
+          {/* Materials */}
+          {item.materials?.length > 0 && (
+            <div className="mt-4">
+              <p className="font-semibold text-sm text-gray-700 mb-1">Placas:</p>
+              <ul className="text-sm text-gray-600 list-disc list-inside">
+                {item.materials.map((m, i) => (
+                  <li key={i}>{m.table} × {m.qty} — {fmtCurrency(m.price * m.qty)}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Modules */}
+          {item.show_modules && furn.modules_furniture?.length > 0 && (
+            <div className="mt-4">
+              <p className="font-semibold text-sm text-gray-700 mb-1">Módulos:</p>
+              <ul className="text-sm text-gray-600 list-disc list-inside">
+                {furn.modules_furniture.map((mod, i) => (
+                  <li key={i}>{mod.name} — {mod.height}×{mod.length}×{mod.width}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function EditBudget() {
   const { budgetId } = useParams();
   const [budget, setBudget] = useState({});
   const [submitLoader, setSubmitLoader] = useState(false);
+  const [validationErrors, setValidationErrors] = useState(null);
   const [loader, setLoader] = useState(true);
+
+  // ── Multi-furniture edit state ───────────────────────────────────────────
+  const multiSectionRefs = useRef([]);
+  const [openFurnitureIndex, setOpenFurnitureIndex] = useState(null);
+  const [multiSubtotals, setMultiSubtotals] = useState({});
+  const [multiTotalPrice, setMultiTotalPrice] = useState(0);
+  const handleMultiSubtotalChange = useCallback((idx, value) => {
+    setMultiSubtotals((prev) => ({ ...prev, [idx]: value }));
+  }, []);
+  // ── End multi-furniture edit state ───────────────────────────────────────
   const [singleFurniture, setSingleFurniture] = useState(null);
   //categoria mueble
   const [categories, setCategories] = useState([]);
@@ -171,25 +291,25 @@ function EditBudget() {
     }),
   };
 
-  const tableOptions = tables.map((table) => ({
-    value: table.name,
-    label: table.name,
-  }));
+  const tableOptions = useMemo(
+    () => tables.map((table) => ({ value: table.name, label: table.name })),
+    [tables]
+  );
 
-  const edgeOptions = edges.map((edge) => ({
-    value: edge._id,
-    label: edge.name,
-  }));
+  const edgeOptions = useMemo(
+    () => edges.map((edge) => ({ value: edge._id, label: edge.name })),
+    [edges]
+  );
 
-  const veneerOptions = veneer.map((item) => ({
-    value: item._id,
-    label: item.name,
-  }));
+  const veneerOptions = useMemo(
+    () => veneer.map((item) => ({ value: item._id, label: item.name })),
+    [veneer]
+  );
 
-  const categoryOptions = categories.map((cat) => ({
-    value: cat._id,
-    label: cat.name,
-  }));
+  const categoryOptions = useMemo(
+    () => categories.map((cat) => ({ value: cat._id, label: cat.name })),
+    [categories]
+  );
 
   //Volver a presupuestos o presupuestos confirmados según corresponda
   const location = useLocation();
@@ -247,57 +367,30 @@ function EditBudget() {
         setValue("category_name", furn?.category?.name || "");
 
         //FILO LAQUEADO
-        setValue(
-          "edgeLaqueredM2",
-          budgetData.data.edge_lacquered[0].edgeLaqueredM2,
-        );
-        // console.log(
-        //   " budgetData.data.edge_lacquered[0].edgeLaqueredPrice",
-        //   budgetData.data.edge_lacquered[0].edgeLaqueredPrice
-        // );
-        setValue(
-          "edgeLaqueredPrice",
-          budgetData.data.edge_lacquered[0].edgeLaqueredPrice,
-        );
+        const edgeLacquered = budgetData.data.edge_lacquered?.[0];
+        setValue("edgeLaqueredM2", edgeLacquered?.edgeLaqueredM2 ?? 0);
+        setValue("edgeLaqueredPrice", edgeLacquered?.edgeLaqueredPrice ?? 0);
         setTotalLacqueredEdgeLength(
-          Number(budgetData.data.edge_lacquered[0].totalLacqueredEdgeLength),
+          Number(edgeLacquered?.totalLacqueredEdgeLength ?? 0),
         );
-        setValue(
-          "edgeThickness",
-          budgetData.data.edge_lacquered[0].edgeLaqueredThickness,
-        );
-
-        setMaterialEdgeLaquered(
-          budgetData.data.edge_lacquered[0].edgeLaqueredThickness,
-        );
+        setValue("edgeThickness", edgeLacquered?.edgeLaqueredThickness ?? "");
+        setMaterialEdgeLaquered(edgeLacquered?.edgeLaqueredThickness ?? 0);
 
         //FILO LUSTRADO
-        setValue(
-          "edgePolishedM2",
-          budgetData.data.edge_polished[0].edgePolishedM2,
-        );
-
-        setValue(
-          "edgePolishedPrice",
-          budgetData.data.edge_polished[0].edgePolishedPrice,
-        );
-
+        const edgePolished = budgetData.data.edge_polished?.[0];
+        setValue("edgePolishedM2", edgePolished?.edgePolishedM2 ?? 0);
+        setValue("edgePolishedPrice", edgePolished?.edgePolishedPrice ?? 0);
         setTotalPolishedEdgeLength(
-          Number(budgetData.data.edge_polished[0].totalPolishedEdgeLength),
+          Number(edgePolished?.totalPolishedEdgeLength ?? 0),
         );
-        setValue(
-          "edgePolishedThickness",
-          budgetData.data.edge_polished[0].edgePolishedThickness,
-        );
-
-        setMaterialEdgePolished(
-          budgetData.data.edge_polished[0].edgePolishedThickness,
-        );
+        setValue("edgePolishedThickness", edgePolished?.edgePolishedThickness ?? "");
+        setMaterialEdgePolished(edgePolished?.edgePolishedThickness ?? 0);
 
         //FILO SIN NADA
-        setTotalEdgeLength(Number(budgetData.data.edge_no_lacquered[0].edgeM2));
-        setValue("edgeSelect", budgetData.data.edge_no_lacquered[0].edgeSelect);
-        setEdgeSelect(budgetData.data.edge_no_lacquered[0].edgeSelect);
+        const edgeNoLacquered = budgetData.data.edge_no_lacquered?.[0];
+        setTotalEdgeLength(Number(edgeNoLacquered?.edgeM2 ?? 0));
+        setValue("edgeSelect", edgeNoLacquered?.edgeSelect ?? "");
+        setEdgeSelect(edgeNoLacquered?.edgeSelect ?? "");
 
         //INSUMOS
         if (budgetData.data.supplies) {
@@ -404,22 +497,22 @@ function EditBudget() {
         setValue("deliver_date", budgetData.data.deliver_date || "");
         //COLOCACIÓN
         if (budgetData.data.placement) {
-          setValue("placement", "true" || "");
+          setValue("placement", "true");
           setValue("placementDays", budgetData.data.placement_days || "");
           setValue("placementPrice", budgetData.data.placement_price || 0);
           setSubtotalPlacement(
             budgetData.data.placement_price * budgetData.data.placement_days,
           );
         } else {
-          setValue("placement", "false" || "");
+          setValue("placement", "false");
         }
 
         //ENVÍO
         if (budgetData.data.shipment) {
-          setValue("shipment", "true" || "");
+          setValue("shipment", "true");
           setValue("shipmentPrice", budgetData.data.shipment_price || "");
         } else {
-          setValue("shipment", "false" || "");
+          setValue("shipment", "false");
         }
         //MOSTRAR MÓDULOS
         setValue("showModules", budgetData.data.show_modules || "");
@@ -506,35 +599,38 @@ function EditBudget() {
     getAllVeneerToSet();
     getAllClientsToSet();
     getAllCategoriesToSet();
-  }, [budgetId, edgeSelect]);
+  }, [budgetId]);
 
-  //Servicios: obetener valores
-  const enchapadoArtesanalService = services.find(
-    (service) => service._id === "66a5bbab218ee6221506c133",
-  );
-
-  const laqueadoService = services.find(
-    (service) => service._id === "66a5bb29218ee6221506c125",
-  );
-
-  const laqueadoOpenService = services.find(
-    (service) => service._id === "66eb0ec94bc129b0fcfb3dea",
-  );
-
-  const lustreService = services.find(
-    (service) => service._id === "66a5bb50218ee6221506c12b",
-  );
-
-  const pantografiadoService = services.find(
-    (service) => service._id === "66a5bb88218ee6221506c130",
-  );
-
-  const filoService = services.find(
-    (service) => service._id === "66a5baea218ee6221506c119",
-  );
-
-  const cortePlacaService = services.find(
-    (service) => service._id === "66a5baf9218ee6221506c11c",
+  //Servicios: obtener valores
+  const {
+    enchapadoArtesanalService,
+    laqueadoService,
+    laqueadoOpenService,
+    lustreService,
+    pantografiadoService,
+    filoService,
+    cortePlacaService,
+  } = useMemo(
+    () => ({
+      enchapadoArtesanalService: services.find(
+        (s) => s._id === "66a5bbab218ee6221506c133"
+      ),
+      laqueadoService: services.find(
+        (s) => s._id === "66a5bb29218ee6221506c125"
+      ),
+      laqueadoOpenService: services.find(
+        (s) => s._id === "66eb0ec94bc129b0fcfb3dea"
+      ),
+      lustreService: services.find((s) => s._id === "66a5bb50218ee6221506c12b"),
+      pantografiadoService: services.find(
+        (s) => s._id === "66a5bb88218ee6221506c130"
+      ),
+      filoService: services.find((s) => s._id === "66a5baea218ee6221506c119"),
+      cortePlacaService: services.find(
+        (s) => s._id === "66a5baf9218ee6221506c11c"
+      ),
+    }),
+    [services]
   );
 
   //AL SELECCIONAR EL FILO OBTENER EL VALOR
@@ -669,7 +765,6 @@ function EditBudget() {
       totalQty += qty;
     }
     subTotal = subTotal * calculationCoefficient + totalQty * cortePlacaService?.price;
-    total = total;
     setSubtotalMaterialPrice(subTotal);
     setTotalMaterialPrice(total);
   };
@@ -774,13 +869,6 @@ function EditBudget() {
   };
   const handleSearchTermChange = (event) => {
     setSearchTerm(event.target.value);
-    // Aquí puedes filtrar los clientes basados en `event.target.value`
-    const filtered = allClients.filter((client) =>
-      `${client.lastname} ${client.name}`
-        .toLowerCase()
-        .includes(event.target.value.toLowerCase()),
-    );
-    setFilteredClients(filtered);
   };
 
   const handleClientSelect = (client) => {
@@ -900,6 +988,13 @@ function EditBudget() {
     setSubtotalShipmentPrice(shipmentPriceValue);
     // console.log(shipmentPriceValue);
   }, [shipmentPriceValue]);
+
+  // ── Recalcular total en modo multi (envío/locación van por mueble) ────────
+  useEffect(() => {
+    if (!Array.isArray(budget.furniture_items) || budget.furniture_items.length === 0) return;
+    const furnitureSub = Object.values(multiSubtotals).reduce((a, b) => a + b, 0);
+    setMultiTotalPrice(furnitureSub);
+  }, [budget.furniture_items, multiSubtotals]);
 
   //CALCULAR TOTAL COMPLETO
   const calculateTotalPrice = () => {
@@ -1054,9 +1149,114 @@ function EditBudget() {
   //FORMULARIO EDITAR PRESUPUESTO
   const onSubmit = async (data, event) => {
     event.preventDefault();
-    // console.log(data);
     //SET LOADER
     setSubmitLoader(true);
+
+    // ── Validación extra para modo multi ───────────────────────────────────────
+    if (isMultiBudget) {
+      const multiGlobalErrors = [];
+      if (!data.clientId && !clientOption)
+        multiGlobalErrors.push("El presupuesto no tiene un cliente asignado");
+      if (multiGlobalErrors.length > 0) {
+        setValidationErrors({ global: multiGlobalErrors, byFurniture: [] });
+        setSubmitLoader(false);
+        return;
+      }
+    }
+    // ── Fin validación multi ─────────────────────────────────────────────────
+
+    // ── Validación por sección multi (filos/chapa) ───────────────────────────
+    if (isMultiBudget) {
+      const furnitureErrors = multiSectionRefs.current.map((ref, idx) => {
+        const sectionErrs = ref?.collectErrors?.() ?? [];
+        const name = ref?.collectData?.()?.furniture_name ?? `Mueble ${idx + 1}`;
+        return { name, index: idx, errors: sectionErrs };
+      });
+      const hasFurnitureErrors = furnitureErrors.some((f) => f.errors.length > 0);
+      if (hasFurnitureErrors) {
+        setValidationErrors({ global: [], byFurniture: furnitureErrors });
+        setSubmitLoader(false);
+        return;
+      }
+    }
+
+    // ── Submit específico para multi ──────────────────────────────────────────
+    if (isMultiBudget) {
+      const sectionsData = multiSectionRefs.current.map((r) => r?.collectData());
+
+      let clientData;
+      if (clientOption === "existing") {
+        if (!data.clientId) {
+          setError("clientId", { type: "manual", message: "Seleccioná un cliente" });
+          setSubmitLoader(false);
+          return;
+        }
+        try {
+          const res = await getClientById(data.clientId);
+          clientData = res.data;
+        } catch (err) {
+          console.error(err);
+        }
+      } else if (clientOption === "new") {
+        try {
+          const res = await createClient({ ...data });
+          clientData = res.data;
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      if (clientOption && !clientData) {
+        setValidationErrors({ global: ["No se pudo cargar el cliente. Revisá los datos."], byFurniture: [] });
+        setSubmitLoader(false);
+        return;
+      }
+
+      // Imágenes
+      let clientAttachments = [...orderedImages.filter((i) => i.type === "existing")];
+      const newImages = orderedImages.filter((i) => i.type === "new");
+      if (newImages.length > 0) {
+        setImageUploading(true);
+        try {
+          const results = await Promise.all(newImages.map((i) => uploadBudgetImage(i.file)));
+          results.forEach((r) => clientAttachments.push({ url: r.url, original_name: r.original_name, mime_type: r.mime_type, size: r.size, path: r.path }));
+        } catch (err) {
+          setImageUploading(false);
+          setValidationErrors({ global: ["Error al subir las imágenes. Intentá de nuevo."], byFurniture: [] });
+          setSubmitLoader(false);
+          return;
+        }
+        setImageUploading(false);
+      }
+
+      const furnitureNames = sectionsData.map((s) => s?.furniture_name).filter(Boolean).join(", ");
+
+      const multiBudgetData = {
+        budget_number: budget.budget_number,
+        furniture_name: furnitureNames,
+        furniture: sectionsData.map((s) => s?.furniture).filter(Boolean),
+        furniture_items: sectionsData.filter(Boolean),
+        materials: [],
+        total_price: multiTotalPrice,
+        deliver_date: data.deliver_date,
+        client_comment: data.client_comment,
+        client_attachments: clientAttachments,
+        client: clientData || budget.client,
+        placement: false,
+        shipment: false,
+        calculation_coefficient: calculationCoefficient,
+        status: budget.status,
+      };
+
+      try {
+        await editBudget(removeEmptyFields(multiBudgetData), budget._id);
+        navigate(backUrl);
+      } catch (error) {
+        console.error("Error editando presupuesto multi:", error);
+        setSubmitLoader(false);
+        setValidationErrors({ global: ["Error al guardar el presupuesto. Revisá tu conexión e intentá de nuevo."], byFurniture: [] });
+      }
+      return;
+    }
 
     // Creación del objeto supplies agrupado por módulos
     const supplies = {};
@@ -1353,6 +1553,11 @@ function EditBudget() {
       navigate("/ver-presupuestos");
     } catch (error) {
       console.error("Error editando presupuesto front:", error);
+      setSubmitLoader(false);
+      setValidationErrors({
+        global: ["Error al guardar el presupuesto. Revisá tu conexión e intentá de nuevo."],
+        byFurniture: [],
+      });
     }
   };
   const formatCurrency = (value) => {
@@ -1362,6 +1567,215 @@ function EditBudget() {
       minimumFractionDigits: 2,
     }).format(value);
   };
+
+  // ── MULTI-FURNITURE EDIT RENDER ───────────────────────────────────────────
+  const isMultiBudget =
+    Array.isArray(budget.furniture_items) && budget.furniture_items.length > 0;
+
+  if (isMultiBudget) {
+    const fmtCurrency = (v) =>
+      new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency: "ARS",
+        minimumFractionDigits: 2,
+      }).format(v ?? 0);
+
+    return (
+      <>
+        <div className="pb-8 px-16 bg-gray-100 min-h-screen">
+          <div className="shadow-sm flex gap-4 justify-between items-center mb-8 bg-gray-800 p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500">
+            <h1 className="text-4xl font-semibold text-white">
+              Editar Presupuesto N°{budget.budget_number}
+            </h1>
+            <div className="flex items-center gap-4">
+              <Link
+                to={backUrl}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center align-middle items-center gap-2"
+              >
+                <img src="./../icon_back.svg" alt="Volver" className="w-[18px]" />
+                <p className="m-0 leading-loose">Volver</p>
+              </Link>
+              <Link
+                to="/"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-1 px-4 rounded-lg shadow-md transition duration-200 flex flex-row justify-center align-middle items-center gap-2"
+              >
+                <img src="./../icon_home.svg" alt="Inicio" className="w-[20px]" />
+                <p className="m-0 leading-loose">Ir a Inicio</p>
+              </Link>
+            </div>
+          </div>
+
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.target.tagName !== "TEXTAREA")
+                e.preventDefault();
+            }}
+            className="flex flex-col gap-6"
+          >
+            {/* Coeficiente de cálculo */}
+            <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="flex flex-row gap-4 items-center">
+                <div className="flex flex-col w-48">
+                  <label className="font-semibold text-gray-700 mb-1">
+                    Coeficiente de cálculo
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="border border-gray-300 rounded-md p-2"
+                    value={coefficientInput}
+                    onChange={(e) => {
+                      let raw = e.target.value.replace(",", ".");
+                      raw = raw.replace(/[^0-9.]/g, "");
+                      const parts = raw.split(".");
+                      const cleaned =
+                        parts.length > 2
+                          ? parts[0] + "." + parts.slice(1).join("")
+                          : raw;
+                      setCoefficientInput(cleaned);
+                      const num = parseFloat(cleaned);
+                      if (!Number.isNaN(num) && num > 0)
+                        setCalculationCoefficient(num);
+                    }}
+                    onBlur={() => {
+                      const num = parseFloat(coefficientInput);
+                      if (Number.isNaN(num) || num <= 0) {
+                        setCalculationCoefficient(systemCoefficient);
+                        setCoefficientInput(String(systemCoefficient));
+                      }
+                    }}
+                  />
+                </div>
+                <p className="text-sm text-gray-500 mt-5">
+                  Se aplica a todos los muebles de este presupuesto.
+                </p>
+              </div>
+            </div>
+
+            {/* Acordeones de muebles (editables) */}
+            <div className="flex flex-col gap-4">
+              {budget.furniture_items.map((item, idx) => (
+                <FurnitureBudgetSection
+                  key={item.furniture?._id || idx}
+                  ref={(el) => (multiSectionRefs.current[idx] = el)}
+                  furnitureId={item.furniture?._id || (typeof item.furniture === "string" ? item.furniture : null)}
+                  index={idx}
+                  services={services}
+                  edges={edges}
+                  tables={tables}
+                  veneer={veneer}
+                  calculationCoefficient={calculationCoefficient}
+                  onSubtotalChange={handleMultiSubtotalChange}
+                  selectStyles={selectStyles}
+                  quillModules={quillModules}
+                  quillFormats={quillFormats}
+                  isOpen={openFurnitureIndex === idx}
+                  onToggle={() =>
+                    setOpenFurnitureIndex((prev) => (prev === idx ? null : idx))
+                  }
+                  initialValues={item}
+                />
+              ))}
+            </div>
+
+            {/* Campos compartidos */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col gap-6">
+              <h2 className="text-2xl font-semibold border-b border-emerald-500 pb-3">
+                Datos del Presupuesto
+              </h2>
+
+              {/* Comentarios compartidos */}
+              <div className="w-full">
+                <label className="block font-semibold mb-2">Comentarios para el cliente</label>
+                <QuillEditor
+                  value={clientCommentValue}
+                  onChange={(val) => {
+                    setClientCommentValue(val);
+                    setValue("client_comment", val, { shouldValidate: true });
+                  }}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  placeholder="Comentarios para el cliente..."
+                />
+                <input type="hidden" {...register("client_comment")} />
+              </div>
+
+              {/* Fecha de entrega */}
+              <div className="flex flex-col w-1/3 gap-2">
+                <label className="font-semibold">Fecha de entrega</label>
+                <input
+                  type="text"
+                  placeholder="Ej: 15/04/2025 o a confirmar"
+                  className="border border-gray-300 rounded-md p-2"
+                  {...register("deliver_date")}
+                />
+              </div>
+
+              {/* Imágenes adjuntas */}
+              {orderedImages.length > 0 && (
+                <div>
+                  <label className="font-semibold mb-2 block">Imágenes adjuntas</label>
+                  <div className="flex flex-wrap gap-3">
+                    {orderedImages.map((img, i) => (
+                      <div key={img._id || i} className="relative">
+                        <img
+                          src={img.url}
+                          alt={img.original_name || `img-${i}`}
+                          className="w-24 h-24 object-cover rounded border"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Total recalculado */}
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                <p className="text-xl font-bold text-emerald-900">
+                  Total del presupuesto: {fmtCurrency(multiTotalPrice)}
+                </p>
+                <p className="text-xs text-emerald-700 mt-1">
+                  Se recalcula en tiempo real según los valores de cada mueble.
+                </p>
+              </div>
+
+              {/* Submit */}
+              {!submitLoader ? (
+                <button
+                  type="submit"
+                  className="bg-orange text-white font-medium py-2 px-6 rounded-lg shadow-md transition duration-200 w-full"
+                >
+                  Guardar cambios
+                </button>
+              ) : (
+                <div className="flex justify-center items-center py-4">
+                  <Oval
+                    visible
+                    height="30"
+                    width="30"
+                    color="#fff"
+                    secondaryColor="#fff"
+                    strokeWidth="6"
+                    ariaLabel="oval-loading"
+                    wrapperClass="bg-lightblue rounded-md px-2 py-1"
+                  />
+                </div>
+              )}
+            </div>
+          </form>
+        </div>
+
+        {validationErrors && (
+          <ValidationErrorModal
+            errors={validationErrors}
+            onClose={() => setValidationErrors(null)}
+          />
+        )}
+      </>
+    );
+  }
+  // ── END MULTI-FURNITURE EDIT RENDER ──────────────────────────────────────
 
   return (
     <>
@@ -1709,43 +2123,44 @@ function EditBudget() {
                 ) : (
                   ""
                 )}
-                {/* FILO  laqueado*/}
-                {totalLacqueredEdgeLength > 0 ? (
-                  <>
-                    <div className="flex gap-4 my-6">
-                      <div className="flex flex-col w-2/3">
-                        <p className="font-bold w-full ">Filo Laqueado:</p>
-                        <div>
-                          {materialEdgeLaquered > 0 ? (
-                            <>
-                              <p className="mb-1">
-                                {(
-                                  (totalLacqueredEdgeLength *
-                                    materialEdgeLaquered) /
-                                  1000
-                                ).toFixed(2)}{" "}
-                                m<sup>2</sup> Precio:
-                                {formatCurrency(getValues("edgeLaqueredPrice"))}
-                              </p>
-                              <input
-                                name={"edgeLaqueredM2"}
-                                type="hidden"
-                                {...register("edgeLaqueredM2")}
-                              />
-
-                              <input
-                                name={`edgeLaqueredPrice`}
-                                type="hidden"
-                                {...register(`edgeLaqueredPrice`)}
-                              />
-                            </>
-                          ) : (
-                            <p className="text-red-500">Indicar grosor</p>
-                          )}
-                        </div>
+                {/* FILOS */}
+                <div className="flex flex-col gap-4">
+                  {/* FILO laqueado */}
+                  {totalLacqueredEdgeLength > 0 && (
+                    <div className="flex items-start gap-6">
+                      <div className="flex-1">
+                        <p className="font-bold">Filo Laqueado:</p>
+                        {materialEdgeLaquered > 0 ? (
+                          <>
+                            <p className="mb-1">
+                              {(
+                                (totalLacqueredEdgeLength *
+                                  materialEdgeLaquered) /
+                                1000
+                              ).toFixed(2)}{" "}
+                              m<sup>2</sup> Precio:
+                              {formatCurrency(getValues("edgeLaqueredPrice"))}
+                            </p>
+                            <input
+                              name={"edgeLaqueredM2"}
+                              type="hidden"
+                              {...register("edgeLaqueredM2")}
+                            />
+                            <input
+                              name={`edgeLaqueredPrice`}
+                              type="hidden"
+                              {...register(`edgeLaqueredPrice`)}
+                            />
+                          </>
+                        ) : (
+                          <p className="text-red-500">Indicar grosor</p>
+                        )}
                       </div>
-                      <div className="flex flex-col w-1/3 ">
-                        <label htmlFor="edgeThickness" className="mb-0">
+                      <div className="flex flex-col w-72">
+                        <label
+                          htmlFor="edgeThickness"
+                          className="mb-1 text-sm font-medium text-gray-700"
+                        >
                           Grosor de la placa (cm)
                         </label>
                         <input
@@ -1770,46 +2185,44 @@ function EditBudget() {
                         )}
                       </div>
                     </div>
-                  </>
-                ) : (
-                  ""
-                )}
-                {/* FILO  lustrado*/}
-                {totalPolishedEdgeLength > 0 ? (
-                  <>
-                    <div className="flex gap-y-4">
-                      <div>
+                  )}
+
+                  {/* FILO lustrado */}
+                  {totalPolishedEdgeLength > 0 && (
+                    <div className="flex items-start gap-6">
+                      <div className="flex-1">
                         <p className="font-bold">Filo Lustrado:</p>
-                        <div className="flex flex-col w-2/3  ">
-                          {materialEdgePolished > 0 ? (
-                            <>
-                              <p className="mb-1">
-                                {(
-                                  (totalPolishedEdgeLength *
-                                    materialEdgePolished) /
-                                  1000
-                                ).toFixed(2)}{" "}
-                                m<sup>2</sup> Precio:
-                                {formatCurrency(getValues("edgePolishedPrice"))}
-                              </p>
-                              <input
-                                name={`edgePolishedM2`}
-                                type="hidden"
-                                {...register(`edgePolishedM2`)}
-                              />
-                              <input
-                                name={`edgePolishedPrice`}
-                                type="hidden"
-                                {...register(`edgePolishedPrice`)}
-                              />
-                            </>
-                          ) : (
-                            <p className="text-red-500">Indicar grosor</p>
-                          )}
-                        </div>
+                        {materialEdgePolished > 0 ? (
+                          <>
+                            <p className="mb-1">
+                              {(
+                                (totalPolishedEdgeLength *
+                                  materialEdgePolished) /
+                                1000
+                              ).toFixed(2)}{" "}
+                              m<sup>2</sup> Precio:
+                              {formatCurrency(getValues("edgePolishedPrice"))}
+                            </p>
+                            <input
+                              name={`edgePolishedM2`}
+                              type="hidden"
+                              {...register(`edgePolishedM2`)}
+                            />
+                            <input
+                              name={`edgePolishedPrice`}
+                              type="hidden"
+                              {...register(`edgePolishedPrice`)}
+                            />
+                          </>
+                        ) : (
+                          <p className="text-red-500">Indicar grosor</p>
+                        )}
                       </div>
-                      <div className="flex flex-col w-1/3 ml-2">
-                        <label htmlFor="edgePolishedThickness" className="mb-2">
+                      <div className="flex flex-col w-72">
+                        <label
+                          htmlFor="edgePolishedThickness"
+                          className="mb-1 text-sm font-medium text-gray-700"
+                        >
                           Grosor de la placa (cm)
                         </label>
                         <input
@@ -1834,19 +2247,14 @@ function EditBudget() {
                         )}
                       </div>
                     </div>
-                  </>
-                ) : (
-                  ""
-                )}
-                {/* FILO  sin nada*/}
-                {totalEdgeLength > 0 ? (
-                  <>
-                    <div className="flex gap-4">
-                      <p className="flex flex-col mb-1 w-2/3">
-                        <span className="font-bold w-full">
-                          Filo total (sin laquear):
-                        </span>{" "}
-                        <span>
+                  )}
+
+                  {/* FILO sin nada */}
+                  {totalEdgeLength > 0 && (
+                    <div className="flex items-start gap-6">
+                      <div className="flex-1">
+                        <p className="font-bold">Filo total (sin laquear):</p>
+                        <p>
                           {totalEdgeLength.toFixed(2)} m Precio:
                           {formatCurrency(
                             totalEdgeLength * materialEdge +
@@ -1859,21 +2267,23 @@ function EditBudget() {
                                 filoService?.price * totalEdgeLength,
                             ),
                           )}
-                        </span>
-                      </p>
-                      <input
-                        name={`edgeM2`}
-                        type="hidden"
-                        value={totalEdgeLength.toFixed(2)}
-                        {...register(`edgeM2`)}
-                      />
-                      <input
-                        name={`edgePrice`}
-                        type="hidden"
-                        {...register(`edgePrice`)}
-                      />
-
-                      <div className="flex flex-col w-1/3 ">
+                        </p>
+                        <input
+                          name={`edgeM2`}
+                          type="hidden"
+                          value={totalEdgeLength.toFixed(2)}
+                          {...register(`edgeM2`)}
+                        />
+                        <input
+                          name={`edgePrice`}
+                          type="hidden"
+                          {...register(`edgePrice`)}
+                        />
+                      </div>
+                      <div className="flex flex-col w-72">
+                        <label className="mb-1 text-sm font-medium text-gray-700">
+                          Tipo de filo
+                        </label>
                         <Controller
                           name="edgeSelect"
                           control={control}
@@ -1907,10 +2317,8 @@ function EditBudget() {
                         )}
                       </div>
                     </div>
-                  </>
-                ) : (
-                  ""
-                )}
+                  )}
+                </div>
               </div>
               {/* INSUMOS */}
               {showSupplies ? (
@@ -2620,6 +3028,13 @@ function EditBudget() {
           </div>
         </form>
       </div>
+
+      {validationErrors && (
+        <ValidationErrorModal
+          errors={validationErrors}
+          onClose={() => setValidationErrors(null)}
+        />
+      )}
     </>
   );
 }

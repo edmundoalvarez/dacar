@@ -126,10 +126,10 @@ function EditFurnitureMultipleModules() {
   }
 
   return (
-    <div className="pb-8 px-16 bg-gray-100 min-h-screen">
+    <div className="pb-8 px-4 sm:px-8 lg:px-16 bg-gray-100 min-h-screen">
       <div>
-        <div className="flex gap-4 justify-between items-center mb-8 bg-gray-800 p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
-          <h1 className="text-4xl font-semibold text-white">
+        <div className="flex flex-wrap gap-4 justify-between items-center mb-8 bg-gray-800 p-4 sm:p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white">
             Mueble: {singleFurniture.name}
           </h1>
           <div className="flex items-center gap-4">
@@ -223,88 +223,89 @@ function EditFurnitureMultipleModules() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <button
                       onClick={() => handleEditFurniture(singleFurniture._id)}
-                      className="w-1/2 text-white bg-orange rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                      className="text-white bg-orange rounded-md px-4 py-1.5 flex flex-row justify-center align-middle items-center gap-2"
                     >
                       <img
                         src="./../icon_edit.svg"
                         alt="Icono de budgets"
-                        className="w-[20px]"
+                        className="w-[16px] shrink-0"
                       />
-                      <p className="m-0 leading-loose">Editar</p>
+                      <p className="m-0 leading-loose text-sm">Editar</p>
                     </button>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <div className="overflow-x-auto my-8 flex justify-center items-center h-[100px]">
-            <Grid
-              visible={loader}
-              height="80"
-              width="80"
-              s
-              color="rgb(92, 92, 92)"
-              ariaLabel="grid-loading"
-              radius="12.5"
-              wrapperStyle={{}}
-              wrapperClass="grid-wrapper"
-            />
-          </div>
+          {loader && (
+            <div className="my-4 flex justify-center items-center h-[80px]">
+              <Grid
+                visible={loader}
+                height="80"
+                width="80"
+                color="rgb(92, 92, 92)"
+                ariaLabel="grid-loading"
+                radius="12.5"
+                wrapperStyle={{}}
+                wrapperClass="grid-wrapper"
+              />
+            </div>
+          )}
           {/* modulos */}
 
-          <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white p-6">
-            <h2 className="text-2xl font-semibold mb-4">Modulos</h2>
+          <div className="mt-4 rounded-lg shadow-sm border border-gray-200 bg-white p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Modulos</h2>
             {Array.isArray(singleFurniture.modules_furniture) ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
                 {singleFurniture.modules_furniture
                   .slice()
-                  .sort((a, b) => a.name.localeCompare(b.name)) // Ordena alfabéticamente
+                  .sort((a, b) => a.name.localeCompare(b.name))
                   .map((module, index) => (
                     <div
                       key={module._id || index}
                       className="rounded-lg p-4 flex flex-col items-start bg-white shadow border-2 border-emerald-500"
                     >
-                      <p className="mb-2 font-bold text-md text-black">
+                      <p className="mb-3 font-bold text-sm text-black">
                         {module.name}
                       </p>
-                      <div className="mt-auto flex gap-2 w-full">
+                      <div className="mt-auto flex gap-1.5 w-full">
                         <button
-                          className="w-1/3 text-white bg-blue-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          className="w-1/3 text-white bg-blue-500 rounded-md px-2 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-1.5"
                           onClick={() => handleOpenModal(module)}
                         >
                           <img
                             src="./../icon_search.svg"
-                            alt="Icono de budgets"
-                            className="w-[18px]"
+                            alt="Ver"
+                            className="w-[13px] sm:w-[15px] shrink-0"
                           />
-                          <p className="m-0 leading-loose">Ver</p>
+                          <p className="m-0 leading-loose text-xs sm:text-sm">Ver</p>
                         </button>
 
                         <button
                           onClick={() =>
                             handleEditModule(singleFurniture._id, module._id)
                           }
-                          className="w-1/3 text-white bg-orange rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          className="w-1/3 text-white bg-orange rounded-md px-2 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-1.5"
                         >
                           <img
                             src="./../icon_edit.svg"
-                            alt="Icono de budgets"
-                            className="w-[18px]"
+                            alt="Editar"
+                            className="w-[13px] sm:w-[15px] shrink-0"
                           />
-                          <p className="m-0 leading-loose">Editar</p>
+                          <p className="m-0 leading-loose text-xs sm:text-sm">Editar</p>
                         </button>
                         <button
                           onClick={() =>
                             handleDeleteModule(singleFurniture._id, module._id)
                           }
-                          className="w-1/3 text-white bg-red-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          className="w-1/3 text-white bg-red-500 rounded-md px-2 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-1.5"
                         >
                           <img
                             src="./../icon_delete.svg"
-                            alt="Icono de budgets"
-                            className="w-[16px]"
+                            alt="Eliminar"
+                            className="w-[12px] sm:w-[14px] shrink-0"
                           />
-                          <p className="m-0 leading-loose">Eliminar</p>
+                          <p className="m-0 leading-loose text-xs sm:text-sm">Eliminar</p>
                         </button>
                       </div>
                     </div>

@@ -144,16 +144,13 @@ export const generatePDF = async (elementId, budget) => {
       }
     });
 
-    // Segunda tabla
-    tables[1].querySelectorAll("tr").forEach((row, index) => {
-      // Quitar bordes iniciales
+    // Segunda tabla (totales: puede tener 2 o 3 filas según IVA)
+    const totalRows = tables[1].querySelectorAll("tr");
+    totalRows.forEach((row, index) => {
       row.style.border = "none";
-
-      // Aplicar borde superior a todos los tr por defecto
       row.style.borderTop = "0.5px solid #282828";
-
-      // Excepción: el tr 3 (índice 2) de la segunda tabla
-      if (index === 2) {
+      // Última fila siempre lleva el borde inferior
+      if (index === totalRows.length - 1) {
         row.style.borderTop = "none";
         row.style.borderBottom = "0.5px solid #282828";
       }

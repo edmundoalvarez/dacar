@@ -11,6 +11,8 @@ export { createFurniture } from "./services/Furniture/createFurniture.js";
 export { getAllFurnitures } from "./services/Furniture/getAllFurnitures.js";
 export { getAllFurnituresList } from "./services/Furniture/getAllFurnituresList.js";
 export { getFurnitureById } from "./services/Furniture/getFurnitureById.js";
+export { getFurnitureWithBudgetCalcs } from "./services/Furniture/getFurnitureWithBudgetCalcs.js";
+export { cloneFurniture } from "./services/Furniture/cloneFurniture.js";
 export { updateModuleOfFurniture } from "./services/Furniture/updateModuleOfFurniture.js";
 export { deleteModuleOnFurniture } from "./services/Furniture/deleteModuleOnFurniture.js";
 export { updateFurniture } from "./services/Furniture/updateFurniture.js";
@@ -168,6 +170,7 @@ export { Budgets } from "./views/Budgets/Budgets";
 export { BudgetDetails } from "./views/Budgets/BudgetDetails";
 export { EditBudget } from "./views/Budgets/EditBudget";
 export { ConfirmedBudgetsReport } from "./views/Budgets/ConfirmedBudgetsReport";
+export { SelectFurnitures } from "./views/Budgets/SelectFurnitures";
 
 //CLIENTS
 export { Clients } from "./views/Clients/Clients";

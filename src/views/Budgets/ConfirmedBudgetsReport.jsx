@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Grid, Oval } from "react-loader-spinner";
 import debounce from "lodash.debounce";
+import { BudgetsFilterBar } from "./BudgetsFilterBar.jsx";
 import {
   getConfirmedBudgets,
   deleteBudget,
@@ -14,6 +15,8 @@ function ConfirmedBudgetsReport() {
   const [loader, setLoader] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [furnitureName, setFurnitureName] = useState("");
+  const [budgetNumber, setBudgetNumber] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
@@ -48,21 +51,17 @@ function ConfirmedBudgetsReport() {
     });
   };
 
-  const fetchData = async (
-    term,
-    from,
-    to,
-    page,
-    { showMainLoader = false } = {}
-  ) => {
+  const fetchData = async (filters = {}, page = 1, { showMainLoader = false } = {}) => {
     if (showMainLoader) setLoader(true);
     try {
       const result = await getConfirmedBudgets(
-        term,
+        filters.term,
         page,
         itemsPerPage,
-        from,
-        to
+        filters.dateFrom,
+        filters.dateTo,
+        filters.furnitureName,
+        filters.budgetNumber
       );
       setBudgets(result.data || []);
       setCurrentPage(result.currentPage);
@@ -75,57 +74,97 @@ function ConfirmedBudgetsReport() {
     }
   };
 
+  // Snapshot de los filtros vigentes, para usar en paginación y recargas
+  const buildFilters = () => ({
+    term: searchTerm,
+    furnitureName,
+    budgetNumber,
+    dateFrom,
+    dateTo,
+  });
+
+  // Carga inicial (los cambios de filtros se disparan vía debouncedSearch,
+  // y los de página vía los handlers de paginación, para evitar pedidos duplicados)
   useEffect(() => {
-    fetchData(searchTerm, dateFrom, dateTo, currentPage, {
-      showMainLoader: true,
-    });
+    fetchData(buildFilters(), 1, { showMainLoader: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
+  }, []);
 
   const debouncedSearch = useMemo(
     () =>
-      debounce((term, from, to) => {
-        fetchData(term, from, to, 1);
+      debounce((filters) => {
+        fetchData(filters, 1);
         setCurrentPage(1);
       }, 800),
     []
   );
 
-  const handleSearchChange = (e) => {
+  const handleSearchTermChange = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
     setSearchLoader(true);
-    debouncedSearch(term, dateFrom, dateTo);
+    debouncedSearch({ ...buildFilters(), term });
+  };
+
+  const handleFurnitureNameChange = (e) => {
+    const value = e.target.value;
+    setFurnitureName(value);
+    setSearchLoader(true);
+    debouncedSearch({ ...buildFilters(), furnitureName: value });
+  };
+
+  const handleBudgetNumberChange = (e) => {
+    const value = e.target.value.replace(/[^0-9]/g, "");
+    setBudgetNumber(value);
+    setSearchLoader(true);
+    debouncedSearch({ ...buildFilters(), budgetNumber: value });
   };
 
   const handleDateFromChange = (e) => {
     const value = e.target.value;
     setDateFrom(value);
     setSearchLoader(true);
-    debouncedSearch(searchTerm, value, dateTo);
+    debouncedSearch({ ...buildFilters(), dateFrom: value });
   };
 
   const handleDateToChange = (e) => {
     const value = e.target.value;
     setDateTo(value);
     setSearchLoader(true);
-    debouncedSearch(searchTerm, dateFrom, value);
+    debouncedSearch({ ...buildFilters(), dateTo: value });
+  };
+
+  const handleClearFilters = () => {
+    const hasActiveFilters = Boolean(
+      searchTerm || furnitureName || budgetNumber || dateFrom || dateTo
+    );
+    if (!hasActiveFilters) return;
+
+    debouncedSearch.cancel();
+    setSearchTerm("");
+    setFurnitureName("");
+    setBudgetNumber("");
+    setDateFrom("");
+    setDateTo("");
+    setSearchLoader(true);
+    setCurrentPage(1);
+    fetchData(
+      { term: "", furnitureName: "", budgetNumber: "", dateFrom: "", dateTo: "" },
+      1,
+      { showMainLoader: true }
+    );
   };
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
-      fetchData(searchTerm, dateFrom, dateTo, currentPage - 1, {
-        showMainLoader: true,
-      });
+      fetchData(buildFilters(), currentPage - 1, { showMainLoader: true });
       setCurrentPage((p) => p - 1);
     }
   };
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      fetchData(searchTerm, dateFrom, dateTo, currentPage + 1, {
-        showMainLoader: true,
-      });
+      fetchData(buildFilters(), currentPage + 1, { showMainLoader: true });
       setCurrentPage((p) => p + 1);
     }
   };
@@ -140,7 +179,7 @@ function ConfirmedBudgetsReport() {
     if (!budgetToDelete) return;
     try {
       await deleteBudget(budgetToDelete);
-      await fetchData(searchTerm, dateFrom, dateTo, currentPage, {
+      await fetchData(buildFilters(), currentPage, {
         showMainLoader: true,
       });
     } catch (error) {
@@ -199,7 +238,7 @@ function ConfirmedBudgetsReport() {
       await unconfirmBudget(budgetToUnconfirm);
 
       // recargo lista de confirmados; este presupuesto ya no va a aparecer aquí
-      await fetchData(searchTerm, dateFrom, dateTo, currentPage, {
+      await fetchData(buildFilters(), currentPage, {
         showMainLoader: true,
       });
 
@@ -213,53 +252,11 @@ function ConfirmedBudgetsReport() {
 
   return (
     <>
-      <div className="pb-8 px-16 bg-gray-100 min-h-screen">
-        <div className="flex gap-4 justify-between items-center mb-8 bg-gray-800 p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
-          <h1 className="text-3xl font-semibold text-white">
+      <div className="pb-8 px-4 sm:px-8 lg:px-16 bg-gray-100 min-h-screen">
+        <div className="flex flex-wrap gap-4 justify-between items-center mb-6 bg-gray-800 p-4 sm:p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-white">
             Presupuestos confirmados
           </h1>
-
-          {/* Filtros */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={handleSearchChange}
-                placeholder="Buscar por nombre de cliente"
-                className="border border-gray-300 p-2 rounded-lg shadow-md w-[260px]"
-              />
-              <Oval
-                visible={searchLoader}
-                height="28"
-                width="28"
-                color="rgb(92, 92, 92)"
-                secondaryColor="rgb(92, 92, 92)"
-                strokeWidth="6"
-                ariaLabel="oval-loading"
-              />
-            </div>
-            <div className="flex items-center gap-2 text-white text-sm">
-              <div className="flex flex-col">
-                <span>Desde</span>
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={handleDateFromChange}
-                  className="border border-gray-300 p-1 rounded-lg text-black"
-                />
-              </div>
-              <div className="flex flex-col">
-                <span>Hasta</span>
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={handleDateToChange}
-                  className="border border-gray-300 p-1 rounded-lg text-black"
-                />
-              </div>
-            </div>
-          </div>
 
           <Link
             to="/"
@@ -274,9 +271,24 @@ function ConfirmedBudgetsReport() {
           </Link>
         </div>
 
-        <div className="overflow-x-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white">
+        <BudgetsFilterBar
+          searchTerm={searchTerm}
+          furnitureName={furnitureName}
+          budgetNumber={budgetNumber}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onSearchTermChange={handleSearchTermChange}
+          onFurnitureNameChange={handleFurnitureNameChange}
+          onBudgetNumberChange={handleBudgetNumberChange}
+          onDateFromChange={handleDateFromChange}
+          onDateToChange={handleDateToChange}
+          onClearFilters={handleClearFilters}
+          loading={searchLoader}
+        />
+
+        <div className="overflow-x-auto overflow-y-auto rounded-lg shadow-sm border border-gray-200 bg-white max-h-[70vh]">
           <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-gray-700">
+            <thead className="bg-gray-700 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider">
                   Número

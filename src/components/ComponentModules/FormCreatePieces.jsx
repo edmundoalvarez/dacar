@@ -9,6 +9,8 @@ function FormCreatePieces({
     errors,
     tables,
     resetField,
+    getValues,
+    setValue,
 }) {
     const [showEdgePiece, setShowEdgePiece] = useState(false);
     const [finishingModule, setFinishingModule] = useState("");
@@ -695,6 +697,11 @@ function FormCreatePieces({
                                 className="ml-2"
                                 type="checkbox"
                                 {...register(`edgeWidth${index}`)}
+                                onChange={(e) => {
+                                    if (!e.target.checked) {
+                                        resetField(`edgeWidthSides${index}`);
+                                    }
+                                }}
                             />
                         </div>
                         <div className="flex flex-col">
@@ -708,7 +715,19 @@ function FormCreatePieces({
                                 className="border border-gray-300 rounded-md p-2"
                                 name={`edgeWidthSides${index}`}
                                 id={`edgeWidthSides${index}`}
-                                {...register(`edgeWidthSides${index}`)}
+                                {...register(`edgeWidthSides${index}`, {
+                                    validate: (value) =>
+                                        !getValues(`edgeWidth${index}`) || value
+                                            ? true
+                                            : "La cantidad de lados es obligatoria",
+                                })}
+                                onChange={(e) => {
+                                    if (e.target.value) {
+                                        setValue(`edgeWidth${index}`, true, {
+                                            shouldValidate: true,
+                                        });
+                                    }
+                                }}
                             >
                                 <option value="">Elegir una opción</option>
                                 <option value="1">1 Lado</option>
@@ -731,6 +750,11 @@ function FormCreatePieces({
                                 className="ml-2"
                                 type="checkbox"
                                 {...register(`edgeLength${index}`)}
+                                onChange={(e) => {
+                                    if (!e.target.checked) {
+                                        resetField(`edgeLengthSides${index}`);
+                                    }
+                                }}
                             />
                         </div>
                         <div className="flex flex-col">
@@ -744,7 +768,19 @@ function FormCreatePieces({
                                 className="border border-gray-300 rounded-md p-2"
                                 name={`edgeLengthSides${index}`}
                                 id={`edgeLengthSides${index}`}
-                                {...register(`edgeLengthSides${index}`)}
+                                {...register(`edgeLengthSides${index}`, {
+                                    validate: (value) =>
+                                        !getValues(`edgeLength${index}`) || value
+                                            ? true
+                                            : "La cantidad de lados es obligatoria",
+                                })}
+                                onChange={(e) => {
+                                    if (e.target.value) {
+                                        setValue(`edgeLength${index}`, true, {
+                                            shouldValidate: true,
+                                        });
+                                    }
+                                }}
                             >
                                 <option value="">Elegir una opción</option>
                                 <option value="1">1 Lado</option>

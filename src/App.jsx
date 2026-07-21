@@ -33,6 +33,7 @@ import {
   Budgets,
   BudgetDetails,
   EditBudget,
+  SelectFurnitures,
   ConfirmedBudgetsReport,
   //Clientes
   Clients,
@@ -100,6 +101,10 @@ function App() {
             />
             {/* presupuestos */}
             <Route path="/ver-presupuestos" element={<Budgets />} />
+            <Route
+              path="/seleccionar-muebles"
+              element={<SelectFurnitures />}
+            />
             <Route
               path="/presupuestar-mueble/:idFurniture"
               element={<CreateBudget />}
