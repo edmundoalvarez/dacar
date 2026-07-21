@@ -5,6 +5,7 @@ import { Grid, Oval } from "react-loader-spinner";
 import ExcelJS from "exceljs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { BudgetsFilterBar } from "./BudgetsFilterBar.jsx";
 import {
   getAllBudgets,
   deleteBudget,
@@ -23,6 +24,10 @@ function Budgets() {
 
   const [loader, setLoader] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [furnitureName, setFurnitureName] = useState("");
+  const [budgetNumber, setBudgetNumber] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [searchLoader, setSearchLoader] = useState(false);
 
   // Paginación
@@ -59,7 +64,7 @@ function Budgets() {
   };
 
   const getAllBudgetsToSet = useCallback(
-    async (term = "", page = 1, { showMainLoader = false } = {}) => {
+    async (filters = {}, page = 1, { showMainLoader = false } = {}) => {
       if (controllerRef.current) controllerRef.current.abort();
       const controller = new AbortController();
       controllerRef.current = controller;
@@ -69,12 +74,12 @@ function Budgets() {
       if (showMainLoader) setLoader(true);
 
       try {
-        const data = await getAllBudgets(
-          term,
+        const data = await getAllBudgets({
+          ...filters,
           page,
           itemsPerPage,
-          controller.signal
-        );
+          signal: controller.signal,
+        });
         if (!data || seq !== reqSeqRef.current) return;
 
         setBudgets(data.budgets);
@@ -90,19 +95,31 @@ function Budgets() {
     [itemsPerPage]
   );
 
+  // Snapshot de los filtros vigentes, para usar en paginación y recargas
+  const buildFilters = () => ({
+    term: searchTerm,
+    furnitureName,
+    budgetNumber,
+    dateFrom,
+    dateTo,
+  });
+
   // Al entrar/volver a la lista (o al paginar), aseguramos scroll arriba
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [currentPage]);
 
+  // Carga inicial (los cambios de filtros se disparan vía debouncedSearch,
+  // y los de página vía los handlers de paginación, para evitar pedidos duplicados)
   useEffect(() => {
-    getAllBudgetsToSet(searchTerm, currentPage, { showMainLoader: true });
-  }, [currentPage, searchTerm, getAllBudgetsToSet]);
+    getAllBudgetsToSet(buildFilters(), 1, { showMainLoader: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const debouncedSearch = useMemo(
     () =>
-      debounce((term) => {
-        getAllBudgetsToSet(term, 1);
+      debounce((filters) => {
+        getAllBudgetsToSet(filters, 1);
         setCurrentPage(1);
       }, 800),
     [getAllBudgetsToSet]
@@ -115,23 +132,76 @@ function Budgets() {
     };
   }, [debouncedSearch]);
 
-  const handleChange = (e) => {
+  const handleSearchTermChange = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
     setSearchLoader(true);
-    debouncedSearch(term);
+    debouncedSearch({ ...buildFilters(), term });
+  };
+
+  const handleFurnitureNameChange = (e) => {
+    const value = e.target.value;
+    setFurnitureName(value);
+    setSearchLoader(true);
+    debouncedSearch({ ...buildFilters(), furnitureName: value });
+  };
+
+  const handleBudgetNumberChange = (e) => {
+    const value = e.target.value.replace(/[^0-9]/g, "");
+    setBudgetNumber(value);
+    setSearchLoader(true);
+    debouncedSearch({ ...buildFilters(), budgetNumber: value });
+  };
+
+  const handleDateFromChange = (e) => {
+    const value = e.target.value;
+    setDateFrom(value);
+    setSearchLoader(true);
+    debouncedSearch({ ...buildFilters(), dateFrom: value });
+  };
+
+  const handleDateToChange = (e) => {
+    const value = e.target.value;
+    setDateTo(value);
+    setSearchLoader(true);
+    debouncedSearch({ ...buildFilters(), dateTo: value });
+  };
+
+  const handleClearFilters = () => {
+    const hasActiveFilters = Boolean(
+      searchTerm || furnitureName || budgetNumber || dateFrom || dateTo
+    );
+    if (!hasActiveFilters) return;
+
+    debouncedSearch.cancel();
+    setSearchTerm("");
+    setFurnitureName("");
+    setBudgetNumber("");
+    setDateFrom("");
+    setDateTo("");
+    setSearchLoader(true);
+    setCurrentPage(1);
+    getAllBudgetsToSet(
+      { term: "", furnitureName: "", budgetNumber: "", dateFrom: "", dateTo: "" },
+      1,
+      { showMainLoader: true }
+    );
   };
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
-      getAllBudgetsToSet(searchTerm, currentPage - 1, { showMainLoader: true });
+      getAllBudgetsToSet(buildFilters(), currentPage - 1, {
+        showMainLoader: true,
+      });
       setCurrentPage((p) => p - 1);
     }
   };
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      getAllBudgetsToSet(searchTerm, currentPage + 1, { showMainLoader: true });
+      getAllBudgetsToSet(buildFilters(), currentPage + 1, {
+        showMainLoader: true,
+      });
       setCurrentPage((p) => p + 1);
     }
   };
@@ -465,7 +535,9 @@ function Budgets() {
   function deleteSingleBudget(budgetId) {
     deleteBudget(budgetId)
       .then(() => {
-        getAllBudgetsToSet(searchTerm, currentPage, { showMainLoader: true });
+        getAllBudgetsToSet(buildFilters(), currentPage, {
+          showMainLoader: true,
+        });
       })
       .catch((error) => {
         console.error(error);
@@ -523,7 +595,7 @@ function Budgets() {
       await confirmBudget(budgetToConfirm);
 
       // recargo la lista; el presupuesto confirmado ya no se trae
-      await getAllBudgetsToSet(searchTerm, currentPage, {
+      await getAllBudgetsToSet(buildFilters(), currentPage, {
         showMainLoader: true,
       });
 
@@ -538,28 +610,8 @@ function Budgets() {
   return (
     <>
       <div className="pb-8 px-4 sm:px-8 lg:px-16 bg-gray-100 min-h-screen">
-        <div className="flex flex-wrap gap-4 justify-between items-center mb-8 bg-gray-800 p-4 sm:p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
+        <div className="flex flex-wrap gap-4 justify-between items-center mb-6 bg-gray-800 p-4 sm:p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
           <h1 className="text-2xl sm:text-4xl font-semibold text-white">Presupuestos</h1>
-
-          {/* Búsqueda */}
-          <div className="flex items-center gap-4">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={handleChange}
-              placeholder="Buscar por nombre de cliente"
-              className="border border-gray-300 p-2 rounded-lg ml-auto shadow-md w-full sm:w-[300px] lg:w-[400px]"
-            />
-            <Oval
-              visible={searchLoader}
-              height="30"
-              width="30"
-              color="rgb(92, 92, 92)"
-              secondaryColor="rgb(92, 92, 92)"
-              strokeWidth="6"
-              ariaLabel="oval-loading"
-            />
-          </div>
 
           <div className="flex items-center gap-3">
             <Link
@@ -593,8 +645,23 @@ function Budgets() {
           </div>
         )}
 
-        <div className="overflow-x-auto mt-4">
-          <div className="overflow-x-auto overflow-y-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white max-h-[70vh]">
+        <BudgetsFilterBar
+          searchTerm={searchTerm}
+          furnitureName={furnitureName}
+          budgetNumber={budgetNumber}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onSearchTermChange={handleSearchTermChange}
+          onFurnitureNameChange={handleFurnitureNameChange}
+          onBudgetNumberChange={handleBudgetNumberChange}
+          onDateFromChange={handleDateFromChange}
+          onDateToChange={handleDateToChange}
+          onClearFilters={handleClearFilters}
+          loading={searchLoader}
+        />
+
+        <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-auto rounded-lg shadow-sm border border-gray-200 bg-white max-h-[70vh]">
             <table className="min-w-full divide-y divide-gray-700">
               <thead className="bg-gray-700 sticky top-0 z-10">
                 <tr>

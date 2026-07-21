@@ -7,7 +7,9 @@ async function getConfirmedBudgets(
   page = 1,
   limit = 50,
   dateFrom = "",
-  dateTo = ""
+  dateTo = "",
+  furnitureName = "",
+  budgetNumber = ""
 ) {
   const token = Cookies.get("token");
 
@@ -17,6 +19,8 @@ async function getConfirmedBudgets(
   if (searchTerm) params.set("search", searchTerm);
   if (dateFrom) params.set("dateFrom", dateFrom);
   if (dateTo) params.set("dateTo", dateTo);
+  if (furnitureName) params.set("furnitureName", furnitureName);
+  if (budgetNumber) params.set("budgetNumber", budgetNumber);
 
   const res = await axios.get(
     `${config.apiBudgets}/confirmed?${params.toString()}`,
