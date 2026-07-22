@@ -137,6 +137,11 @@ function EditUser() {
               id="username"
               {...register("username", {
                 required: "El campo es obligatorio",
+                validate: {
+                  noSpaces: (v) =>
+                    !/\s/.test(v) ||
+                    "El usuario no puede contener espacios",
+                },
               })}
             />
             {errors.username && (
@@ -180,6 +185,10 @@ function EditUser() {
                     message: "Debe tener al menos 6 caracteres",
                   },
                   validate: {
+                    noSpaces: (v) =>
+                      !v ||
+                      !/\s/.test(v) ||
+                      "La contraseña no puede contener espacios",
                     hasUpper: (v) =>
                       !v ||
                       /[A-Z]/.test(v) ||
@@ -192,7 +201,8 @@ function EditUser() {
                 })}
               />
               <span className="text-xs text-gray-500 mt-1">
-                Dejar vacío para no cambiar la contraseña.
+                Dejar vacío para no cambiar la contraseña. No se permiten
+                espacios.
               </span>
               {errors.password && (
                 <span className="text-xs xl:text-base text-red-700 mt-1 block text-left">
