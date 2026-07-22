@@ -128,8 +128,13 @@ function SelectFurnitures() {
     }
   };
 
-  const categoryName = (furn) =>
-    furn?.category?.name || furn?.category || "—";
+  const categoryName = (furn) => {
+    if (furn?.category?.name) return furn.category.name;
+
+    const catId = String(furn?.category?._id || furn?.category || "");
+    const cat = categories.find((c) => String(c._id) === catId);
+    return cat?.name || "—";
+  };
 
   return (
     <>
