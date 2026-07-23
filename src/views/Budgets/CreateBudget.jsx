@@ -18,10 +18,11 @@ import {
   getLastBudgetNum,
   ViewModulesFurniture,
   uploadBudgetImage,
-  getSystemVariableByKey,
 } from "../../index.js";
 import { FurnitureBudgetSection } from "./FurnitureBudgetSection.jsx";
 import ValidationErrorModal from "../../components/ValidationErrorModal.jsx";
+import { useSystemVariable } from "../../hooks/useSystemVariable.js";
+import { SystemVariableFallbackWarning } from "../../components/SystemVariableFallbackWarning.jsx";
 
 const normalizeHtml = (html) => (typeof html === "string" ? html.trim() : "");
 
@@ -281,11 +282,27 @@ function CreateBudget() {
   const [imageUploading, setImageUploading] = useState(false);
 
   // Coeficiente de cálculo (variable del sistema, default 3.8)
+  const {
+    value: systemCoefficient,
+    loading: coefficientLoading,
+    usedFallback: coefficientUsedFallback,
+  } = useSystemVariable("budget_calculation_coefficient", {
+    fallback: 3.8,
+    parse: (raw) => Number(raw),
+  });
   const [calculationCoefficient, setCalculationCoefficient] = useState(3.8);
   const [coefficientInput, setCoefficientInput] = useState("3.8");
 
+  useEffect(() => {
+    setCalculationCoefficient(systemCoefficient);
+    setCoefficientInput(String(systemCoefficient).replace(",", "."));
+  }, [systemCoefficient]);
+
   // IVA por defecto (variable del sistema, 0 = sin IVA)
-  const [budgetIva, setBudgetIva] = useState(0);
+  const { value: budgetIva } = useSystemVariable("budget_iva", {
+    fallback: 0,
+    parse: (raw) => Number(raw),
+  });
 
   const quillModules = {
     toolbar: [
@@ -353,45 +370,6 @@ function CreateBudget() {
   );
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const controller = new AbortController();
-    getSystemVariableByKey("budget_calculation_coefficient", controller.signal)
-      .then((variable) => {
-        if (variable?.value != null && variable.value !== "") {
-          const num = Number(variable.value);
-          if (!Number.isNaN(num)) {
-            setCalculationCoefficient(num);
-            setCoefficientInput(String(num).replace(",", "."));
-          }
-        }
-      })
-      .catch((err) => {
-        if (err?.name !== "CanceledError" && err?.name !== "AbortError") {
-          console.error("Error al obtener coeficiente de cálculo:", err);
-        }
-      });
-    return () => controller.abort();
-  }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    getSystemVariableByKey("budget_iva", controller.signal)
-      .then((variable) => {
-        if (variable?.value != null && variable.value !== "") {
-          const num = Number(variable.value);
-          if (!Number.isNaN(num)) {
-            setBudgetIva(num);
-          }
-        }
-      })
-      .catch((err) => {
-        if (err?.name !== "CanceledError" && err?.name !== "AbortError") {
-          console.error("Error al obtener IVA por defecto:", err);
-        }
-      });
-    return () => controller.abort();
-  }, []);
 
   const getFurnituresToSet = () => {
     getFurnitureWithBudgetCalcs(idFurniture)
@@ -1286,6 +1264,9 @@ function CreateBudget() {
                 <p className="text-sm text-gray-500">
                   Se aplica a todos los muebles de este presupuesto.
                 </p>
+                {!coefficientLoading && coefficientUsedFallback && (
+                  <SystemVariableFallbackWarning variableKey="budget_calculation_coefficient" />
+                )}
               </div>
             </div>
 
@@ -1665,6 +1646,11 @@ function CreateBudget() {
                 Este valor se usa para calcular el precio de materiales, insumos, chapas y filos.
                 Por defecto usa el valor del sistema ({calculationCoefficient}), pero podés
                 modificarlo para este presupuesto en particular.
+                {!coefficientLoading && coefficientUsedFallback && (
+                  <span className="block mt-1">
+                    <SystemVariableFallbackWarning variableKey="budget_calculation_coefficient" />
+                  </span>
+                )}
               </p>
             </div>
             <div className="flex gap-16 w-full">

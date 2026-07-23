@@ -19,10 +19,11 @@ import {
   getFurnitureCategories,
   uploadBudgetImage,
   deleteBudgetImage,
-  getSystemVariableByKey,
 } from "../../index.js";
 import ValidationErrorModal from "../../components/ValidationErrorModal.jsx";
 import { FurnitureBudgetSection } from "./FurnitureBudgetSection.jsx";
+import { useSystemVariable } from "../../hooks/useSystemVariable.js";
+import { SystemVariableFallbackWarning } from "../../components/SystemVariableFallbackWarning.jsx";
 
 // ── Helper component: accordion for a single furniture item in edit mode ──────
 function MultiFurnitureEditAccordion({ item, index, fmtCurrency }) {
@@ -211,29 +212,15 @@ function EditBudget() {
 
   // Coeficiente de cálculo (variable del sistema, default 3.8)
   const [calculationCoefficient, setCalculationCoefficient] = useState(3.8);
-  const [systemCoefficient, setSystemCoefficient] = useState(3.8); // Guardar el valor del sistema para referencia
   const [coefficientInput, setCoefficientInput] = useState("3.8");
-
-  useEffect(() => {
-    const controller = new AbortController();
-    getSystemVariableByKey("budget_calculation_coefficient", controller.signal)
-      .then((variable) => {
-        if (variable?.value != null && variable.value !== "") {
-          const num = Number(variable.value);
-          if (!Number.isNaN(num)) {
-            setSystemCoefficient(num);
-            // Solo setear si no hay valor guardado en el presupuesto
-            // Esto se manejará en getBudgetToSet
-          }
-        }
-      })
-      .catch((err) => {
-        if (err?.name !== "CanceledError" && err?.name !== "AbortError") {
-          console.error("Error al obtener coeficiente de cálculo:", err);
-        }
-      });
-    return () => controller.abort();
-  }, []);
+  const {
+    value: systemCoefficient, // Guardar el valor del sistema para referencia
+    loading: coefficientLoading,
+    usedFallback: coefficientUsedFallback,
+  } = useSystemVariable("budget_calculation_coefficient", {
+    fallback: 3.8,
+    parse: (raw) => Number(raw),
+  });
 
   // Sincronizar coefficientInput cuando cambia calculationCoefficient
   useEffect(() => {
@@ -1952,6 +1939,11 @@ function EditBudget() {
               <p className="text-sm text-gray-500 w-3/4">
                 Este valor se usa para calcular el precio de materiales, insumos, chapas y filos.
                 Valor del sistema: {systemCoefficient}. Podés modificarlo para este presupuesto en particular.
+                {!coefficientLoading && coefficientUsedFallback && (
+                  <span className="block mt-1">
+                    <SystemVariableFallbackWarning variableKey="budget_calculation_coefficient" />
+                  </span>
+                )}
               </p>
             </div>
             <div className="flex gap-16 w-full">

@@ -115,6 +115,9 @@ export { createSystemVariable } from "./services/SystemVariables/createSystemVar
 export { updateSystemVariable } from "./services/SystemVariables/updateSystemVariable.js";
 export { deleteSystemVariable } from "./services/SystemVariables/deleteSystemVariable.js";
 
+//Hooks --->
+export { useSystemVariable } from "./hooks/useSystemVariable.js";
+
 //Components --->
 
 //MODULES

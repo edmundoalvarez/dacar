@@ -45,6 +45,13 @@ function Furniture() {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 50; // Límite de insumos por página
 
+  const paginationRange = useMemo(() => {
+    if (furnitures.length === 0) return null;
+    const start = (currentPage - 1) * itemsPerPage + 1;
+    const end = start + furnitures.length - 1;
+    return `${start}-${end}`;
+  }, [currentPage, furnitures.length, itemsPerPage]);
+
   // Guardamos el AbortController actual para abortar la request previa
   const controllerRef = useRef(null);
   // (Opcional) sequence para evitar respuestas fuera de orden
@@ -360,6 +367,15 @@ function Furniture() {
     return FIELD_LABELS[field] || field;
   }
 
+  function getCategoryName(furniture) {
+    if (furniture?.category?.name) return furniture.category.name;
+
+    const catId = String(furniture?.category?._id || furniture?.category || "");
+    if (catId && categoriesMap[catId]) return categoriesMap[catId];
+
+    return furniture?.category ? "(Categoría eliminada)" : "Sin categoría";
+  }
+
   function formatChangeValue(change, key) {
     const val = change[key];
 
@@ -451,7 +467,7 @@ function Furniture() {
 
   return (
     <>
-      <div className="pb-8 px-4 sm:px-8 lg:px-16 bg-gray-100 min-h-screen">
+      <div className="pb-4 px-4 sm:px-8 lg:px-16 bg-gray-100 min-h-screen flex flex-col">
         <div className="flex flex-wrap gap-4 justify-between items-center mb-8 bg-gray-800 p-4 sm:p-8 rounded-bl-2xl rounded-br-2xl border-b-2 border-b-emerald-500 border-l-2 border-l-emerald-500 border-r-2 border-r-emerald-500 shadow-sm">
           <h1 className="text-2xl sm:text-4xl font-semibold text-white">Muebles</h1>
           {/* Campo de búsqueda */}
@@ -517,8 +533,8 @@ function Furniture() {
             ⚠️ Estás en entorno de pruebas (TEST)
           </div>
         )}
-        <div className="overflow-x-auto mt-4">
-          <div className="overflow-x-auto overflow-y-auto mt-4 rounded-lg shadow-sm border border-gray-200 bg-white max-h-[70vh]">
+        <div className="flex-1 flex flex-col min-h-0 mt-4">
+          <div className="overflow-x-auto overflow-y-auto rounded-lg shadow-sm border border-gray-200 bg-white max-h-[calc(100vh-220px)]">
             <table className="min-w-full divide-y divide-gray-700">
               <thead className="bg-gray-700 sticky top-0 z-10">
                 <tr>
@@ -570,26 +586,24 @@ function Furniture() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {furnitures.map((furniture) => (
                   <tr key={furniture._id}>
-                    <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-2 py-2 text-center whitespace-nowrap text-sm text-gray-500">
                       {furniture.name}
                     </td>
-                    <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-2 py-2 text-center whitespace-nowrap text-sm text-gray-500">
                       {furniture.length}
                     </td>
-                    <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-2 py-2 text-center whitespace-nowrap text-sm text-gray-500">
                       {furniture.height}
                     </td>
-                    <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-2 py-2 text-center whitespace-nowrap text-sm text-gray-500">
                       {furniture.width}
                     </td>
 
-                    <td className="px-2 py-4 text-center whitespace-nowrap text-sm text-gray-500">
-                      {categoriesMap[furniture.category]
-                        ? categoriesMap[furniture.category]
-                        : "(Categoría eliminada)"}
+                    <td className="px-2 py-2 text-center whitespace-nowrap text-sm text-gray-500">
+                      {getCategoryName(furniture)}
                     </td>
 
-                    <td className="px-2 py-4 text-center text-sm whitespace-nowrap max-w-[140px] text-gray-500">
+                    <td className="px-2 py-2 text-center text-sm whitespace-nowrap max-w-[140px] text-gray-500">
                       {Array.isArray(furniture.modules_furniture) &&
                       furniture.modules_furniture.length > 0 ? (
                         <>
@@ -607,7 +621,7 @@ function Furniture() {
                               )}
                             </p>
                           </div>
-                          <div className="mt-4 w-full flex flex-col justify-center items-center align-middle">
+                          <div className="mt-2 w-full flex flex-col justify-center items-center align-middle">
                             <button
                               onClick={() => handleOpenModal(furniture)}
                               className="w-2/3 text-white  bg-blue-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
@@ -622,8 +636,8 @@ function Furniture() {
                     </td>
 
                     <td>
-                      <div className="flex flex-col gap-1.5 items-center py-4 sm:py-6 w-full px-2 sm:w-10/12 sm:m-auto">
-                        <div className="flex flex-row gap-1.5 w-full">
+                      <div className="flex flex-col gap-1 items-center py-2 w-full px-2 sm:w-10/12 sm:m-auto">
+                        <div className="flex flex-row gap-1 w-full">
                           <Link
                             to={`/presupuestar-mueble/${furniture._id}`}
                             className="w-full text-white bg-emerald-700 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 sm:gap-3"
@@ -637,7 +651,7 @@ function Furniture() {
                           </Link>
                         </div>
 
-                        <div className="flex flex-row gap-1.5 w-full">
+                        <div className="flex flex-row gap-1 w-full">
                           <Link
                             to={`/editar-modulos-mueble/${furniture._id}`}
                             className="w-1/2 text-white bg-orange rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-2"
@@ -662,7 +676,7 @@ function Furniture() {
                           </button>
                         </div>
 
-                        <div className="flex flex-col gap-1.5 w-full">
+                        <div className="flex flex-row gap-1 w-full">
                           <button
                             onClick={() =>
                               handleDownloadPieces(
@@ -670,7 +684,7 @@ function Furniture() {
                                 furniture.name
                               )
                             }
-                            className="w-full text-white bg-sky-800 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 sm:gap-2"
+                            className="w-1/2 text-white bg-sky-800 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-2"
                           >
                             <FontAwesomeIcon
                               icon={faDownload}
@@ -689,10 +703,13 @@ function Furniture() {
                                 alert("Error al clonar el mueble. Intentá de nuevo.");
                               }
                             }}
-                            className="w-full text-white bg-emerald-700 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 sm:gap-2"
+                            className="w-1/2 text-white bg-emerald-700 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-2"
                           >
                             <p className="m-0 leading-loose text-xs sm:text-sm">Clonar</p>
                           </button>
+                        </div>
+
+                        <div className="flex flex-row gap-1 w-full">
                           <button
                             onClick={() =>
                               handleDownloadLoosePiece(
@@ -700,7 +717,7 @@ function Furniture() {
                                 furniture.name
                               )
                             }
-                            className="w-full text-white bg-gray-700 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 sm:gap-2"
+                            className="w-1/2 text-white bg-gray-700 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-2"
                           >
                             <FontAwesomeIcon
                               icon={faDownload}
@@ -709,13 +726,9 @@ function Furniture() {
                             />
                             <p className="m-0 leading-loose text-xs sm:text-sm">Piezas Sueltas</p>
                           </button>
-                        </div>
-
-                        {/* NUEVO: botón Historial */}
-                        <div className="flex flex-row gap-1.5 w-full">
                           <button
                             onClick={() => handleOpenHistory(furniture)}
-                            className="w-full text-white bg-gray-900 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center items-center gap-1.5 sm:gap-2"
+                            className="w-1/2 text-white bg-gray-900 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center items-center gap-1 sm:gap-2"
                           >
                             <img
                               src="./../icon_history.svg"
@@ -734,20 +747,23 @@ function Furniture() {
               </tbody>
             </table>
           </div>
-          <div className="overflow-x-auto my-8 flex justify-center items-center h-[100px]">
-            <Grid
-              visible={loader}
-              height="80"
-              width="80"
-              color="rgb(92, 92, 92)"
-              ariaLabel="grid-loading"
-              radius="12.5"
-              wrapperStyle={{}}
-              wrapperClass="grid-wrapper"
-            />
-          </div>
+          {loader && (
+            <div className="flex justify-center items-center py-3">
+              <Grid
+                visible={true}
+                height="48"
+                width="48"
+                color="rgb(92, 92, 92)"
+                ariaLabel="grid-loading"
+                radius="12.5"
+                wrapperStyle={{}}
+                wrapperClass="grid-wrapper"
+              />
+            </div>
+          )}
         </div>
-        <div className="flex justify-center items-center gap-4 py-8 text-black">
+        <div className="flex flex-col items-center gap-1 pt-3 pb-2 shrink-0">
+          <div className="flex justify-center items-center gap-4 text-black">
           <button
             onClick={handlePreviousPage}
             disabled={currentPage === 1}
@@ -775,6 +791,10 @@ function Furniture() {
           >
             Siguiente
           </button>
+          </div>
+          {paginationRange && (
+            <p className="text-xs text-gray-500 m-0">{paginationRange}</p>
+          )}
         </div>
       </div>
       {/* Abrimos la modal en caso que el estado isModalOpen cambie */}

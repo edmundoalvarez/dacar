@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { getBudgetById, getSystemVariableByKey, editBudget } from "../../index.js";
+import { getBudgetById, editBudget } from "../../index.js";
+import { useSystemVariable } from "../../hooks/useSystemVariable.js";
+import { SystemVariableFallbackWarning } from "../../components/SystemVariableFallbackWarning.jsx";
 import { Grid } from "react-loader-spinner";
 import { generatePDF } from "../../helpers/Budgets/budgetDetailPdf.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -8,11 +10,16 @@ import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import parse from "html-react-parser";
 import { formatComments } from "../../helpers/Budgets/formatComments.js";
 
+const DEFAULT_PAYMENT_TERMS = "50% SEÑA. 50% SALDO PARA COORDINAR ENTREGA.";
+
 function BudgetDetails() {
   const [budget, setBudget] = useState({});
   const [loader, setLoader] = useState(true);
-  const defaultPaymentTerms = "50% SEÑA. 50% SALDO PARA COORDINAR ENTREGA.";
-  const [paymentTerms, setPaymentTerms] = useState(defaultPaymentTerms);
+  const {
+    value: paymentTerms,
+    loading: paymentTermsLoading,
+    usedFallback: paymentTermsUsedFallback,
+  } = useSystemVariable("budget_payment_terms", { fallback: DEFAULT_PAYMENT_TERMS });
   const { idBudget } = useParams();
   const furn = budget?.furniture?.[0];
   const categoryName = furn?.category?.name || "-";
@@ -41,23 +48,6 @@ function BudgetDetails() {
   useEffect(() => {
     getBudgetToSet();
   }, [idBudget]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    getSystemVariableByKey("budget_payment_terms", controller.signal)
-      .then((variable) => {
-        if (variable?.value) {
-          setPaymentTerms(variable.value);
-        }
-      })
-      .catch((error) => {
-        if (error?.name === "CanceledError" || error?.name === "AbortError") {
-          return;
-        }
-        console.error("Error al obtener términos de pago:", error);
-      });
-    return () => controller.abort();
-  }, []);
 
   // ── IVA ─────────────────────────────────────────────────────────────────────
   const [ivaEditMode, setIvaEditMode] = useState(false);
@@ -508,6 +498,11 @@ function BudgetDetails() {
                     className="uppercase px-6 py-4 text-left whitespace-nowrap text-sm align-midd  border-r-2 border-r-black border-l-2 border-l-black"
                   >
                     <p className="whitespace-pre-line">{paymentTerms}</p>
+                    {!paymentTermsLoading && paymentTermsUsedFallback && (
+                      <div className="mt-1 normal-case">
+                        <SystemVariableFallbackWarning variableKey="budget_payment_terms" />
+                      </div>
+                    )}
                   </td>
                 </tr>
                 <tr className=" text-center border-b-2 border-gray-700 text-gray-700">
