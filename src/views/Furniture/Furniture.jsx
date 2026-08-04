@@ -5,7 +5,7 @@ import { Grid, Oval } from "react-loader-spinner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faScissors, faClone } from "@fortawesome/free-solid-svg-icons";
 import ExcelJS from "exceljs"; //Para transformar en excel
 
 import {
@@ -540,27 +540,27 @@ function Furniture() {
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                    className="px-3 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
                   >
                     Nombre
                   </th>
                   <th
                     scope="col"
-                    className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                    className="px-1 py-3 text-center text-xs font-medium text-light uppercase tracking-wider w-12"
                   >
                     Largo
                   </th>
                   <th
                     scope="col"
-                    className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                    className="px-1 py-3 text-center text-xs font-medium text-light uppercase tracking-wider w-12"
                   >
                     Alto
                   </th>
                   <th
                     scope="col"
-                    className="px-2 py-3 text-center text-xs font-medium text-light uppercase tracking-wider"
+                    className="px-1 py-3 text-center text-xs font-medium text-light uppercase tracking-wider w-12"
                   >
-                    Profundidad
+                    Prof.
                   </th>
 
                   <th
@@ -586,16 +586,16 @@ function Furniture() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {furnitures.map((furniture) => (
                   <tr key={furniture._id}>
-                    <td className="px-2 py-2 text-center whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-3 py-2 text-center whitespace-nowrap text-sm text-gray-500 max-w-[160px] truncate">
                       {furniture.name}
                     </td>
-                    <td className="px-2 py-2 text-center whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-1 py-2 text-center whitespace-nowrap text-sm text-gray-500 w-12">
                       {furniture.length}
                     </td>
-                    <td className="px-2 py-2 text-center whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-1 py-2 text-center whitespace-nowrap text-sm text-gray-500 w-12">
                       {furniture.height}
                     </td>
-                    <td className="px-2 py-2 text-center whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-1 py-2 text-center whitespace-nowrap text-sm text-gray-500 w-12">
                       {furniture.width}
                     </td>
 
@@ -606,93 +606,70 @@ function Furniture() {
                     <td className="px-2 py-2 text-center text-sm whitespace-nowrap max-w-[140px] text-gray-500">
                       {Array.isArray(furniture.modules_furniture) &&
                       furniture.modules_furniture.length > 0 ? (
-                        <>
-                          <div className="flex flex-wrap justify-center text-left w-full ">
-                            <p className=" max-w-[180px] flex flex-wrap ">
-                              {furniture.modules_furniture.map(
-                                (module, index) => (
-                                  <span key={index} className="truncate">
-                                    {module.name}
-                                    {index <
-                                      furniture.modules_furniture.length - 1 &&
-                                      ","}
-                                  </span>
-                                )
-                              )}
-                            </p>
-                          </div>
-                          <div className="mt-2 w-full flex flex-col justify-center items-center align-middle">
-                            <button
-                              onClick={() => handleOpenModal(furniture)}
-                              className="w-2/3 text-white  bg-blue-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
-                            >
-                              Ver
-                            </button>
-                          </div>
-                        </>
+                        <div className="flex flex-col justify-center items-center align-middle">
+                          <p className="mb-2">
+                            {furniture.modules_furniture.length}{" "}
+                            {furniture.modules_furniture.length === 1
+                              ? "módulo"
+                              : "módulos"}
+                          </p>
+                          <button
+                            onClick={() => handleOpenModal(furniture)}
+                            className="w-2/3 text-white  bg-blue-500 rounded-md px-3 py-0.5 flex flex-row justify-center align-middle items-center gap-2"
+                          >
+                            Ver
+                          </button>
+                        </div>
                       ) : (
                         <p>Sin Módulos</p>
                       )}
                     </td>
 
-                    <td>
-                      <div className="flex flex-col gap-1 items-center py-2 w-full px-2 sm:w-10/12 sm:m-auto">
+                    <td className="min-w-[220px]">
+                      <div className="flex flex-col gap-1 items-center py-2 w-full px-1 lg:w-11/12 lg:mx-auto">
                         <div className="flex flex-row gap-1 w-full">
                           <Link
                             to={`/presupuestar-mueble/${furniture._id}`}
-                            className="w-full text-white bg-emerald-700 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1.5 sm:gap-3"
+                            className="w-1/3 min-w-0 text-white bg-emerald-700 rounded-md px-1 lg:px-2 py-1 flex flex-row justify-center align-middle items-center gap-1"
                           >
                             <img
                               src="./../icon_budgets.svg"
                               alt="Icono de budgets"
-                              className="w-[14px] sm:w-[18px] shrink-0"
+                              className="w-[13px] shrink-0"
                             />
-                            <p className="m-0 leading-loose text-xs sm:text-sm">Presupuestar</p>
+                            <p className="m-0 leading-tight text-[10px] lg:text-xs min-w-0">
+                              Presup.
+                            </p>
                           </Link>
-                        </div>
-
-                        <div className="flex flex-row gap-1 w-full">
                           <Link
                             to={`/editar-modulos-mueble/${furniture._id}`}
-                            className="w-1/2 text-white bg-orange rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-2"
+                            className="w-1/3 min-w-0 text-white bg-orange rounded-md px-1 lg:px-2 py-1 flex flex-row justify-center align-middle items-center gap-1"
                           >
                             <img
                               src="./../icon_edit.svg"
                               alt="Icono editar mueble"
-                              className="w-[13px] sm:w-[18px] shrink-0"
+                              className="w-[13px] shrink-0"
                             />
-                            <p className="m-0 leading-loose text-xs sm:text-sm">Editar</p>
+                            <p className="m-0 leading-tight text-[10px] lg:text-xs min-w-0">
+                              Editar
+                            </p>
                           </Link>
                           <button
                             onClick={() => handleDeleteFurniture(furniture._id)}
-                            className="w-1/2 text-white bg-red-500 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-2"
+                            className="w-1/3 min-w-0 text-white bg-red-500 rounded-md px-1 lg:px-2 py-1 flex flex-row justify-center align-middle items-center gap-1"
                           >
                             <img
                               src="./../icon_delete.svg"
                               alt="Icono eliminar mueble"
-                              className="w-[13px] sm:w-[16px] shrink-0"
+                              className="w-[13px] shrink-0"
                             />
-                            <p className="m-0 leading-loose text-xs sm:text-sm">Eliminar</p>
+                            <p className="m-0 leading-tight text-[10px] lg:text-xs min-w-0">
+                              Eliminar
+                            </p>
                           </button>
                         </div>
 
                         <div className="flex flex-row gap-1 w-full">
-                          <button
-                            onClick={() =>
-                              handleDownloadPieces(
-                                furniture._id,
-                                furniture.name
-                              )
-                            }
-                            className="w-1/2 text-white bg-sky-800 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-2"
-                          >
-                            <FontAwesomeIcon
-                              icon={faDownload}
-                              className="w-[13px] sm:w-[16px] shrink-0"
-                              size="sm"
-                            />
-                            <p className="m-0 leading-loose text-xs sm:text-sm">Despiece</p>
-                          </button>
                           <button
                             onClick={async () => {
                               try {
@@ -703,10 +680,49 @@ function Furniture() {
                                 alert("Error al clonar el mueble. Intentá de nuevo.");
                               }
                             }}
-                            className="w-1/2 text-white bg-emerald-700 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-2"
+                            style={{ backgroundColor: "#0ea379" }}
+                            className="w-1/3 min-w-0 text-white rounded-md px-1 lg:px-2 py-1 flex flex-row justify-center align-middle items-center gap-1"
                           >
-                            <p className="m-0 leading-loose text-xs sm:text-sm">Clonar</p>
+                            <FontAwesomeIcon
+                              icon={faClone}
+                              className="w-[13px] shrink-0"
+                              size="sm"
+                            />
+                            <p className="m-0 leading-tight text-[10px] lg:text-xs min-w-0">
+                              Clonar
+                            </p>
                           </button>
+                          <button
+                            onClick={() =>
+                              handleDownloadPieces(
+                                furniture._id,
+                                furniture.name
+                              )
+                            }
+                            className="w-1/3 min-w-0 text-white bg-sky-800 rounded-md px-1 lg:px-2 py-1 flex flex-row justify-center align-middle items-center gap-1"
+                          >
+                            <FontAwesomeIcon
+                              icon={faDownload}
+                              className="w-[13px] shrink-0"
+                              size="sm"
+                            />
+                            <p className="m-0 leading-tight text-[10px] lg:text-xs min-w-0">
+                              Despiece
+                            </p>
+                          </button>
+                          <Link
+                            to={`/optimizar-corte/${furniture._id}`}
+                            className="w-1/3 min-w-0 text-white bg-indigo-700 hover:bg-indigo-600 rounded-md px-1 lg:px-2 py-1 flex flex-row justify-center align-middle items-center gap-1"
+                          >
+                            <FontAwesomeIcon
+                              icon={faScissors}
+                              className="w-[13px] shrink-0"
+                              size="sm"
+                            />
+                            <p className="m-0 leading-tight text-[10px] lg:text-xs min-w-0">
+                              Opt. Corte
+                            </p>
+                          </Link>
                         </div>
 
                         <div className="flex flex-row gap-1 w-full">
@@ -717,25 +733,27 @@ function Furniture() {
                                 furniture.name
                               )
                             }
-                            className="w-1/2 text-white bg-gray-700 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center align-middle items-center gap-1 sm:gap-2"
+                            className="w-1/2 min-w-0 text-white bg-gray-700 rounded-md px-1 lg:px-2 py-1 flex flex-row justify-center align-middle items-center gap-1"
                           >
                             <FontAwesomeIcon
                               icon={faDownload}
-                              className="w-[13px] sm:w-[16px] shrink-0"
+                              className="w-[13px] shrink-0"
                               size="sm"
                             />
-                            <p className="m-0 leading-loose text-xs sm:text-sm">Piezas Sueltas</p>
+                            <p className="m-0 leading-tight text-[10px] lg:text-xs min-w-0">
+                              Piez. Sueltas
+                            </p>
                           </button>
                           <button
                             onClick={() => handleOpenHistory(furniture)}
-                            className="w-1/2 text-white bg-gray-900 rounded-md px-2 sm:px-3 py-1 flex flex-row justify-center items-center gap-1 sm:gap-2"
+                            className="w-1/2 min-w-0 text-white bg-gray-900 rounded-md px-1 lg:px-2 py-1 flex flex-row justify-center items-center gap-1"
                           >
                             <img
                               src="./../icon_history.svg"
                               alt="Historial del mueble"
-                              className="w-[13px] sm:w-[15px] shrink-0"
+                              className="w-[13px] shrink-0"
                             />
-                            <p className="m-0 leading-loose text-xs sm:text-sm">
+                            <p className="m-0 leading-tight text-[10px] lg:text-xs min-w-0">
                               Historial
                             </p>
                           </button>

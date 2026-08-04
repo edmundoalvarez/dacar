@@ -145,6 +145,7 @@ export { Login } from "./views/Login/Login.jsx";
 export { Furniture } from "./views/Furniture/Furniture";
 export { CreateFurniture } from "./views/Furniture/CreateFurniture";
 export { EditFurnitureMultipleModules } from "./views/Furniture/EditFurnitureMultipleModules";
+export { CutOptimizer } from "./views/Furniture/CutOptimizer";
 
 //FURNITURE-CATEGORIES
 export { FurnitureCategories } from "./views/FurnitureCategories/FurnitureCategories";

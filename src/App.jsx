@@ -9,6 +9,7 @@ import {
   Furniture,
   //Furniture
   CreateFurniture,
+  CutOptimizer,
   //FurnitureCategories
   FurnitureCategories,
   CreateFurnitureCategory,
@@ -85,6 +86,10 @@ function App() {
             <Route
               path="/editar-modulos-mueble/:idFurniture"
               element={<EditFurnitureMultipleModules />}
+            />
+            <Route
+              path="/optimizar-corte/:idFurniture"
+              element={<CutOptimizer />}
             />
             <Route path="/ver-insumos" element={<Supplies />} />
             <Route path="/crear-insumo" element={<CreateSupplie />} />
