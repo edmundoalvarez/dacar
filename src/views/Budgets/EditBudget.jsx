@@ -24,6 +24,7 @@ import ValidationErrorModal from "../../components/ValidationErrorModal.jsx";
 import { FurnitureBudgetSection } from "./FurnitureBudgetSection.jsx";
 import { useSystemVariable } from "../../hooks/useSystemVariable.js";
 import { SystemVariableFallbackWarning } from "../../components/SystemVariableFallbackWarning.jsx";
+import { getBudgetErrorMessage } from "../../helpers/Budgets/getBudgetErrorMessage.js";
 
 // ── Helper component: accordion for a single furniture item in edit mode ──────
 function MultiFurnitureEditAccordion({ item, index, fmtCurrency }) {
@@ -1217,10 +1218,18 @@ function EditBudget() {
 
       const furnitureNames = sectionsData.map((s) => s?.furniture_name).filter(Boolean).join(", ");
 
+      // Nota: no repetimos el objeto completo del mueble (con módulos y piezas) acá:
+      // ya viaja completo dentro de cada furniture_items[i].furniture. Repetirlo
+      // duplica el tamaño del payload y puede superar el límite del body de la API.
+      const furnitureSummaries = sectionsData
+        .map((s) => s?.furniture)
+        .filter(Boolean)
+        .map((f) => ({ _id: f._id, name: f.name, category: f.category }));
+
       const multiBudgetData = {
         budget_number: budget.budget_number,
         furniture_name: furnitureNames,
-        furniture: sectionsData.map((s) => s?.furniture).filter(Boolean),
+        furniture: furnitureSummaries,
         furniture_items: sectionsData.filter(Boolean),
         materials: [],
         total_price: multiTotalPrice,
@@ -1240,7 +1249,7 @@ function EditBudget() {
       } catch (error) {
         console.error("Error editando presupuesto multi:", error);
         setSubmitLoader(false);
-        setValidationErrors({ global: ["Error al guardar el presupuesto. Revisá tu conexión e intentá de nuevo."], byFurniture: [] });
+        setValidationErrors({ global: [getBudgetErrorMessage(error)], byFurniture: [] });
       }
       return;
     }
@@ -1542,7 +1551,7 @@ function EditBudget() {
       console.error("Error editando presupuesto front:", error);
       setSubmitLoader(false);
       setValidationErrors({
-        global: ["Error al guardar el presupuesto. Revisá tu conexión e intentá de nuevo."],
+        global: [getBudgetErrorMessage(error)],
         byFurniture: [],
       });
     }

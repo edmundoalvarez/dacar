@@ -23,6 +23,7 @@ import { FurnitureBudgetSection } from "./FurnitureBudgetSection.jsx";
 import ValidationErrorModal from "../../components/ValidationErrorModal.jsx";
 import { useSystemVariable } from "../../hooks/useSystemVariable.js";
 import { SystemVariableFallbackWarning } from "../../components/SystemVariableFallbackWarning.jsx";
+import { getBudgetErrorMessage } from "../../helpers/Budgets/getBudgetErrorMessage.js";
 
 const normalizeHtml = (html) => (typeof html === "string" ? html.trim() : "");
 
@@ -204,10 +205,18 @@ function CreateBudget() {
         .filter(Boolean)
         .join(", ");
 
+      // Nota: no repetimos el objeto completo del mueble (con módulos y piezas) acá:
+      // ya viaja completo dentro de cada furniture_items[i].furniture. Repetirlo
+      // duplica el tamaño del payload y puede superar el límite del body de la API.
+      const furnitureSummaries = sectionsData
+        .map((s) => s?.furniture)
+        .filter(Boolean)
+        .map((f) => ({ _id: f._id, name: f.name, category: f.category }));
+
       const budgetData = {
         budget_number: lastnumber + 1,
         furniture_name: furnitureNames,
-        furniture: sectionsData.map((s) => s?.furniture).filter(Boolean),
+        furniture: furnitureSummaries,
         materials: [],
         furniture_items: sectionsData.filter(Boolean),
         total_price: multiTotalPrice,
@@ -227,7 +236,7 @@ function CreateBudget() {
     } catch (err) {
       console.error("Error creando presupuesto multi:", err);
       setValidationErrors({
-        global: ["Error al guardar el presupuesto. Revisá tu conexión e intentá de nuevo."],
+        global: [getBudgetErrorMessage(err)],
         byFurniture: [],
       });
     } finally {
@@ -1173,7 +1182,7 @@ function CreateBudget() {
       console.error("Error creando presupuesto:", error);
       setSubmitLoader(false);
       setValidationErrors({
-        global: ["Error al guardar el presupuesto. Revisá tu conexión e intentá de nuevo."],
+        global: [getBudgetErrorMessage(error)],
         byFurniture: [],
       });
     }
