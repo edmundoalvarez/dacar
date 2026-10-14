@@ -1228,7 +1228,7 @@ function EditBudget() {
 
       const multiBudgetData = {
         budget_number: budget.budget_number,
-        furniture_name: furnitureNames,
+        furniture_name: (data.furniture_name || "").trim() || furnitureNames,
         furniture: furnitureSummaries,
         furniture_items: sectionsData.filter(Boolean),
         materials: [],
@@ -1680,6 +1680,17 @@ function EditBudget() {
               <h2 className="text-2xl font-semibold border-b border-emerald-500 pb-3">
                 Datos del Presupuesto
               </h2>
+
+              {/* Nombre de la obra */}
+              <div className="flex flex-col w-1/2 gap-2">
+                <label className="font-semibold">Nombre de la obra</label>
+                <input
+                  type="text"
+                  placeholder="Ej: Cocina Principal, Depto. Palermo..."
+                  className="border border-gray-300 rounded-md p-2"
+                  {...register("furniture_name")}
+                />
+              </div>
 
               {/* Comentarios compartidos */}
               <div className="w-full">

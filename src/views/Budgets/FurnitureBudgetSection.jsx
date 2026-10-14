@@ -201,6 +201,13 @@ const FurnitureBudgetSection = forwardRef(function FurnitureBudgetSection(
         setTotalPolishedEdgeLength(calcs?.totalPolishedEdgeLength ?? 0);
         setTotalSuppliePrice(calcs?.totalSuppliePrice ?? 0);
         setConsolidatedSupplies(calcs?.consolidatedSupplies ?? []);
+
+        // Pre-poblar descripción desde el parámetro del mueble/categoría cuando
+        // no hay valores guardados (modo creación multi-mueble).
+        const parameterHtml = furn?.parameter || furn?.category?.parameter || "";
+        if (parameterHtml && !initialValues?.comments) {
+          setComments(parameterHtml);
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));

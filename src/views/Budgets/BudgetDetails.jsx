@@ -316,58 +316,50 @@ function BudgetDetails() {
                                   : (item.subtotal_price || 0) +
                                     (item.shipment_price || 0) +
                                     (item.placement_price || 0));
-                              const extras = (item.shipment_price || 0) + (item.placement_price || 0);
-                              return (
-                                <>
-                                  {formatCurrency(itemTotal)}
-                                  {extras > 0 && (
-                                    <p className="text-xs text-gray-400 mt-1">
-                                      (inc. envío/loc.: {formatCurrency(extras)})
-                                    </p>
-                                  )}
-                                </>
-                              );
+                              return formatCurrency(itemTotal);
                             })()}
                           </td>
                         </tr>
-                        {/* Modules row */}
-                        <tr key={`mods-${idx}`} className="text-left text-sm align-middle text-gray-700 border-b-2 border-gray-700">
-                          <td className="px-2 py-4 max-w-[150px] w-[150px] text-sm align-middle text-gray-700 border-r-2 border-r-black break-words">
-                            DETALLES DE MÓDULOS
-                          </td>
-                          <td colSpan={3} className="px-6 py-4">
-                            {itemCatName || (furn.width && furn.height && furn.length) ? (
-                              <p className="mb-0">
-                                <span className="font-bold">
-                                  {furn?.category?.name
-                                    ? furn.category.name.toUpperCase()
-                                    : ""}
-                                </span>{" "}
-                                {furn.width && furn.height && furn.length ? (
-                                  <>
-                                    de {furn.width} (ancho) x {furn.height} (alto) x{" "}
-                                    {furn.length} (profundidad).
-                                  </>
-                                ) : (
-                                  ""
-                                )}
-                              </p>
-                            ) : (
-                              ""
-                            )}
-                            {item.show_modules && furn.modules_furniture?.length > 0 && (
-                              <ul className="mb-0">
-                                {furn.modules_furniture.map((mod, mIdx) => (
-                                  <li key={mIdx}>
-                                    {mod.name} - {mod.height} (alto) x {mod.length} (largo) x{" "}
-                                    {mod.width} (profundidad)
-                                    {mod.description ? ` - ${mod.description}` : ""}
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </td>
-                        </tr>
+                        {/* Modules row — solo si show_modules está activo */}
+                        {item.show_modules && (
+                          <tr key={`mods-${idx}`} className="text-left text-sm align-middle text-gray-700 border-b-2 border-gray-700">
+                            <td className="px-2 py-4 max-w-[150px] w-[150px] text-sm align-middle text-gray-700 border-r-2 border-r-black break-words">
+                              DETALLES DE MÓDULOS
+                            </td>
+                            <td colSpan={3} className="px-6 py-4">
+                              {itemCatName || (furn.width && furn.height && furn.length) ? (
+                                <p className="mb-0">
+                                  <span className="font-bold">
+                                    {furn?.category?.name
+                                      ? furn.category.name.toUpperCase()
+                                      : ""}
+                                  </span>{" "}
+                                  {furn.width && furn.height && furn.length ? (
+                                    <>
+                                      de {furn.width} (ancho) x {furn.height} (alto) x{" "}
+                                      {furn.length} (profundidad).
+                                    </>
+                                  ) : (
+                                    ""
+                                  )}
+                                </p>
+                              ) : (
+                                ""
+                              )}
+                              {furn.modules_furniture?.length > 0 && (
+                                <ul className="mb-0">
+                                  {furn.modules_furniture.map((mod, mIdx) => (
+                                    <li key={mIdx}>
+                                      {mod.name} - {mod.height} (alto) x {mod.length} (largo) x{" "}
+                                      {mod.width} (profundidad)
+                                      {mod.description ? ` - ${mod.description}` : ""}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </td>
+                          </tr>
+                        )}
                       </>
                     );
                   })

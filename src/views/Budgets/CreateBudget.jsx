@@ -79,6 +79,7 @@ function CreateBudget() {
   const [multiSearchTerm, setMultiSearchTerm] = useState("");
   const [multiFilteredClients, setMultiFilteredClients] = useState([]);
   const [multiDeliverDate, setMultiDeliverDate] = useState("");
+  const [multiObraName, setMultiObraName] = useState("");
   const [multiClientComment, setMultiClientComment] = useState("");
   const [multiSubmitLoader, setMultiSubmitLoader] = useState(false);
 
@@ -215,7 +216,7 @@ function CreateBudget() {
 
       const budgetData = {
         budget_number: lastnumber + 1,
-        furniture_name: furnitureNames,
+        furniture_name: multiObraName.trim() || furnitureNames,
         furniture: furnitureSummaries,
         materials: [],
         furniture_items: sectionsData.filter(Boolean),
@@ -1309,6 +1310,18 @@ function CreateBudget() {
               <h2 className="text-2xl font-semibold border-b border-emerald-500 pb-3">
                 Datos del Presupuesto
               </h2>
+
+              {/* Nombre de la obra */}
+              <div className="flex flex-col w-1/2 gap-2">
+                <label className="font-semibold">Nombre de la obra</label>
+                <input
+                  type="text"
+                  value={multiObraName}
+                  onChange={(e) => setMultiObraName(e.target.value)}
+                  placeholder="Ej: Cocina Principal, Depto. Palermo..."
+                  className="border border-gray-300 rounded-md p-2"
+                />
+              </div>
 
               {/* Cliente */}
               <div className="flex flex-col gap-3 w-1/2">
