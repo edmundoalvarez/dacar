@@ -423,77 +423,103 @@ function Budgets() {
     setBorder(worksheet.getCell("C13"));
     setBorder(worksheet.getCell("E13"));
 
-    const addItem = (tipo, descripcion, unidades) => {
+    // Los presupuestos multi-mueble guardan el detalle dentro de furniture_items[i]
+    // y dejan vacíos los campos de nivel superior (materials, supplies, filos...).
+    // Los simples siguen leyendo directamente del presupuesto.
+    const sources =
+      Array.isArray(budget?.furniture_items) && budget.furniture_items.length > 0
+        ? budget.furniture_items
+        : [budget];
+
+    // La orden es de toda la obra: se suman las líneas iguales de todos los muebles.
+    const lines = new Map();
+    const addItem = (tipo, descripcion, amount, unit = "") => {
+      const name = descripcion || "—";
+      const key = `${tipo}|${name}|${unit}`;
+      const num =
+        amount === undefined || amount === null || amount === ""
+          ? null
+          : Number(amount);
+      const line = lines.get(key) || { tipo, name, unit, total: null };
+      if (num !== null && !Number.isNaN(num)) {
+        line.total = (line.total ?? 0) + num;
+      }
+      lines.set(key, line);
+    };
+
+    sources.forEach((source) => {
+      const materials = Array.isArray(source?.materials) ? source.materials : [];
+      materials.forEach((material) => {
+        addItem("Placas", material.table, material.qty);
+      });
+    });
+
+    sources.forEach((source) => {
+      const supplies = Array.isArray(source?.supplies) ? source.supplies : [];
+      supplies.forEach((supplie) => {
+        const hasQty =
+          supplie.qty !== undefined && supplie.qty !== null && supplie.qty !== "";
+        const hasLength =
+          supplie.length !== undefined &&
+          supplie.length !== null &&
+          supplie.length !== "";
+
+        // Priorizar cantidad en unidades; usar metros solo si no hay cantidad.
+        if (hasQty) addItem("Insumo", supplie.name, supplie.qty);
+        else if (hasLength) addItem("Insumo", supplie.name, supplie.length, "m");
+        else addItem("Insumo", supplie.name, null);
+      });
+    });
+
+    sources.forEach((source) => {
+      const edgeLacquered = normalizeBudgetSection(source?.edge_lacquered);
+      if (edgeLacquered?.edgeLaqueredM2) {
+        addItem("Filo", "Filo laqueado", edgeLacquered.edgeLaqueredM2, "m2");
+      }
+    });
+
+    sources.forEach((source) => {
+      const edgePolished = normalizeBudgetSection(source?.edge_polished);
+      if (edgePolished?.edgePolishedM2) {
+        addItem("Filo", "Filo pulido", edgePolished.edgePolishedM2, "m2");
+      }
+    });
+
+    sources.forEach((source) => {
+      const edgeRegular = normalizeBudgetSection(source?.edge_no_lacquered);
+      if (edgeRegular?.edgeM2) {
+        const edgeName =
+          catalogs?.edgesMap?.[edgeRegular.edgeSelect] ||
+          edgeRegular.edgeSelect ||
+          "Filo";
+        addItem("Filo", edgeName, edgeRegular.edgeM2, "m");
+      }
+    });
+
+    sources.forEach((source) => {
+      const chapa = normalizeBudgetSection(source?.chapa);
+      const veneer = normalizeBudgetSection(source?.veneer);
+      if (chapa?.veneerSelect || veneer?.veneerM2) {
+        const veneerName =
+          catalogs?.veneersMap?.[chapa.veneerSelect] ||
+          chapa.veneerSelect ||
+          "Chapa";
+        addItem("Chapa", veneerName, veneer?.veneerM2 || null, "m2");
+      }
+    });
+
+    lines.forEach(({ tipo, name, unit, total }) => {
       const rowIndex = worksheet.lastRow.number + 1;
       worksheet.mergeCells(`B${rowIndex}`, `C${rowIndex}`);
       worksheet.mergeCells(`D${rowIndex}`, `E${rowIndex}`);
       worksheet.getCell(`B${rowIndex}`).value = tipo;
-      worksheet.getCell(`D${rowIndex}`).value = descripcion || "—";
-      worksheet.getCell(`F${rowIndex}`).value = unidades ?? "";
+      worksheet.getCell(`D${rowIndex}`).value = name;
+      worksheet.getCell(`F${rowIndex}`).value =
+        total === null ? "" : unit ? `${Number(total.toFixed(2))}${unit}` : Number(total.toFixed(2));
       ["B", "C", "D", "E", "F"].forEach((col) =>
         setBorder(worksheet.getCell(`${col}${rowIndex}`))
       );
-    };
-
-    const materials = Array.isArray(budget?.materials) ? budget.materials : [];
-    materials.forEach((material) => {
-      addItem("Placas", material.table || "—", material.qty ?? "");
     });
-
-    const supplies = Array.isArray(budget?.supplies) ? budget.supplies : [];
-    supplies.forEach((supplie) => {
-      const hasQty =
-        supplie.qty !== undefined && supplie.qty !== null && supplie.qty !== "";
-      const hasLength =
-        supplie.length !== undefined &&
-        supplie.length !== null &&
-        supplie.length !== "";
-      const qtyValue = hasQty ? supplie.qty : "";
-      const lengthValue = hasLength ? `${supplie.length}m` : "";
-
-      // Priorizar cantidad en unidades; usar metros solo si no hay cantidad.
-      const units = qtyValue !== "" ? qtyValue : lengthValue;
-      addItem("Insumo", supplie.name || "—", units);
-    });
-
-    const edgeLacquered = normalizeBudgetSection(budget?.edge_lacquered);
-    const edgePolished = normalizeBudgetSection(budget?.edge_polished);
-    const edgeRegular = normalizeBudgetSection(budget?.edge_no_lacquered);
-
-    if (edgeLacquered?.edgeLaqueredM2) {
-      addItem(
-        "Filo",
-        "Filo laqueado",
-        `${edgeLacquered.edgeLaqueredM2}m2`
-      );
-    }
-
-    if (edgePolished?.edgePolishedM2) {
-      addItem(
-        "Filo",
-        "Filo pulido",
-        `${edgePolished.edgePolishedM2}m2`
-      );
-    }
-
-    if (edgeRegular?.edgeM2) {
-      const edgeName =
-        catalogs?.edgesMap?.[edgeRegular.edgeSelect] ||
-        edgeRegular.edgeSelect ||
-        "Filo";
-      addItem("Filo", edgeName, `${edgeRegular.edgeM2}m`);
-    }
-
-    const chapa = normalizeBudgetSection(budget?.chapa);
-    const veneer = normalizeBudgetSection(budget?.veneer);
-    if (chapa?.veneerSelect || veneer?.veneerM2) {
-      const veneerName =
-        catalogs?.veneersMap?.[chapa.veneerSelect] ||
-        chapa.veneerSelect ||
-        "Chapa";
-      const veneerMeasure = veneer?.veneerM2 ? `${veneer.veneerM2}m2` : "";
-      addItem("Chapa", veneerName, veneerMeasure);
-    }
 
     const safeFurnitureName = String(furnitureName).replace(
       /[\\/:*?"<>|]/g,
